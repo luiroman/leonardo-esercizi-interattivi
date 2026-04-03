@@ -1,0 +1,295 @@
+<div style="background: #F8F9FA; min-height: 100vh; padding: 2rem 1.5rem; font-family: 'Calibri', sans-serif; color: #1E293B;">
+  
+  <!-- Header -->
+  <div style="background: white; border-radius: 12px; border: 0.5px solid #E2E8F0; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <h1 style="color: #0F4C75; font-size: 28px; margin: 0 0 0.5rem 0; font-family: 'Trebuchet MS', sans-serif;">Esercizi Subnetting</h1>
+    <p style="color: #64748B; margin: 0; font-size: 14px;">Modulo 1: Reti, Sistemi Operativi e Hardening</p>
+  </div>
+
+  <!-- Esercizio 1 - FACILE -->
+  <div style="background: white; border-radius: 12px; border: 0.5px solid #E2E8F0; padding: 2rem; margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
+      <div style="background: #DBEAFE; color: #0F4C75; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">1</div>
+      <div>
+        <h2 style="color: #0F4C75; font-size: 20px; margin: 0; font-family: 'Trebuchet MS', sans-serif;">Calcolo Host Utilizzabili</h2>
+        <p style="color: #64748B; margin: 0.25rem 0 0 0; font-size: 13px;">Difficoltà: FACILE</p>
+      </div>
+    </div>
+    
+    <div style="background: #FFFBEB; border-left: 3px solid #F59E0B; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 14px; color: #92400E;">
+      <strong>Esercizio:</strong> Una rete /25 ha quanti host utilizzabili?
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+      <div>
+        <label style="display: block; font-size: 13px; color: #64748B; margin-bottom: 0.5rem; font-weight: 500;">Numero host:</label>
+        <input type="number" id="es1-answer" placeholder="Inserisci numero" style="width: 100%; padding: 0.75rem; border: 0.5px solid #CBD5E1; border-radius: 6px; font-size: 14px;">
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <button onclick="checkExercise1()" style="flex: 1; padding: 0.75rem; background: white; border: 0.5px solid #0891B2; color: #0891B2; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 14px;">Verifica</button>
+      <button onclick="resetExercise1()" style="flex: 1; padding: 0.75rem; background: white; border: 0.5px solid #CBD5E1; color: #64748B; border-radius: 6px; cursor: pointer; font-size: 14px;">Azzera</button>
+    </div>
+
+    <div id="es1-feedback" style="margin-top: 1rem; padding: 1rem; border-radius: 6px; display: none; font-size: 14px;"></div>
+  </div>
+
+  <!-- Esercizio 2 - MEDIO -->
+  <div style="background: white; border-radius: 12px; border: 0.5px solid #E2E8F0; padding: 2rem; margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
+      <div style="background: #D1FAE5; color: #047857; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">2</div>
+      <div>
+        <h2 style="color: #0F4C75; font-size: 20px; margin: 0; font-family: 'Trebuchet MS', sans-serif;">Segmentazione di Rete</h2>
+        <p style="color: #64748B; margin: 0.25rem 0 0 0; font-size: 13px;">Difficoltà: MEDIO</p>
+      </div>
+    </div>
+    
+    <div style="background: #FFFBEB; border-left: 3px solid #F59E0B; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 14px; color: #92400E;">
+      <strong>Esercizio:</strong> Segmenta la rete 192.168.1.0/24 in 4 sottoreti uguali.<br/>
+      Quali sono gli indirizzi di rete delle prime 2 sottoreti?
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+      <div>
+        <label style="display: block; font-size: 13px; color: #64748B; margin-bottom: 0.5rem; font-weight: 500;">Rete 1 (CIDR):</label>
+        <input type="text" id="es2-answer1" placeholder="192.168.1.0/XX" style="width: 100%; padding: 0.75rem; border: 0.5px solid #CBD5E1; border-radius: 6px; font-size: 14px;">
+      </div>
+      <div>
+        <label style="display: block; font-size: 13px; color: #64748B; margin-bottom: 0.5rem; font-weight: 500;">Rete 2 (CIDR):</label>
+        <input type="text" id="es2-answer2" placeholder="192.168.1.XX/XX" style="width: 100%; padding: 0.75rem; border: 0.5px solid #CBD5E1; border-radius: 6px; font-size: 14px;">
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <button onclick="checkExercise2()" style="flex: 1; padding: 0.75rem; background: white; border: 0.5px solid #0891B2; color: #0891B2; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 14px;">Verifica</button>
+      <button onclick="resetExercise2()" style="flex: 1; padding: 0.75rem; background: white; border: 0.5px solid #CBD5E1; color: #64748B; border-radius: 6px; cursor: pointer; font-size: 14px;">Azzera</button>
+    </div>
+
+    <div id="es2-feedback" style="margin-top: 1rem; padding: 1rem; border-radius: 6px; display: none; font-size: 14px;"></div>
+  </div>
+
+  <!-- Esercizio 3 - DIFFICILE -->
+  <div style="background: white; border-radius: 12px; border: 0.5px solid #E2E8F0; padding: 2rem; margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
+      <div style="background: #FCD34D; color: #854D0E; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">3</div>
+      <div>
+        <h2 style="color: #0F4C75; font-size: 20px; margin: 0; font-family: 'Trebuchet MS', sans-serif;">VLSM (Variable Length Subnet Mask)</h2>
+        <p style="color: #64748B; margin: 0.25rem 0 0 0; font-size: 13px;">Difficoltà: DIFFICILE</p>
+      </div>
+    </div>
+    
+    <div style="background: #FFFBEB; border-left: 3px solid #F59E0B; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 14px; color: #92400E;">
+      <strong>Esercizio VLSM:</strong> Hai la rete 10.0.0.0/22 e devi assegnare:<br/>
+      • Ufficio: 300 host<br/>
+      • Lab: 60 host<br/>
+      • Admin: 10 host<br/><br/>
+      Quale CIDR assegni a Lab?
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+      <div>
+        <label style="display: block; font-size: 13px; color: #64748B; margin-bottom: 0.5rem; font-weight: 500;">/XX per Lab (60 host):</label>
+        <input type="number" id="es3-answer" min="24" max="32" placeholder="Inserisci numero (24-32)" style="width: 100%; padding: 0.75rem; border: 0.5px solid #CBD5E1; border-radius: 6px; font-size: 14px;">
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <button onclick="checkExercise3()" style="flex: 1; padding: 0.75rem; background: white; border: 0.5px solid #0891B2; color: #0891B2; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 14px;">Verifica</button>
+      <button onclick="resetExercise3()" style="flex: 1; padding: 0.75rem; background: white; border: 0.5px solid #CBD5E1; color: #64748B; border-radius: 6px; cursor: pointer; font-size: 14px;">Azzera</button>
+    </div>
+
+    <div id="es3-feedback" style="margin-top: 1rem; padding: 1rem; border-radius: 6px; display: none; font-size: 14px;"></div>
+  </div>
+
+  <!-- Esercizio 4 - AVANZATO -->
+  <div style="background: white; border-radius: 12px; border: 0.5px solid #E2E8F0; padding: 2rem; margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
+      <div style="background: #FCA5A5; color: #7F1D1D; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">4</div>
+      <div>
+        <h2 style="color: #0F4C75; font-size: 20px; margin: 0; font-family: 'Trebuchet MS', sans-serif;">Scenario Reale: Segmentazione Aziendale</h2>
+        <p style="color: #64748B; margin: 0.25rem 0 0 0; font-size: 13px;">Difficoltà: AVANZATO</p>
+      </div>
+    </div>
+    
+    <div style="background: #FFFBEB; border-left: 3px solid #F59E0B; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 14px; color: #92400E;">
+      <strong>Scenario:</strong> Un'azienda ha 172.16.0.0/16 e deve segmentare:<br/>
+      • Produzione: 2000 host<br/>
+      • Sviluppo: 500 host<br/>
+      • Ospiti (DMZ): 100 host<br/><br/>
+      Quanti /24 occorrono per la rete di Produzione? (Approssima per eccesso)
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+      <div>
+        <label style="display: block; font-size: 13px; color: #64748B; margin-bottom: 0.5rem; font-weight: 500;">Numero di reti /24:</label>
+        <input type="number" id="es4-answer" min="1" max="20" placeholder="Inserisci numero" style="width: 100%; padding: 0.75rem; border: 0.5px solid #CBD5E1; border-radius: 6px; font-size: 14px;">
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <button onclick="checkExercise4()" style="flex: 1; padding: 0.75rem; background: white; border: 0.5px solid #0891B2; color: #0891B2; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 14px;">Verifica</button>
+      <button onclick="resetExercise4()" style="flex: 1; padding: 0.75rem; background: white; border: 0.5px solid #CBD5E1; color: #64748B; border-radius: 6px; cursor: pointer; font-size: 14px;">Azzera</button>
+    </div>
+
+    <div id="es4-feedback" style="margin-top: 1rem; padding: 1rem; border-radius: 6px; display: none; font-size: 14px;"></div>
+  </div>
+
+  <!-- Footer -->
+  <div style="background: #E2E8F0; padding: 1.5rem; border-radius: 12px; text-align: center; color: #64748B; font-size: 13px;">
+    <p style="margin: 0;">Corso Cybersecurity — Leonardo SpA | Modulo 1: Reti, Sistemi Operativi e Hardening</p>
+  </div>
+
+</div>
+
+<script>
+  function checkExercise1() {
+    const answer = parseInt(document.getElementById('es1-answer').value);
+    const feedback = document.getElementById('es1-feedback');
+    
+    // /25 = 2 sottoreti da /24. 2^(32-25) = 128 indirizzi. Host = 128 - 2 = 126
+    const correct = 126;
+    
+    if (isNaN(answer)) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#FEE2E2';
+      feedback.style.color = '#991B1B';
+      feedback.style.borderLeft = '3px solid #DC2626';
+      feedback.innerHTML = '⚠️ Inserisci un numero valido.';
+      return;
+    }
+    
+    if (answer === correct) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#ECFDF5';
+      feedback.style.color = '#065F46';
+      feedback.style.borderLeft = '3px solid #10B981';
+      feedback.innerHTML = '✓ <strong>Corretto!</strong><br/>Una rete /25 ha 2^(32-25) = 128 indirizzi. Sottraendo rete e broadcast: 128 - 2 = <strong>126 host utilizzabili</strong>.';
+    } else {
+      feedback.style.display = 'block';
+      feedback.style.background = '#FEE2E2';
+      feedback.style.color = '#991B1B';
+      feedback.style.borderLeft = '3px solid #DC2626';
+      feedback.innerHTML = `✗ <strong>Sbagliato.</strong> Hai risposto ${answer}, ma la risposta corretta è <strong>${correct}</strong>.<br/>Formula: 2^(32 - CIDR) - 2`;
+    }
+  }
+
+  function resetExercise1() {
+    document.getElementById('es1-answer').value = '';
+    document.getElementById('es1-feedback').style.display = 'none';
+  }
+
+  function checkExercise2() {
+    const ans1 = document.getElementById('es2-answer1').value.toUpperCase().trim();
+    const ans2 = document.getElementById('es2-answer2').value.toUpperCase().trim();
+    const feedback = document.getElementById('es2-feedback');
+    
+    // 192.168.1.0/24 segmentato in 4 sottoreti (/26)
+    // Rete 1: 192.168.1.0/26
+    // Rete 2: 192.168.1.64/26
+    const correct1 = '192.168.1.0/26';
+    const correct2 = '192.168.1.64/26';
+    
+    if (!ans1 || !ans2) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#FEE2E2';
+      feedback.style.color = '#991B1B';
+      feedback.style.borderLeft = '3px solid #DC2626';
+      feedback.innerHTML = '⚠️ Completa entrambi i campi.';
+      return;
+    }
+    
+    if ((ans1 === correct1 || ans1 === '192.168.1.0/26') && (ans2 === correct2 || ans2 === '192.168.1.64/26')) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#ECFDF5';
+      feedback.style.color = '#065F46';
+      feedback.style.borderLeft = '3px solid #10B981';
+      feedback.innerHTML = '✓ <strong>Corretto!</strong><br/>Segmentando /24 in 4 sottoreti: /26. Ogni subnet occupa 64 indirizzi (2^(32-26) = 64).<br/>Rete 1: 192.168.1.0/26 | Rete 2: 192.168.1.64/26 | Rete 3: 192.168.1.128/26 | Rete 4: 192.168.1.192/26';
+    } else {
+      feedback.style.display = 'block';
+      feedback.style.background = '#FEE2E2';
+      feedback.style.color = '#991B1B';
+      feedback.style.borderLeft = '3px solid #DC2626';
+      feedback.innerHTML = `✗ <strong>Sbagliato.</strong><br/>Risposte corrette:<br/>Rete 1: <strong>${correct1}</strong><br/>Rete 2: <strong>${correct2}</strong><br/>Hai risposto: ${ans1}, ${ans2}`;
+    }
+  }
+
+  function resetExercise2() {
+    document.getElementById('es2-answer1').value = '';
+    document.getElementById('es2-answer2').value = '';
+    document.getElementById('es2-feedback').style.display = 'none';
+  }
+
+  function checkExercise3() {
+    const answer = parseInt(document.getElementById('es3-answer').value);
+    const feedback = document.getElementById('es3-feedback');
+    
+    // 60 host richiedono 2^6 = 64 indirizzi, quindi /26 (2^(32-26) = 64)
+    const correct = 26;
+    
+    if (isNaN(answer)) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#FEE2E2';
+      feedback.style.color = '#991B1B';
+      feedback.style.borderLeft = '3px solid #DC2626';
+      feedback.innerHTML = '⚠️ Inserisci un numero valido (24-32).';
+      return;
+    }
+    
+    if (answer === correct) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#ECFDF5';
+      feedback.style.color = '#065F46';
+      feedback.style.borderLeft = '3px solid #10B981';
+      feedback.innerHTML = '✓ <strong>Corretto!</strong><br/>Per 60 host: 2^6 = 64 indirizzi. Quindi CIDR /26 (2^(32-26) = 64).<br/>Ufficio → /23 (512h) | Lab → <strong>/26 (64h)</strong> | Admin → /28 (16h)';
+    } else {
+      feedback.style.display = 'block';
+      feedback.style.background = '#FEE2E2';
+      feedback.style.color = '#991B1B';
+      feedback.style.borderLeft = '3px solid #DC2626';
+      feedback.innerHTML = `✗ <strong>Sbagliato.</strong> Hai risposto /${answer}, ma la risposta corretta è <strong>/${correct}</strong>.<br/>Ricorda: per N host, trovi la potenza di 2 immediatamente superiore e usi: CIDR = 32 - log₂(potenza)`;
+    }
+  }
+
+  function resetExercise3() {
+    document.getElementById('es3-answer').value = '';
+    document.getElementById('es3-feedback').style.display = 'none';
+  }
+
+  function checkExercise4() {
+    const answer = parseInt(document.getElementById('es4-answer').value);
+    const feedback = document.getElementById('es4-feedback');
+    
+    // 2000 host. 2^11 = 2048, quindi /21 (2^(32-21) = 2048)
+    // Ma domanda quanti /24 servono. 2000 / 256 = 7.8125 → 8 reti /24
+    const correct = 8;
+    
+    if (isNaN(answer)) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#FEE2E2';
+      feedback.style.color = '#991B1B';
+      feedback.style.borderLeft = '3px solid #DC2626';
+      feedback.innerHTML = '⚠️ Inserisci un numero valido.';
+      return;
+    }
+    
+    if (answer === correct) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#ECFDF5';
+      feedback.style.color = '#065F46';
+      feedback.style.borderLeft = '3px solid #10B981';
+      feedback.innerHTML = '✓ <strong>Corretto!</strong><br/>2000 host ÷ 256 (host per /24) = 7.8125 ≈ <strong>8 reti /24</strong> (per eccesso).<br/>Alternatively: un /21 contiene esattamente 8 reti /24 (2000 host).';
+    } else {
+      feedback.style.display = 'block';
+      feedback.style.background = '#FEE2E2';
+      feedback.style.color = '#991B1B';
+      feedback.style.borderLeft = '3px solid #DC2626';
+      feedback.innerHTML = `✗ <strong>Sbagliato.</strong> Hai risposto ${answer}, ma la risposta corretta è <strong>${correct}</strong>.<br/>Formula: ceil(2000 host ÷ 256 host/24) = ceil(7.8125) = 8`;
+    }
+  }
+
+  function resetExercise4() {
+    document.getElementById('es4-answer').value = '';
+    document.getElementById('es4-feedback').style.display = 'none';
+  }
+</script>
