@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esercizi Subnetting — Corso Cybersecurity Leonardo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #F8F9FA;
+            font-family: 'Calibri', sans-serif;
+            color: #1E293B;
+            line-height: 1.6;
+            padding: 1rem;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            border-radius: 12px;
+            border: 0.5px solid #E2E8F0;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        header h1 {
+            color: #0F4C75;
+            font-size: clamp(24px, 5vw, 32px);
+            font-family: 'Trebuchet MS', sans-serif;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            color: #64748B;
+            font-size: 14px;
+        }
+        
+        .esercizio {
+            background: white;
+            border-radius: 12px;
+            border: 0.5px solid #E2E8F0;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .esercizio-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .numero-esercizio {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .facile { background: #DBEAFE; color: #0F4C75; }
+        .medio { background: #D1FAE5; color: #047857; }
+        .difficile { background: #FCD34D; color: #854D0E; }
+        .avanzato { background: #FCA5A5; color: #7F1D1D; }
+        
+        .esercizio-titolo {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .esercizio-titolo h2 {
+            color: #0F4C75;
+            font-size: clamp(16px, 3vw, 20px);
+            font-family: 'Trebuchet MS', sans-serif;
+            margin-bottom: 0.25rem;
+        }
+        
+        .difficolta {
+            color: #64748B;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .testo-esercizio {
+            background: #FFFBEB;
+            border-left: 3px solid #F59E0B;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            font-size: 14px;
+            color: #92400E;
+            line-height: 1.6;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            font-size: 13px;
+            color: #64748B;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 0.5px solid #CBD5E1;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Calibri', sans-serif;
+            color: #1E293B;
+        }
+        
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #0891B2;
+            box-shadow: 0 0 0 2px rgba(8, 145, 178, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        @media (min-width: 600px) {
+            .form-row.two-col {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .form-row.three-col {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+        
+        .pulsanti {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 0.5px solid;
+            transition: all 0.2s;
+        }
+        
+        .btn-verifica {
+            background: white;
+            border-color: #0891B2;
+            color: #0891B2;
+        }
+        
+        .btn-verifica:hover {
+            background: #E0F2FE;
+        }
+        
+        .btn-azzera {
+            background: white;
+            border-color: #CBD5E1;
+            color: #64748B;
+        }
+        
+        .btn-azzera:hover {
+            background: #F1F5F9;
+        }
+        
+        .feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+            border-left: 3px solid;
+            line-height: 1.6;
+        }
+        
+        .feedback.show {
+            display: block;
+        }
+        
+        .feedback.corretto {
+            background: #ECFDF5;
+            color: #065F46;
+            border-left-color: #10B981;
+        }
+        
+        .feedback.sbagliato {
+            background: #FEE2E2;
+            color: #991B1B;
+            border-left-color: #DC2626;
+        }
+        
+        .feedback strong {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        footer {
+            background: #E2E8F0;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            color: #64748B;
+            font-size: 13px;
+            margin-top: 3rem;
+        }
+        
+        .info-generale {
+            background: #E0F2FE;
+            border-left: 3px solid #0891B2;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            font-size: 14px;
+            color: #0C447C;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>15 Esercizi Subnetting</h1>
+            <p>Modulo 1: Reti, Sistemi Operativi e Hardening — Compiti Studio Autonomo 9 aprile</p>
+        </header>
+        
+        <div class="info-generale">
+            <strong>ℹ️ Come usare:</strong> Rispondi alle domande, clicca "Verifica" per il feedback immediato. Se sbagli, leggi la spiegazione e riprova. Le soluzioni sono spiegate nella sezione NOTA DIDATTICA sotto ogni feedback.
+        </div>
+        
+        <!-- ESERCIZIO 1 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio facile">1</div>
+                <div class="esercizio-titolo">
+                    <h2>Calcolo Host da Subnet Mask</h2>
+                    <p class="difficolta">Difficoltà: FACILE</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Una rete ha subnet mask 255.255.255.0. Quanti host utilizzabili ha?
+            </div>
+            <div class="form-group">
+                <label>Numero di host:</label>
+                <input type="number" class="es1-input" placeholder="Inserisci numero">
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs1()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs1()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es1"></div>
+        </div>
+        
+        <!-- ESERCIZIO 2 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio facile">2</div>
+                <div class="esercizio-titolo">
+                    <h2>Conversione CIDR a Subnet Mask</h2>
+                    <p class="difficolta">Difficoltà: FACILE</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Converti /26 in notazione decimale puntata (subnet mask).
+            </div>
+            <div class="form-group">
+                <label>Subnet mask (es. 255.255.255.0):</label>
+                <input type="text" class="es2-input" placeholder="255.255.255.xxx">
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs2()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs2()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es2"></div>
+        </div>
+        
+        <!-- ESERCIZIO 3 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio facile">3</div>
+                <div class="esercizio-titolo">
+                    <h2>Numero di Host da CIDR</h2>
+                    <p class="difficolta">Difficoltà: FACILE</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Una rete /23 ha quanti host utilizzabili?
+            </div>
+            <div class="form-group">
+                <label>Numero di host:</label>
+                <input type="number" class="es3-input" placeholder="Inserisci numero">
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs3()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs3()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es3"></div>
+        </div>
+        
+        <!-- ESERCIZIO 4 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio facile">4</div>
+                <div class="esercizio-titolo">
+                    <h2>Identificare Indirizzo di Rete</h2>
+                    <p class="difficolta">Difficoltà: FACILE</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Qual è l'indirizzo di rete di 192.168.50.100/25?
+            </div>
+            <div class="form-group">
+                <label>Indirizzo di rete:</label>
+                <input type="text" class="es4-input" placeholder="192.168.50.0">
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs4()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs4()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es4"></div>
+        </div>
+        
+        <!-- ESERCIZIO 5 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio facile">5</div>
+                <div class="esercizio-titolo">
+                    <h2>Broadcast Address</h2>
+                    <p class="difficolta">Difficoltà: FACILE</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Per la rete 10.0.0.0/24, qual è l'indirizzo broadcast?
+            </div>
+            <div class="form-group">
+                <label>Indirizzo broadcast:</label>
+                <input type="text" class="es5-input" placeholder="10.0.0.255">
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs5()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs5()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es5"></div>
+        </div>
+        
+        <!-- ESERCIZIO 6 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio medio">6</div>
+                <div class="esercizio-titolo">
+                    <h2>Segmentazione in 2 Sottoreti</h2>
+                    <p class="difficolta">Difficoltà: MEDIO</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Segmenta 172.16.0.0/23 in 2 sottoreti uguali. Qual è il CIDR delle nuove reti?
+            </div>
+            <div class="form-group">
+                <label>Nuovo CIDR (es. /24):</label>
+                <input type="number" class="es6-input" min="24" max="32" placeholder="/XX">
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs6()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs6()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es6"></div>
+        </div>
+        
+        <!-- ESERCIZIO 7 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio medio">7</div>
+                <div class="esercizio-titolo">
+                    <h2>Segmentazione in 4 Sottoreti</h2>
+                    <p class="difficolta">Difficoltà: MEDIO</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Segmenta 192.168.0.0/24 in 4 sottoreti uguali. Quali sono gli indirizzi di rete della 1ª e 3ª subnet?
+            </div>
+            <div class="form-row two-col">
+                <div class="form-group">
+                    <label>Rete 1:</label>
+                    <input type="text" class="es7-input1" placeholder="192.168.0.0/XX">
+                </div>
+                <div class="form-group">
+                    <label>Rete 3:</label>
+                    <input type="text" class="es7-input2" placeholder="192.168.0.128/XX">
+                </div>
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs7()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs7()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es7"></div>
+        </div>
+        
+        <!-- ESERCIZIO 8 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio medio">8</div>
+                <div class="esercizio-titolo">
+                    <h2>Supernetting (Aggregazione)</h2>
+                    <p class="difficolta">Difficoltà: MEDIO</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Aggrega le reti 10.1.0.0/24, 10.1.1.0/24, 10.1.2.0/24, 10.1.3.0/24. Quale CIDR le rappresenta tutte?
+            </div>
+            <div class="form-group">
+                <label>CIDR aggregato (es. 10.1.0.0/XX):</label>
+                <input type="text" class="es8-input" placeholder="10.1.0.0/22">
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs8()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs8()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es8"></div>
+        </div>
+        
+        <!-- ESERCIZIO 9 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio medio">9</div>
+                <div class="esercizio-titolo">
+                    <h2>Due Reti Sono Contigue?</h2>
+                    <p class="difficolta">Difficoltà: MEDIO</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Le reti 192.168.10.0/25 e 192.168.10.128/25 sono contigue e possono essere aggregate? (Sì/No)
+            </div>
+            <div class="form-group">
+                <label>Risposta:</label>
+                <select class="es9-input">
+                    <option value="">-- Scegli --</option>
+                    <option value="si">Sì</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs9()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs9()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es9"></div>
+        </div>
+        
+        <!-- ESERCIZIO 10 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio medio">10</div>
+                <div class="esercizio-titolo">
+                    <h2>Host Utilizzabili Scenario Reale</h2>
+                    <p class="difficolta">Difficoltà: MEDIO</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Un'azienda ha 100 dipendenti e assegna /25 per la rete uffici. Quanti host rimangono inutilizzati?
+            </div>
+            <div class="form-group">
+                <label>Host inutilizzati:</label>
+                <input type="number" class="es10-input" placeholder="Inserisci numero">
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs10()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs10()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es10"></div>
+        </div>
+        
+        <!-- ESERCIZIO 11 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio difficile">11</div>
+                <div class="esercizio-titolo">
+                    <h2>VLSM — Reti Diverse</h2>
+                    <p class="difficolta">Difficoltà: DIFFICILE</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Usa VLSM su 10.0.0.0/22 per: Ufficio (200 host), Lab (50 host), Admin (14 host).<br/>Quale CIDR per il Lab?
+            </div>
+            <div class="form-group">
+                <label>CIDR per Lab (50 host):</label>
+                <input type="number" class="es11-input" min="24" max="32" placeholder="/XX">
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs11()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs11()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es11"></div>
+        </div>
+        
+        <!-- ESERCIZIO 12 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio difficile">12</div>
+                <div class="esercizio-titolo">
+                    <h2>Calcolo VLSM Rete Principale</h2>
+                    <p class="difficolta">Difficoltà: DIFFICILE</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Dato 172.16.0.0/20 con requisiti: Prod (500h), Dev (200h), DMZ (50h), Mgmt (20h).<br/>Quanti /24 per Produzione (approssima per eccesso)?
+            </div>
+            <div class="form-group">
+                <label>Numero /24:</label>
+                <input type="number" class="es12-input" min="1" max="20" placeholder="Inserisci numero">
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs12()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs12()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es12"></div>
+        </div>
+        
+        <!-- ESERCIZIO 13 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio difficile">13</div>
+                <div class="esercizio-titolo">
+                    <h2>Segmentazione per Sicurezza</h2>
+                    <p class="difficolta">Difficoltà: DIFFICILE</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Azienda multifiliale: HQ (1000h), Filiale A (200h), Filiale B (150h).<br/>Qual è il CIDR minimo per ciascuna se usi 10.0.0.0/16?
+            </div>
+            <div class="form-row three-col">
+                <div class="form-group">
+                    <label>HQ CIDR:</label>
+                    <input type="text" class="es13-input1" placeholder="10.0.0.0/XX">
+                </div>
+                <div class="form-group">
+                    <label>Filiale A:</label>
+                    <input type="text" class="es13-input2" placeholder="10.1.0.0/XX">
+                </div>
+                <div class="form-group">
+                    <label>Filiale B:</label>
+                    <input type="text" class="es13-input3" placeholder="10.2.0.0/XX">
+                </div>
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs13()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs13()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es13"></div>
+        </div>
+        
+        <!-- ESERCIZIO 14 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio avanzato">14</div>
+                <div class="esercizio-titolo">
+                    <h2>Scenario Completo: Lateral Movement</h2>
+                    <p class="difficolta">Difficoltà: AVANZATO</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Segmenti 192.168.0.0/16 in: Utenti (5000h), Servizi (1000h), DB Prod (100h), DMZ (50h).<br/>Quante reti /24 minimo per "Servizi"?
+            </div>
+            <div class="form-group">
+                <label>Numero /24 per Servizi:</label>
+                <input type="number" class="es14-input" min="1" max="20" placeholder="Inserisci numero">
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs14()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs14()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es14"></div>
+        </div>
+        
+        <!-- ESERCIZIO 15 -->
+        <div class="esercizio">
+            <div class="esercizio-header">
+                <div class="numero-esercizio avanzato">15</div>
+                <div class="esercizio-titolo">
+                    <h2>Micro-Segmentazione Zero Trust</h2>
+                    <p class="difficolta">Difficoltà: AVANZATO</p>
+                </div>
+            </div>
+            <div class="testo-esercizio">
+                Infrastruttura "Zero Trust": ogni micro-servizio ha subnet propria.<br/>172.16.0.0/12 per 50 microservizi (10-20 host ciascuno).<br/>Quale CIDR è ottimale per ogni servizio?
+            </div>
+            <div class="form-group">
+                <label>CIDR ottimale (es. /XX):</label>
+                <input type="number" class="es15-input" min="24" max="32" placeholder="/XX">
+            </div>
+            <div class="pulsanti">
+                <button class="btn-verifica" onclick="verificaEs15()">Verifica</button>
+                <button class="btn-azzera" onclick="azzerappaEs15()">Azzera</button>
+            </div>
+            <div class="feedback" id="feedback-es15"></div>
+        </div>
+        
+        <footer>
+            <p>Corso Cybersecurity — Leonardo SpA | Modulo 1: Reti, Sistemi Operativi e Hardening</p>
+            <p style="margin-top: 0.5rem; color: #94A3B8;">Compiti Studio Autonomo 9 aprile 2026</p>
+        </footer>
+    </div>
+    
+    <script>
+        // ESERCIZIO 1
+        function verificaEs1() {
+            const ans = parseInt(document.querySelector('.es1-input').value);
+            const fb = document.getElementById('feedback-es1');
+            const correct = 254;
+            
+            if (isNaN(ans)) {
+                mostraFeedback(fb, false, "⚠️ Inserisci un numero valido.", true);
+                return;
+            }
+            
+            if (ans === correct) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>255.255.255.0 è /24. Host = 2^(32-24) - 2 = 256 - 2 = <strong>254</strong>", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong> Hai risposto ${ans}, corretto è <strong>${correct}</strong>.`, false);
+            }
+        }
+        
+        function azzerappaEs1() {
+            document.querySelector('.es1-input').value = '';
+            document.getElementById('feedback-es1').classList.remove('show');
+        }
+        
+        // ESERCIZIO 2
+        function verificaEs2() {
+            const ans = document.querySelector('.es2-input').value.trim();
+            const fb = document.getElementById('feedback-es2');
+            const correct = "255.255.255.192";
+            
+            if (!ans) {
+                mostraFeedback(fb, false, "⚠️ Inserisci una subnet mask.", true);
+                return;
+            }
+            
+            if (ans === correct) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>/26 = 255.255.255.192<br/>Conversione: 32 - 26 = 6 bit host. 2^6 = 64. Ultimi 8 bit: 11000000 = 192.", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong> Hai risposto ${ans}, corretto è <strong>${correct}</strong>.`, false);
+            }
+        }
+        
+        function azzerappaEs2() {
+            document.querySelector('.es2-input').value = '';
+            document.getElementById('feedback-es2').classList.remove('show');
+        }
+        
+        // ESERCIZIO 3
+        function verificaEs3() {
+            const ans = parseInt(document.querySelector('.es3-input').value);
+            const fb = document.getElementById('feedback-es3');
+            const correct = 510;
+            
+            if (isNaN(ans)) {
+                mostraFeedback(fb, false, "⚠️ Inserisci un numero valido.", true);
+                return;
+            }
+            
+            if (ans === correct) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>/23 = 2^(32-23) - 2 = 512 - 2 = <strong>510 host</strong>.", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong> Hai risposto ${ans}, corretto è <strong>${correct}</strong>.`, false);
+            }
+        }
+        
+        function azzerappaEs3() {
+            document.querySelector('.es3-input').value = '';
+            document.getElementById('feedback-es3').classList.remove('show');
+        }
+        
+        // ESERCIZIO 4
+        function verificaEs4() {
+            const ans = document.querySelector('.es4-input').value.trim();
+            const fb = document.getElementById('feedback-es4');
+            const correct = "192.168.50.0";
+            
+            if (!ans) {
+                mostraFeedback(fb, false, "⚠️ Inserisci un indirizzo valido.", true);
+                return;
+            }
+            
+            if (ans === correct) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>192.168.50.100/25 → ultimi 25 bit sono host. 100 in binario con /25 dà rete 192.168.50.0.", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong> Hai risposto ${ans}, corretto è <strong>${correct}</strong>.`, false);
+            }
+        }
+        
+        function azzerappaEs4() {
+            document.querySelector('.es4-input').value = '';
+            document.getElementById('feedback-es4').classList.remove('show');
+        }
+        
+        // ESERCIZIO 5
+        function verificaEs5() {
+            const ans = document.querySelector('.es5-input').value.trim();
+            const fb = document.getElementById('feedback-es5');
+            const correct = "10.0.0.255";
+            
+            if (!ans) {
+                mostraFeedback(fb, false, "⚠️ Inserisci un indirizzo valido.", true);
+                return;
+            }
+            
+            if (ans === correct) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>10.0.0.0/24 ha ultima sottorete .255 come broadcast. Tutti gli host bit a 1.", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong> Hai risposto ${ans}, corretto è <strong>${correct}</strong>.`, false);
+            }
+        }
+        
+        function azzerappaEs5() {
+            document.querySelector('.es5-input').value = '';
+            document.getElementById('feedback-es5').classList.remove('show');
+        }
+        
+        // ESERCIZIO 6
+        function verificaEs6() {
+            const ans = parseInt(document.querySelector('.es6-input').value);
+            const fb = document.getElementById('feedback-es6');
+            const correct = 24;
+            
+            if (isNaN(ans)) {
+                mostraFeedback(fb, false, "⚠️ Inserisci un CIDR valido (numero).", true);
+                return;
+            }
+            
+            if (ans === correct) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>172.16.0.0/23 diviso in 2 → /24. Ogni /24 ha 256 indirizzi.", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong> Hai risposto /${ans}, corretto è <strong>/${correct}</strong>.`, false);
+            }
+        }
+        
+        function azzerappaEs6() {
+            document.querySelector('.es6-input').value = '';
+            document.getElementById('feedback-es6').classList.remove('show');
+        }
+        
+        // ESERCIZIO 7
+        function verificaEs7() {
+            const ans1 = document.querySelector('.es7-input1').value.trim();
+            const ans2 = document.querySelector('.es7-input2').value.trim();
+            const fb = document.getElementById('feedback-es7');
+            const c1 = "192.168.0.0/26";
+            const c3 = "192.168.0.128/26";
+            
+            if (!ans1 || !ans2) {
+                mostraFeedback(fb, false, "⚠️ Completa entrambi i campi.", true);
+                return;
+            }
+            
+            if (ans1 === c1 && ans2 === c3) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>192.168.0.0/24 in 4 → /26. Indirizzi: .0, .64, .128, .192", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong><br/>Corretto: Rete 1: ${c1} | Rete 3: ${c3}`, false);
+            }
+        }
+        
+        function azzerappaEs7() {
+            document.querySelector('.es7-input1').value = '';
+            document.querySelector('.es7-input2').value = '';
+            document.getElementById('feedback-es7').classList.remove('show');
+        }
+        
+        // ESERCIZIO 8
+        function verificaEs8() {
+            const ans = document.querySelector('.es8-input').value.trim();
+            const fb = document.getElementById('feedback-es8');
+            const correct = "10.1.0.0/22";
+            
+            if (!ans) {
+                mostraFeedback(fb, false, "⚠️ Inserisci un CIDR valido.", true);
+                return;
+            }
+            
+            if (ans === correct) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>4 reti /24 consecutive = /22. Supernetting riduce CIDR di 2 posizioni.", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong> Hai risposto ${ans}, corretto è <strong>${correct}</strong>.`, false);
+            }
+        }
+        
+        function azzerappaEs8() {
+            document.querySelector('.es8-input').value = '';
+            document.getElementById('feedback-es8').classList.remove('show');
+        }
+        
+        // ESERCIZIO 9
+        function verificaEs9() {
+            const ans = document.querySelector('.es9-input').value;
+            const fb = document.getElementById('feedback-es9');
+            const correct = "si";
+            
+            if (!ans) {
+                mostraFeedback(fb, false, "⚠️ Scegli una risposta.", true);
+                return;
+            }
+            
+            if (ans === correct) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>Sì, sono contigue (0-127, 128-255) e possono diventare 192.168.10.0/24.", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong> La risposta corretta è <strong>Sì</strong>.`, false);
+            }
+        }
+        
+        function azzerappaEs9() {
+            document.querySelector('.es9-input').value = '';
+            document.getElementById('feedback-es9').classList.remove('show');
+        }
+        
+        // ESERCIZIO 10
+        function verificaEs10() {
+            const ans = parseInt(document.querySelector('.es10-input').value);
+            const fb = document.getElementById('feedback-es10');
+            const correct = 26;
+            
+            if (isNaN(ans)) {
+                mostraFeedback(fb, false, "⚠️ Inserisci un numero valido.", true);
+                return;
+            }
+            
+            if (ans === correct) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>/25 = 126 host utilizzabili. 126 - 100 = <strong>26 inutilizzati</strong>.", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong> Hai risposto ${ans}, corretto è <strong>${correct}</strong>.`, false);
+            }
+        }
+        
+        function azzerappaEs10() {
+            document.querySelector('.es10-input').value = '';
+            document.getElementById('feedback-es10').classList.remove('show');
+        }
+        
+        // ESERCIZIO 11
+        function verificaEs11() {
+            const ans = parseInt(document.querySelector('.es11-input').value);
+            const fb = document.getElementById('feedback-es11');
+            const correct = 26;
+            
+            if (isNaN(ans)) {
+                mostraFeedback(fb, false, "⚠️ Inserisci un CIDR valido.", true);
+                return;
+            }
+            
+            if (ans === correct) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>50 host → 64 indirizzi → /26. VLSM: Ufficio /23 (512), Lab /26 (64), Admin /28 (16).", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong> Hai risposto /${ans}, corretto è <strong>/${correct}</strong>.`, false);
+            }
+        }
+        
+        function azzerappaEs11() {
+            document.querySelector('.es11-input').value = '';
+            document.getElementById('feedback-es11').classList.remove('show');
+        }
+        
+        // ESERCIZIO 12
+        function verificaEs12() {
+            const ans = parseInt(document.querySelector('.es12-input').value);
+            const fb = document.getElementById('feedback-es12');
+            const correct = 2;
+            
+            if (isNaN(ans)) {
+                mostraFeedback(fb, false, "⚠️ Inserisci un numero valido.", true);
+                return;
+            }
+            
+            if (ans === correct) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>500 host ÷ 256 (/24) = 1.95 ≈ <strong>2 reti /24</strong>.", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong> Hai risposto ${ans}, corretto è <strong>${correct}</strong>.`, false);
+            }
+        }
+        
+        function azzerappaEs12() {
+            document.querySelector('.es12-input').value = '';
+            document.getElementById('feedback-es12').classList.remove('show');
+        }
+        
+        // ESERCIZIO 13
+        function verificaEs13() {
+            const ans1 = document.querySelector('.es13-input1').value.trim();
+            const ans2 = document.querySelector('.es13-input2').value.trim();
+            const ans3 = document.querySelector('.es13-input3').value.trim();
+            const fb = document.getElementById('feedback-es13');
+            const c1 = "10.0.0.0/22";
+            const c2 = "10.1.0.0/24";
+            const c3 = "10.2.0.0/24";
+            
+            if (!ans1 || !ans2 || !ans3) {
+                mostraFeedback(fb, false, "⚠️ Completa tutti i campi.", true);
+                return;
+            }
+            
+            if (ans1 === c1 && ans2 === c2 && ans3 === c3) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>HQ 1000 → /22 (1024). Filiali 150-200 → /24 (256).", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong><br/>Corretto: HQ: ${c1} | Fil.A: ${c2} | Fil.B: ${c3}`, false);
+            }
+        }
+        
+        function azzerappaEs13() {
+            document.querySelector('.es13-input1').value = '';
+            document.querySelector('.es13-input2').value = '';
+            document.querySelector('.es13-input3').value = '';
+            document.getElementById('feedback-es13').classList.remove('show');
+        }
+        
+        // ESERCIZIO 14
+        function verificaEs14() {
+            const ans = parseInt(document.querySelector('.es14-input').value);
+            const fb = document.getElementById('feedback-es14');
+            const correct = 4;
+            
+            if (isNaN(ans)) {
+                mostraFeedback(fb, false, "⚠️ Inserisci un numero valido.", true);
+                return;
+            }
+            
+            if (ans === correct) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>1000 host ÷ 256 = 3.9 ≈ <strong>4 reti /24</strong>.", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong> Hai risposto ${ans}, corretto è <strong>${correct}</strong>.`, false);
+            }
+        }
+        
+        function azzerappaEs14() {
+            document.querySelector('.es14-input').value = '';
+            document.getElementById('feedback-es14').classList.remove('show');
+        }
+        
+        // ESERCIZIO 15
+        function verificaEs15() {
+            const ans = parseInt(document.querySelector('.es15-input').value);
+            const fb = document.getElementById('feedback-es15');
+            const correct = 27;
+            
+            if (isNaN(ans)) {
+                mostraFeedback(fb, false, "⚠️ Inserisci un CIDR valido.", true);
+                return;
+            }
+            
+            if (ans === correct) {
+                mostraFeedback(fb, true, "<strong>✓ Corretto!</strong><br/>/27 = 32 indirizzi (30 host + rete/broadcast). Perfetto per micro-servizi 10-20 host.", false);
+            } else {
+                mostraFeedback(fb, false, `<strong>✗ Sbagliato.</strong> Hai risposto /${ans}, corretto è <strong>/${correct}</strong>.`, false);
+            }
+        }
+        
+        function azzerappaEs15() {
+            document.querySelector('.es15-input').value = '';
+            document.getElementById('feedback-es15').classList.remove('show');
+        }
+        
+        // Funzione helper
+        function mostraFeedback(elemento, corretto, messaggio, warning = false) {
+            elemento.classList.add('show');
+            elemento.textContent = '';
+            elemento.innerHTML = messaggio;
+            
+            elemento.classList.remove('corretto', 'sbagliato');
+            if (warning) {
+                elemento.style.background = '#FEE2E2';
+                elemento.style.color = '#991B1B';
+                elemento.style.borderLeftColor = '#DC2626';
+            } else {
+                elemento.classList.add(corretto ? 'corretto' : 'sbagliato');
+            }
+        }
+    </script>
+</body>
+</html>
