@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compiti Settimana 1 — Giorno 2 (11–14 aprile)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #F8F9FA;
+            font-family: 'Calibri', sans-serif;
+            color: #1E293B;
+            line-height: 1.7;
+            padding: 1.5rem;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            border-radius: 12px;
+            border: 0.5px solid #E2E8F0;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        header h1 {
+            color: #0F4C75;
+            font-size: clamp(28px, 5vw, 36px);
+            font-family: 'Trebuchet MS', sans-serif;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            color: #64748B;
+            font-size: 15px;
+            margin-bottom: 1rem;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #FFFBEB;
+            color: #92400E;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 0.5px solid #F59E0B;
+        }
+        
+        .alert-box {
+            background: #E0F2FE;
+            border-left: 4px solid #0891B2;
+            padding: 1.25rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            font-size: 14px;
+            color: #0C447C;
+        }
+        
+        .alert-box strong {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            border: 0.5px solid #E2E8F0;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .section h2 {
+            color: #0F4C75;
+            font-size: 24px;
+            font-family: 'Trebuchet MS', sans-serif;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #0891B2;
+        }
+        
+        .section h3 {
+            color: #0F4C75;
+            font-size: 16px;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .compito-item {
+            background: #FFFBEB;
+            border-left: 3px solid #F59E0B;
+            padding: 1.25rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .compito-item strong {
+            color: #854D0E;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .compito-item p {
+            font-size: 14px;
+            margin-bottom: 0.5rem;
+            color: #1E293B;
+        }
+        
+        .btn-link {
+            display: inline-block;
+            background: #0891B2;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            margin-top: 0.75rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-link:hover {
+            background: #0077B6;
+            transform: translateY(-1px);
+        }
+        
+        .qr-box {
+            background: white;
+            border-radius: 12px;
+            border: 0.5px solid #E2E8F0;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .qr-box img {
+            max-width: 250px;
+            height: auto;
+            margin: 1rem 0;
+        }
+        
+        .qr-box p {
+            font-size: 13px;
+            color: #64748B;
+            margin-top: 1rem;
+        }
+        
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .timeline-item {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .timeline-time {
+            font-weight: bold;
+            color: #0891B2;
+            min-width: 100px;
+            font-size: 14px;
+        }
+        
+        .timeline-content {
+            flex: 1;
+            background: #F8F9FA;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1E293B;
+        }
+        
+        .faq-item {
+            background: #F8F9FA;
+            border-left: 3px solid #0891B2;
+            padding: 1.25rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .faq-item strong {
+            color: #0F4C75;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .faq-item p {
+            font-size: 14px;
+            color: #1E293B;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tip-box {
+            background: #ECFDF5;
+            border-left: 3px solid #10B981;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            font-size: 14px;
+            color: #065F46;
+        }
+        
+        .tip-box strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .checklist li {
+            padding: 0.75rem 0 0.75rem 2rem;
+            position: relative;
+            font-size: 14px;
+            border-bottom: 0.5px solid #E2E8F0;
+        }
+        
+        .checklist li:before {
+            content: "☑";
+            position: absolute;
+            left: 0;
+            color: #10B981;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background: #1E293B;
+            color: #E2E8F0;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 1rem 0;
+        }
+        
+        footer {
+            background: #E2E8F0;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            color: #64748B;
+            font-size: 13px;
+            margin-top: 3rem;
+        }
+        
+        .divider {
+            height: 1px;
+            background: #E2E8F0;
+            margin: 2rem 0;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+            
+            header {
+                padding: 1.5rem;
+            }
+            
+            header h1 {
+                font-size: 24px;
+            }
+            
+            .section {
+                padding: 1.5rem;
+            }
+            
+            .timeline-item {
+                flex-direction: column;
+            }
+            
+            .timeline-time {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <h1>📋 Compiti Settimana 1</h1>
+            <p>11–14 aprile 2026 | Giorno 2 — In presenza Napoli</p>
+            <span class="badge">⏱️ Tempo stimato: 8–10 ore (flessibile)</span>
+        </header>
+        
+        <!-- ALERT -->
+        <div class="alert-box">
+            <strong>ℹ️ Come usare questa pagina:</strong>
+            Qui trovi i compiti assegnati dopo il Giorno 2. Sono strutturati in priorità: esercizi (ALTA), letture (MEDIA), lab opzionale (BASSA). Non è obbligatorio completare tutto—punta almeno a 1-2 ore al giorno di pratica.
+        </div>
+        
+        <!-- SEZIONE 1: ESERCIZI -->
+        <div class="section">
+            <h2>1️⃣ 50+ Esercizi (PRIORITARIO)</h2>
+            
+            <p style="font-size: 15px; margin-bottom: 1rem; color: #0F4C75;">
+                <strong>4 categorie su routing, DNS, SSL/TLS, Wireshark:</strong>
+            </p>
+            
+            <div class="qr-box">
+                <p style="margin-top: 0;">
+                    <strong>Scansiona o clicca:</strong>
+                </p>
+                <svg width="200" height="200" style="background: white; border: 2px solid #E2E8F0; border-radius: 8px;">
+                    <text x="50" y="100" fill="#999" font-size="12">QR Code sarà visibile</text>
+                </svg>
+                <p>
+                    <a href="https://luiroman.github.io/leonardo-esercizi-interattivi/esercizi-compiti-g2-50plus.html" 
+                       class="btn-link" 
+                       style="display: inline-block;">
+                        🔗 Apri esercizi
+                    </a>
+                </p>
+                <p style="margin-top: 1rem; font-size: 12px; color: #64748B;">
+                    https://luiroman.github.io/leonardo-esercizi-interattivi/esercizi-compiti-g2-50plus.html
+                </p>
+            </div>
+            
+            <div class="compito-item">
+                <strong>🎯 Esercizi per categoria:</strong>
+                <p><strong>A. Routing Avanzato</strong> (13 esercizi) — OSPF, BGP, convergenza</p>
+                <p><strong>B. DNS Profondo</strong> (13 esercizi) — Gerarchia, spoofing, DNSSEC</p>
+                <p><strong>C. SSL/TLS & PKI</strong> (12 esercizi) — Handshake, certificati, chiavi</p>
+                <p><strong>D. Wireshark Pratico</strong> (12 esercizi) — Pacchetti, filtri, scenari</p>
+            </div>
+            
+            <h3>💡 Come usare:</h3>
+            <ul class="checklist">
+                <li>Apri il link da PC, tablet o cellulare</li>
+                <li>Scegli una categoria dal menu</li>
+                <li>Fai gli esercizi al tuo ritmo (~1-2 min cad.)</li>
+                <li>Feedback istantaneo ti dice se è corretto</li>
+                <li>Punta a 30-40 esercizi in 1-2 ore</li>
+            </ul>
+            
+            <div class="tip-box">
+                <strong>⏱️ Timing:</strong> 50+ esercizi = ~1-2 ore se fai la metà. Se fai tutti, ~2-3 ore. Non è obbligatorio.
+            </div>
+        </div>
+        
+        <!-- SEZIONE 2: WIRESHARK PRATICA -->
+        <div class="section">
+            <h2>2️⃣ Wireshark: 5 Catture Pratiche</h2>
+            
+            <div class="compito-item">
+                <strong>🔬 Cosa fare:</strong>
+                <p>Ripeti il workshop fatto in aula: cattura traffico reale, identifica pacchetti, scrivi un report breve</p>
+            </div>
+            
+            <h3>📡 Catture da fare (una per giorno):</h3>
+            
+            <div style="background: #F8F9FA; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
+                <p style="font-size: 13px; margin-bottom: 0.75rem;"><strong>Lunedì 11:</strong> TCP handshake (apri Google, cattura, identifica SYN/SYN-ACK/ACK)</p>
+                <p style="font-size: 13px; margin-bottom: 0.75rem;"><strong>Martedì 12:</strong> DNS query (naviga, cattura, identifica richiesta e risposta DNS)</p>
+                <p style="font-size: 13px; margin-bottom: 0.75rem;"><strong>Mercoledì 13:</strong> HTTPS (visita sito HTTPS, cattura, vedi handshake SSL/TLS e dati crittati)</p>
+                <p style="font-size: 13px; margin-bottom: 0.75rem;"><strong>Giovedì 14:</strong> ARP (cattura, identifica broadcast e reply ARP dal gateway)</p>
+            </div>
+            
+            <h3>📝 Deliverable:</h3>
+            <p style="font-size: 14px; margin-bottom: 1rem;">
+                <strong>Report Wireshark (1 pagina, PDF o Word):</strong>
+            </p>
+            <ul class="checklist">
+                <li>Descrivi una cattura (es. "Ho fatto TCP handshake con google.com")</li>
+                <li>Spiega cosa hai visto (SYN? SYN-ACK? ACK?)</li>
+                <li>Screenshot del pacchetto (opzionale)</li>
+                <li>Una riga di concetto: "Per connettersi, TCP ha 3 step..."</li>
+            </ul>
+            
+            <div class="tip-box">
+                <strong>✅ Non è difficile!</strong> La prima cattura è strana. La seconda è facile. Ripeti il procedimento dal workshop.
+            </div>
+        </div>
+        
+        <!-- SEZIONE 3: LETTURE -->
+        <div class="section">
+            <h2>3️⃣ Letture Opzionali (Media Priorità)</h2>
+            
+            <div class="compito-item">
+                <strong>📖 Routing Avanzato</strong>
+                <p>Approfondimento: OSPF cost calculation, BGP AS-PATH, convergence time</p>
+                <p style="font-size: 13px; color: #64748B; margin-top: 0.5rem;">⏱️ ~45 min | Fonte: articoli su OSPF/BGP da Cisco, Juniper docs</p>
+            </div>
+            
+            <div class="compito-item">
+                <strong>📖 DNSSEC & DNS Security</strong>
+                <p>Come DNSSEC firma le risposte, perché è importante, configurazione base</p>
+                <p style="font-size: 13px; color: #64748B; margin-top: 0.5rem;">⏱️ ~30 min | Fonte: IETF RFC 4033, articoli ISC BIND</p>
+            </div>
+            
+            <div class="compito-item">
+                <strong>📖 PKI & Certificate Management</strong>
+                <p>Chain of trust, CA hierarchy, certificate lifecycle, revocation (CRL, OCSP)</p>
+                <p style="font-size: 13px; color: #64748B; margin-top: 0.5rem;">⏱️ ~45 min | Fonte: RFC 5280, Digicert guides</p>
+            </div>
+        </div>
+        
+        <!-- SEZIONE 4: LAB OPZIONALE -->
+        <div class="section">
+            <h2>4️⃣ Lab Opzionale (Se Avete VirtualBox)</h2>
+            
+            <div class="compito-item">
+                <strong>💻 Routing Configuration Lab</strong>
+                <p>Se avete VirtualBox con Ubuntu Server + 2 VM, configurate routing statico fra loro</p>
+                <p style="font-size: 13px; color: #64748B; margin-top: 0.5rem;">⏱️ ~1–2 ore | Difficoltà: MEDIA-HIGH</p>
+            </div>
+            
+            <div class="tip-box">
+                <strong>⚠️ Molto opzionale!</strong> Se non avete fatto VirtualBox ieri, non iniziate ora. Rimandate al fine settimana se vi interessa.
+            </div>
+        </div>
+        
+        <!-- SEZIONE 5: TIMELINE -->
+        <div class="section">
+            <h2>⏰ Timeline Consigliata (11–14 aprile)</h2>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-time">Lunedì</div>
+                    <div class="timeline-content">
+                        <strong>Esercizi (1h) + Wireshark TCP (30 min)</strong><br/>
+                        Categorie A–B. Cattura TCP handshake.
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-time">Martedì</div>
+                    <div class="timeline-content">
+                        <strong>Letture (1h) + Wireshark DNS (30 min)</strong><br/>
+                        Leggi su routing. Cattura DNS query.
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-time">Mercoledì</div>
+                    <div class="timeline-content">
+                        <strong>Esercizi (1h) + Wireshark HTTPS (30 min)</strong><br/>
+                        Categorie C–D. Cattura SSL/TLS handshake.
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-time">Giovedì</div>
+                    <div class="timeline-content">
+                        <strong>Letture (1h) + Wireshark ARP (30 min) + Report</strong><br/>
+                        Leggi PKI. Cattura ARP. Scrivi report (1 pag).
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-time">Venerdì</div>
+                    <div class="timeline-content">
+                        <strong>Ripasso + Lab opzionale (se interessati)</strong><br/>
+                        Ripassa argomenti deboli. Se avete tempo, VM routing.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tip-box" style="margin-top: 1.5rem;">
+                <strong>⚠️ Nota:</strong> Non è rigida. Se lunedì fate 2h, martedì riposate. L'importante è pratica costante, non frettolosa.
+            </div>
+        </div>
+        
+        <!-- SEZIONE 6: COSA CONSEGNARE -->
+        <div class="section">
+            <h2>✅ Cosa Consegnare</h2>
+            
+            <div class="alert-box">
+                <strong>📧 Deadline: Lunedì 15 aprile, ore 18:00</strong><br/>
+                Inviate al docente via email:
+            </div>
+            
+            <ul class="checklist" style="margin-bottom: 1rem;">
+                <li><strong>Report Wireshark</strong> (1 pagina PDF o Word)</li>
+                <li><strong>File .pcap</strong> di una cattura (es. tcp-handshake.pcap)</li>
+                <li><strong>Numero esercizi completati</strong> (es. "Ho fatto 35 esercizi su 50")</li>
+            </ul>
+        </div>
+        
+        <!-- SEZIONE 7: FAQ -->
+        <div class="section">
+            <h2>❓ Domande Frequenti</h2>
+            
+            <div class="faq-item">
+                <strong>D: Devo fare tutti i 50+ esercizi?</strong>
+                <p>R: No. Almeno 25-30 sono un buon traguardo. Se fai tutti, ancora meglio.</p>
+            </div>
+            
+            <div class="faq-item">
+                <strong>D: Posso fare le catture Wireshark tutte insieme?</strong>
+                <p>R: Sì, ma distribuirle su 4 giorni è meglio per consolidare l'apprendimento.</p>
+            </div>
+            
+            <div class="faq-item">
+                <strong>D: Se non riesco con Wireshark?</strong>
+                <p>R: Usa le istruzioni dal Giorno 2. Se ancora problemi, emaila il docente con screenshot dell'errore.</p>
+            </div>
+            
+            <div class="faq-item">
+                <strong>D: Quanto tempo mi serve?</strong>
+                <p>R: 8–10 ore se fai tutto. 4–5 ore se solo esercizi + Wireshark essenziale.</p>
+            </div>
+            
+            <div class="faq-item">
+                <strong>D: Il report Wireshark deve essere lunghissimo?</strong>
+                <p>R: No! Una pagina. Descrizione concisa + uno screenshot + una riga di spiegazione.</p>
+            </div>
+            
+            <div class="faq-item">
+                <strong>D: E se non finisco entro giovedì?</strong>
+                <p>R: Inviate comunque il report lunedì sera. Potete continuare a esercitarvi dopo—nessuna valutazione severa.</p>
+            </div>
+        </div>
+        
+        <!-- CHIUSURA -->
+        <div class="section">
+            <h2>✨ Chiusura</h2>
+            
+            <p style="font-size: 15px; margin-bottom: 1rem;">
+                <strong>Bravissimi questi due giorni.</strong> Avete visto il viaggio dei dati dalla teoria (subnetting) alla pratica (Wireshark). Questa settimana consolidate con pratica autonoma.
+            </p>
+            
+            <p style="font-size: 15px; margin-bottom: 1rem;">
+                Non abbiate fretta. Wireshark diventa naturale con la ripetizione. Routing prende tempo per essere capito—è normale.
+            </p>
+            
+            <p style="font-size: 15px; margin-bottom: 1rem;">
+                Prossima settimana (Modulo 2): Cloud Architecture. Portiamo tutto quello che sapete di rete nel cloud—tutto quello che abbiamo fatto rimane critico.
+            </p>
+            
+            <p style="font-size: 16px; color: #0891B2; font-weight: bold;">
+                💪 Continuate così!
+            </p>
+        </div>
+        
+        <!-- FOOTER -->
+        <footer>
+            <p><strong>Corso Cybersecurity Leonardo SpA</strong></p>
+            <p>Modulo 1: Reti, Sistemi Operativi e Hardening</p>
+            <p style="margin-top: 1rem; color: #94A3B8;">8 aprile — 24 luglio 2026</p>
+        </footer>
+    </div>
+</body>
+</html>

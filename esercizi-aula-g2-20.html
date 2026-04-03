@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>20 Esercizi Aula G2 — Routing, DNS, SSL/TLS, Wireshark</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #F8F9FA;
+            font-family: 'Calibri', sans-serif;
+            color: #1E293B;
+            line-height: 1.6;
+            padding: 1rem;
+        }
+        
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            border-radius: 12px;
+            border: 0.5px solid #E2E8F0;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        header h1 {
+            color: #0F4C75;
+            font-size: clamp(24px, 5vw, 32px);
+            font-family: 'Trebuchet MS', sans-serif;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            color: #64748B;
+            font-size: 14px;
+        }
+        
+        .category-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+        
+        .category-btn {
+            padding: 0.75rem 1.25rem;
+            border: 0.5px solid #CBD5E1;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: #64748B;
+        }
+        
+        .category-btn:hover {
+            border-color: #0891B2;
+            color: #0891B2;
+            background: #E0F2FE;
+        }
+        
+        .category-btn.active {
+            background: #0891B2;
+            color: white;
+            border-color: #0891B2;
+        }
+        
+        .category-section {
+            display: none;
+        }
+        
+        .category-section.active {
+            display: block;
+        }
+        
+        .category-header {
+            background: white;
+            border-radius: 12px;
+            border: 0.5px solid #E2E8F0;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .category-header h2 {
+            color: #0F4C75;
+            font-size: 24px;
+            font-family: 'Trebuchet MS', sans-serif;
+            margin-bottom: 0.5rem;
+        }
+        
+        .category-header .subtitle {
+            color: #64748B;
+            font-size: 13px;
+        }
+        
+        .category-header .count {
+            background: #FFFBEB;
+            color: #92400E;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 1rem;
+            display: inline-block;
+        }
+        
+        .exercises-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (min-width: 800px) {
+            .exercises-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .esercizio {
+            background: white;
+            border-radius: 12px;
+            border: 0.5px solid #E2E8F0;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .esercizio-num {
+            display: inline-block;
+            background: #DBEAFE;
+            color: #0F4C75;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 0.75rem;
+        }
+        
+        .esercizio-testo {
+            background: #FFFBEB;
+            border-left: 3px solid #F59E0B;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 13px;
+            color: #92400E;
+            line-height: 1.5;
+        }
+        
+        .form-group {
+            margin-bottom: 0.75rem;
+        }
+        
+        label {
+            display: block;
+            font-size: 12px;
+            color: #64748B;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 0.6rem;
+            border: 0.5px solid #CBD5E1;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: 'Calibri', sans-serif;
+            color: #1E293B;
+        }
+        
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #0891B2;
+            box-shadow: 0 0 0 2px rgba(8, 145, 178, 0.1);
+        }
+        
+        .pulsanti {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        button {
+            flex: 1;
+            padding: 0.6rem;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 0.5px solid;
+            transition: all 0.2s;
+        }
+        
+        .btn-verifica {
+            background: white;
+            border-color: #0891B2;
+            color: #0891B2;
+        }
+        
+        .btn-verifica:hover {
+            background: #E0F2FE;
+        }
+        
+        .btn-azzera {
+            background: white;
+            border-color: #CBD5E1;
+            color: #64748B;
+        }
+        
+        .btn-azzera:hover {
+            background: #F1F5F9;
+        }
+        
+        .feedback {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 12px;
+            display: none;
+            border-left: 3px solid;
+            line-height: 1.5;
+        }
+        
+        .feedback.show {
+            display: block;
+        }
+        
+        .feedback.corretto {
+            background: #ECFDF5;
+            color: #065F46;
+            border-left-color: #10B981;
+        }
+        
+        .feedback.sbagliato {
+            background: #FEE2E2;
+            color: #991B1B;
+            border-left-color: #DC2626;
+        }
+        
+        footer {
+            background: #E2E8F0;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            color: #64748B;
+            font-size: 12px;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>20 Esercizi Aula — Giorno 2</h1>
+            <p>10 aprile, in presenza Napoli | Routing, DNS, SSL/TLS, Wireshark</p>
+        </header>
+        
+        <div class="category-nav">
+            <button class="category-btn active" onclick="showCategory('A')">A. Routing (5)</button>
+            <button class="category-btn" onclick="showCategory('B')">B. DNS (5)</button>
+            <button class="category-btn" onclick="showCategory('C')">C. SSL/TLS (5)</button>
+            <button class="category-btn" onclick="showCategory('D')">D. Wireshark (5)</button>
+        </div>
+        
+        <!-- CATEGORIA A: ROUTING -->
+        <div id="categoryA" class="category-section active">
+            <div class="category-header">
+                <h2>A. Routing Statico vs Dinamico</h2>
+                <p class="subtitle">Rotte, configurazione, OSPF, BGP concetti</p>
+                <span class="count">5 esercizi</span>
+            </div>
+            <div class="exercises-grid" id="gridA"></div>
+        </div>
+        
+        <!-- CATEGORIA B: DNS -->
+        <div id="categoryB" class="category-section">
+            <div class="category-header">
+                <h2>B. DNS (Domain Name System)</h2>
+                <p class="subtitle">Query, server, spoofing, sicurezza</p>
+                <span class="count">5 esercizi</span>
+            </div>
+            <div class="exercises-grid" id="gridB"></div>
+        </div>
+        
+        <!-- CATEGORIA C: SSL/TLS -->
+        <div id="categoryC" class="category-section">
+            <div class="category-header">
+                <h2>C. SSL/TLS & Certificati</h2>
+                <p class="subtitle">Crittografia, handshake, PKI, certificati</p>
+                <span class="count">5 esercizi</span>
+            </div>
+            <div class="exercises-grid" id="gridC"></div>
+        </div>
+        
+        <!-- CATEGORIA D: WIRESHARK -->
+        <div id="categoryD" class="category-section">
+            <div class="category-header">
+                <h2>D. Wireshark & Analisi Traffico</h2>
+                <p class="subtitle">Pacchetti, TCP, DNS, HTTPS, ARP</p>
+                <span class="count">5 esercizi</span>
+            </div>
+            <div class="exercises-grid" id="gridD"></div>
+        </div>
+        
+        <footer>
+            <p>Corso Cybersecurity — Leonardo SpA | Modulo 1: Reti, Sistemi Operativi e Hardening</p>
+            <p style="margin-top: 0.5rem; color: #94A3B8;">Giorno 2 — 10 aprile 2026</p>
+        </footer>
+    </div>
+    
+    <script>
+        const esercizi = {
+            A: [
+                { q: "Routing statico: l'admin configura manualmente le rotte. Vero o falso?", a: "vero", tipo: "select", opts: ["vero", "falso"] },
+                { q: "OSPF è usato prevalentemente dove?", a: "interno rete aziendale", tipo: "select", opts: ["internet globale", "interno rete aziendale", "fra provider", "nessuno di questi"] },
+                { q: "BGP è usato per routing fra quali entità?", a: "autonomous systems", tipo: "text" },
+                { q: "Un router con routing statico può adattarsi se un link cade?", a: "no", tipo: "select", opts: ["sì", "no", "dipende"] },
+                { q: "Routing dinamico converge (calcola nuove rotte) in millisecondi. Vero o falso?", a: "vero", tipo: "select", opts: ["vero", "falso"] }
+            ],
+            B: [
+                { q: "DNS traduce domain name in quale tipo di indirizzo?", a: "ip", tipo: "text" },
+                { q: "Una query DNS parte dal PC verso quale server?", a: "dns server ricorsivo", tipo: "text" },
+                { q: "DNS spoofing è un attacco dove l'attaccante intercetta query e risponde falso. Vero o falso?", a: "vero", tipo: "select", opts: ["vero", "falso"] },
+                { q: "DNSSEC protegge DNS con crittografia. Quale tipo?", a: "digitale signature", tipo: "text" },
+                { q: "Se google.com viene spiegato male da DNS spoofing, l'utente finisce dove?", a: "sito clonato attaccante", tipo: "text" }
+            ],
+            C: [
+                { q: "HTTPS = HTTP + quale protocollo di crittografia?", a: "ssl/tls", tipo: "text" },
+                { q: "SSL/TLS handshake fra client e server stabilisce quale?", a: "chiave segreta", tipo: "text" },
+                { q: "Un certificato SSL è firmato da quale entità?", a: "certification authority", tipo: "text" },
+                { q: "PKI = Public Key Infrastructure. Cosa contiene un certificato?", a: "chiave pubblica + identità", tipo: "text" },
+                { q: "Un certificato self-signed è firmato da chi?", a: "se stesso", tipo: "text" }
+            ],
+            D: [
+                { q: "In Wireshark, il TCP handshake ha 3 step. Quali flag vedete? (SYN, SYN-ACK, ACK)", a: "syn, syn-ack, ack", tipo: "text" },
+                { q: "Una DNS query in Wireshark è su quale protocollo di trasporto?", a: "udp", tipo: "text" },
+                { q: "Vedete un pacchetto HTTP leggibile in chiaro. È crittato?", a: "no", tipo: "select", opts: ["sì", "no"] },
+                { q: "Una richiesta ARP è broadcast? (sì/no)", a: "sì", tipo: "select", opts: ["sì", "no"] },
+                { q: "In Wireshark, come si filtra per vedere solo DNS?", a: "dns", tipo: "text" }
+            ]
+        };
+        
+        let stats = { completed: 0, correct: 0 };
+        
+        function verificaRispostaGen(cat, idx) {
+            const divId = `${cat.toLowerCase()}${idx}`;
+            const input = document.querySelector(`#${divId} input, #${divId} select`);
+            if (!input) return;
+            
+            const ans = input.value?.trim().toLowerCase() || "";
+            const fbId = `fb-${divId}`;
+            const fb = document.getElementById(fbId);
+            const es = esercizi[cat][idx];
+            
+            if (!ans) {
+                mostraFeedback(fb, false, "⚠️ Inserisci una risposta");
+                return;
+            }
+            
+            const corretto = String(es.a).toLowerCase() === ans;
+            
+            stats.completed++;
+            if (corretto) stats.correct++;
+            
+            mostraFeedback(fb, corretto, 
+                corretto ? 
+                `✓ Corretto! Risposta: ${es.a}` :
+                `✗ Sbagliato. Risposta corretta: ${es.a}`
+            );
+        }
+        
+        function mostraFeedback(elem, isCorrect, msg) {
+            elem.classList.add('show', isCorrect ? 'corretto' : 'sbagliato');
+            elem.innerHTML = msg;
+        }
+        
+        function generaEsercizi(categoria, idGrid) {
+            const grid = document.getElementById(idGrid);
+            grid.innerHTML = '';
+            
+            esercizi[categoria].forEach((es, idx) => {
+                const divId = `${categoria.toLowerCase()}${idx}`;
+                const inputId = `${divId}-input`;
+                const fbId = `fb-${divId}`;
+                
+                let inputHtml = '';
+                if (es.tipo === 'select') {
+                    inputHtml = `<select id="${inputId}">
+                        <option value="">-- Scegli --</option>
+                        ${es.opts.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                    </select>`;
+                } else {
+                    inputHtml = `<input type="text" id="${inputId}" placeholder="Risposta">`;
+                }
+                
+                const html = `
+                    <div class="esercizio" id="${divId}">
+                        <div class="esercizio-num">${idx + 1}</div>
+                        <div class="esercizio-testo">${es.q}</div>
+                        <div class="form-group">
+                            ${inputHtml}
+                        </div>
+                        <div class="pulsanti">
+                            <button class="btn-verifica" onclick="verificaRispostaGen('${categoria}', ${idx})">Verifica</button>
+                            <button class="btn-azzera" onclick="azzerappaEsercizio('${divId}', '${fbId}', '${inputId}')">Azzera</button>
+                        </div>
+                        <div class="feedback" id="${fbId}"></div>
+                    </div>
+                `;
+                grid.innerHTML += html;
+            });
+        }
+        
+        function azzerappaEsercizio(divId, fbId, inputId) {
+            const input = document.getElementById(inputId);
+            if (input) input.value = '';
+            document.getElementById(fbId).classList.remove('show', 'corretto', 'sbagliato');
+        }
+        
+        function showCategory(cat) {
+            document.querySelectorAll('.category-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(`category${cat}`).classList.add('active');
+            event.target.classList.add('active');
+            
+            generaEsercizi(cat, `grid${cat}`);
+        }
+        
+        window.addEventListener('load', () => {
+            generaEsercizi('A', 'gridA');
+        });
+    </script>
+</body>
+</html>

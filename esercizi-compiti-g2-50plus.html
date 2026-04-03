@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>50+ Compiti Casa G2 — Routing, DNS, SSL/TLS, Wireshark</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #F8F9FA;
+            font-family: 'Calibri', sans-serif;
+            color: #1E293B;
+            line-height: 1.6;
+            padding: 1rem;
+        }
+        
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            border-radius: 12px;
+            border: 0.5px solid #E2E8F0;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        header h1 {
+            color: #0F4C75;
+            font-size: clamp(24px, 5vw, 32px);
+            font-family: 'Trebuchet MS', sans-serif;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            color: #64748B;
+            font-size: 14px;
+        }
+        
+        .info-bar {
+            background: #E0F2FE;
+            border-left: 3px solid #0891B2;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            font-size: 14px;
+            color: #0C447C;
+        }
+        
+        .category-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+        
+        .category-btn {
+            padding: 0.75rem 1.25rem;
+            border: 0.5px solid #CBD5E1;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: #64748B;
+        }
+        
+        .category-btn:hover {
+            border-color: #0891B2;
+            color: #0891B2;
+            background: #E0F2FE;
+        }
+        
+        .category-btn.active {
+            background: #0891B2;
+            color: white;
+            border-color: #0891B2;
+        }
+        
+        .category-section {
+            display: none;
+        }
+        
+        .category-section.active {
+            display: block;
+        }
+        
+        .category-header {
+            background: white;
+            border-radius: 12px;
+            border: 0.5px solid #E2E8F0;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .category-header h2 {
+            color: #0F4C75;
+            font-size: 24px;
+            font-family: 'Trebuchet MS', sans-serif;
+            margin-bottom: 0.5rem;
+        }
+        
+        .category-header .subtitle {
+            color: #64748B;
+            font-size: 13px;
+        }
+        
+        .category-header .count {
+            background: #FFFBEB;
+            color: #92400E;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 1rem;
+            display: inline-block;
+        }
+        
+        .exercises-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (min-width: 800px) {
+            .exercises-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .esercizio {
+            background: white;
+            border-radius: 12px;
+            border: 0.5px solid #E2E8F0;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .esercizio-num {
+            display: inline-block;
+            background: #DBEAFE;
+            color: #0F4C75;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 0.75rem;
+        }
+        
+        .esercizio-testo {
+            background: #FFFBEB;
+            border-left: 3px solid #F59E0B;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 13px;
+            color: #92400E;
+            line-height: 1.5;
+        }
+        
+        .form-group {
+            margin-bottom: 0.75rem;
+        }
+        
+        label {
+            display: block;
+            font-size: 12px;
+            color: #64748B;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 0.6rem;
+            border: 0.5px solid #CBD5E1;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: 'Calibri', sans-serif;
+            color: #1E293B;
+        }
+        
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #0891B2;
+            box-shadow: 0 0 0 2px rgba(8, 145, 178, 0.1);
+        }
+        
+        .pulsanti {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        button {
+            flex: 1;
+            padding: 0.6rem;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 0.5px solid;
+            transition: all 0.2s;
+        }
+        
+        .btn-verifica {
+            background: white;
+            border-color: #0891B2;
+            color: #0891B2;
+        }
+        
+        .btn-verifica:hover {
+            background: #E0F2FE;
+        }
+        
+        .btn-azzera {
+            background: white;
+            border-color: #CBD5E1;
+            color: #64748B;
+        }
+        
+        .btn-azzera:hover {
+            background: #F1F5F9;
+        }
+        
+        .feedback {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 12px;
+            display: none;
+            border-left: 3px solid;
+            line-height: 1.5;
+        }
+        
+        .feedback.show {
+            display: block;
+        }
+        
+        .feedback.corretto {
+            background: #ECFDF5;
+            color: #065F46;
+            border-left-color: #10B981;
+        }
+        
+        .feedback.sbagliato {
+            background: #FEE2E2;
+            color: #991B1B;
+            border-left-color: #DC2626;
+        }
+        
+        footer {
+            background: #E2E8F0;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            color: #64748B;
+            font-size: 12px;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>50+ Compiti Casa — Giorno 2</h1>
+            <p>11–14 aprile | Routing, DNS, SSL/TLS, Wireshark</p>
+        </header>
+        
+        <div class="info-bar">
+            <strong>ℹ️ Come usare:</strong> Scegli una categoria, fai gli esercizi al tuo ritmo. Punta a 1-2 ore di pratica. Non è obbligatorio farli tutti—almeno 30-40 esercizi sono un buon traguardo.
+        </div>
+        
+        <div class="category-nav">
+            <button class="category-btn active" onclick="showCategory('A')">A. Routing (13)</button>
+            <button class="category-btn" onclick="showCategory('B')">B. DNS (13)</button>
+            <button class="category-btn" onclick="showCategory('C')">C. SSL/TLS (12)</button>
+            <button class="category-btn" onclick="showCategory('D')">D. Wireshark (12)</button>
+        </div>
+        
+        <!-- CATEGORIA A: ROUTING -->
+        <div id="categoryA" class="category-section active">
+            <div class="category-header">
+                <h2>A. Routing Avanzato</h2>
+                <p class="subtitle">Configurazione, OSPF, BGP, convergenza, costi</p>
+                <span class="count">13 esercizi</span>
+            </div>
+            <div class="exercises-grid" id="gridA"></div>
+        </div>
+        
+        <!-- CATEGORIA B: DNS -->
+        <div id="categoryB" class="category-section">
+            <div class="category-header">
+                <h2>B. DNS Profondo</h2>
+                <p class="subtitle">Gerarchia, query ricorsive, spoofing, DNSSEC</p>
+                <span class="count">13 esercizi</span>
+            </div>
+            <div class="exercises-grid" id="gridB"></div>
+        </div>
+        
+        <!-- CATEGORIA C: SSL/TLS -->
+        <div id="categoryC" class="category-section">
+            <div class="category-header">
+                <h2>C. SSL/TLS & PKI</h2>
+                <p class="subtitle">Handshake, certificati, chiavi, autenticazione</p>
+                <span class="count">12 esercizi</span>
+            </div>
+            <div class="exercises-grid" id="gridC"></div>
+        </div>
+        
+        <!-- CATEGORIA D: WIRESHARK -->
+        <div id="categoryD" class="category-section">
+            <div class="category-header">
+                <h2>D. Wireshark Pratico</h2>
+                <p class="subtitle">Analisi pacchetti, filtri, scenari reali</p>
+                <span class="count">12 esercizi</span>
+            </div>
+            <div class="exercises-grid" id="gridD"></div>
+        </div>
+        
+        <footer>
+            <p>Corso Cybersecurity — Leonardo SpA | Modulo 1: Reti, Sistemi Operativi e Hardening</p>
+            <p style="margin-top: 0.5rem; color: #94A3B8;">Compiti Giorno 2 — 11–14 aprile 2026</p>
+        </footer>
+    </div>
+    
+    <script>
+        const esercizi = {
+            A: [
+                { q: "Routing statico ha quale vantaggio principale?", a: "semplice e prevedibile", tipo: "select", opts: ["complesso", "semplice e prevedibile", "automatico", "nessuno"] },
+                { q: "OSPF converge in secondi o millisecondi?", a: "secondi", tipo: "select", opts: ["millisecondi", "secondi", "minuti", "ore"] },
+                { q: "BGP è usato dove principalmente?", a: "internet fra provider", tipo: "select", opts: ["interno rete", "internet fra provider", "lan locale", "wireless"] },
+                { q: "Un router OSPF calcola rotte basate su quale parametro?", a: "costo", tipo: "text" },
+                { q: "Se un link OSPF cade, i router ricalcolano in quanto tempo?", a: "millisecondi", tipo: "text" },
+                { q: "Routing dinamico vs statico: quale è più robusto?", a: "dinamico", tipo: "select", opts: ["statico", "dinamico", "uguali", "dipende"] },
+                { q: "Un autonomous system (AS) nel BGP corrisponde a cosa?", a: "provider o azienda", tipo: "text" },
+                { q: "OSPF è interior o exterior routing?", a: "interior", tipo: "select", opts: ["interior", "exterior"] },
+                { q: "Se avete 10 router in una rete, routing statico richiede quante configurazioni?", a: "molte", tipo: "select", opts: ["poche", "molte", "nessuna", "automatico"] },
+                { q: "BGP comunica fra router su quale porta TCP?", a: "179", tipo: "text" },
+                { q: "Un router OSPF scambia info su quale protocollo?", a: "ospf", tipo: "text" },
+                { q: "Convergenza routing dinamica = tempo per aggiornare tutte le rotte. Vero?", a: "vero", tipo: "select", opts: ["vero", "falso"] },
+                { q: "Routing statico è scalabile per reti molto grandi?", a: "no", tipo: "select", opts: ["sì", "no"] }
+            ],
+            B: [
+                { q: "DNS trasloca domain name in quale tipo di dato?", a: "ip address", tipo: "text" },
+                { q: "Una query DNS ricorsiva chiede a quale server di risolvere completamente?", a: "dns ricorsivo", tipo: "text" },
+                { q: "Root nameserver sa quale TLD nameserver chiedere?", a: "vero", tipo: "select", opts: ["vero", "falso"] },
+                { q: "DNS spoofing è un attacco dove la risposta è falsa. Protezione?", a: "dnssec", tipo: "text" },
+                { q: "Qual è l'obiettivo di DNS spoofing?", a: "reindirizzare utente a sito falso", tipo: "text" },
+                { q: "DNSSEC firma le risposte DNS con quale algoritmo?", a: "rsa", tipo: "select", opts: ["rsa", "aes", "md5", "sha1"] },
+                { q: "Una zona DNS autoritativa ha quanti nameserver almeno?", a: "2", tipo: "text" },
+                { q: "DNS usa quale protocollo di trasporto (UDP o TCP)?", a: "udp", tipo: "select", opts: ["udp", "tcp", "entrambi", "nessuno"] },
+                { q: "Un attaccante che controlla un nameserver falso può fare DNS spoofing?", a: "sì", tipo: "select", opts: ["sì", "no"] },
+                { q: "DNS over HTTPS (DoH) crittografa le query DNS. Vantaggio?", a: "privacy", tipo: "text" },
+                { q: "Quale TLD gestisce .com?", a: "verisign", tipo: "text" },
+                { q: "Se un nameserver è down, DNS failover a quale server?", a: "secondary", tipo: "text" },
+                { q: "DNS caching riduce il numero di query ai server root. Vero?", a: "vero", tipo: "select", opts: ["vero", "falso"] }
+            ],
+            C: [
+                { q: "HTTPS = HTTP + quale protocollo?", a: "tls", tipo: "select", opts: ["ssl", "tls", "rsa", "aes"] },
+                { q: "Un certificato SSL è firmato da quale entità?", a: "certification authority", tipo: "text" },
+                { q: "Il client verifica il certificato del server controllando la firma della CA. Vero?", a: "vero", tipo: "select", opts: ["vero", "falso"] },
+                { q: "Una chiave privata del certificato è pubblica o privata?", a: "privata", tipo: "select", opts: ["pubblica", "privata"] },
+                { q: "Se un certificato scade, HTTPS si rifiuta di connettersi?", a: "sì", tipo: "select", opts: ["sì", "no"] },
+                { q: "Un certificato self-signed è firmato da chi?", a: "se stesso", tipo: "text" },
+                { q: "PKI = Public Key Infrastructure. Chi emette i certificati?", a: "certification authority", tipo: "text" },
+                { q: "Un certificato contiene quale informazione principale?", a: "chiave pubblica e identità", tipo: "text" },
+                { q: "Quale meccanismo impedisce man-in-the-middle in HTTPS?", a: "certificato e chiave privata", tipo: "text" },
+                { q: "Se Chrome dice 'certificato non affidabile', cosa significa?", a: "ca non riconosciuta", tipo: "text" },
+                { q: "Un certificato per google.com vale anche per google.it?", a: "no", tipo: "select", opts: ["sì", "no"] },
+                { q: "Quale algoritmo crittografico usa SSL/TLS per lo scambio di chiavi?", a: "rsa", tipo: "select", opts: ["aes", "rsa", "md5", "sha256"] }
+            ],
+            D: [
+                { q: "In Wireshark, il TCP handshake SYN->SYN-ACK->ACK ha quanti step?", a: "3", tipo: "text" },
+                { q: "Una DNS query in Wireshark è crittografata di default?", a: "no", tipo: "select", opts: ["sì", "no"] },
+                { q: "Un pacchetto HTTPS veduto in Wireshark è leggibile in chiaro?", a: "no", tipo: "select", opts: ["sì", "no"] },
+                { q: "In Wireshark, come si filtra per vedere solo UDP?", a: "udp", tipo: "text" },
+                { q: "ARP è un protocollo layer 2 o layer 3?", a: "layer 2", tipo: "select", opts: ["layer 2", "layer 3", "layer 4", "layer 1"] },
+                { q: "Una richiesta ARP è unicast o broadcast?", a: "broadcast", tipo: "select", opts: ["unicast", "broadcast", "multicast", "anycast"] },
+                { q: "In Wireshark, il filtro 'tcp.port == 443' mostra quale traffico?", a: "https", tipo: "text" },
+                { q: "Se vedete 'Client Hello' in Wireshark, quale protocollo è?", a: "tls", tipo: "text" },
+                { q: "Una risposta DNS con NODATA significa cosa?", a: "record non esiste", tipo: "text" },
+                { q: "In Wireshark, cercate 'http' per filtrare HTTP. Vedrete HTTPS?", a: "no", tipo: "select", opts: ["sì", "no"] },
+                { q: "Quale flag TCP indica la fine di una connessione (FIN)?", a: "fin", tipo: "text" },
+                { q: "Un pacchetto SYN da un client ha quale numero di sequenza?", a: "random", tipo: "text" }
+            ]
+        };
+        
+        function verificaRispostaGen(cat, idx) {
+            const divId = `${cat.toLowerCase()}${idx}`;
+            const input = document.querySelector(`#${divId} input, #${divId} select`);
+            if (!input) return;
+            
+            const ans = input.value?.trim().toLowerCase() || "";
+            const fbId = `fb-${divId}`;
+            const fb = document.getElementById(fbId);
+            const es = esercizi[cat][idx];
+            
+            if (!ans) {
+                mostraFeedback(fb, false, "⚠️ Inserisci una risposta");
+                return;
+            }
+            
+            const corretto = String(es.a).toLowerCase() === ans;
+            
+            mostraFeedback(fb, corretto, 
+                corretto ? 
+                `✓ Corretto! Risposta: ${es.a}` :
+                `✗ Sbagliato. Risposta corretta: ${es.a}`
+            );
+        }
+        
+        function mostraFeedback(elem, isCorrect, msg) {
+            elem.classList.add('show', isCorrect ? 'corretto' : 'sbagliato');
+            elem.innerHTML = msg;
+        }
+        
+        function generaEsercizi(categoria, idGrid) {
+            const grid = document.getElementById(idGrid);
+            grid.innerHTML = '';
+            
+            esercizi[categoria].forEach((es, idx) => {
+                const divId = `${categoria.toLowerCase()}${idx}`;
+                const inputId = `${divId}-input`;
+                const fbId = `fb-${divId}`;
+                
+                let inputHtml = '';
+                if (es.tipo === 'select') {
+                    inputHtml = `<select id="${inputId}">
+                        <option value="">-- Scegli --</option>
+                        ${es.opts.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                    </select>`;
+                } else {
+                    inputHtml = `<input type="text" id="${inputId}" placeholder="Risposta">`;
+                }
+                
+                const html = `
+                    <div class="esercizio" id="${divId}">
+                        <div class="esercizio-num">${idx + 1}</div>
+                        <div class="esercizio-testo">${es.q}</div>
+                        <div class="form-group">
+                            ${inputHtml}
+                        </div>
+                        <div class="pulsanti">
+                            <button class="btn-verifica" onclick="verificaRispostaGen('${categoria}', ${idx})">Verifica</button>
+                            <button class="btn-azzera" onclick="azzerappaEsercizio('${divId}', '${fbId}', '${inputId}')">Azzera</button>
+                        </div>
+                        <div class="feedback" id="${fbId}"></div>
+                    </div>
+                `;
+                grid.innerHTML += html;
+            });
+        }
+        
+        function azzerappaEsercizio(divId, fbId, inputId) {
+            const input = document.getElementById(inputId);
+            if (input) input.value = '';
+            document.getElementById(fbId).classList.remove('show', 'corretto', 'sbagliato');
+        }
+        
+        function showCategory(cat) {
+            document.querySelectorAll('.category-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(`category${cat}`).classList.add('active');
+            event.target.classList.add('active');
+            
+            generaEsercizi(cat, `grid${cat}`);
+        }
+        
+        window.addEventListener('load', () => {
+            generaEsercizi('A', 'gridA');
+        });
+    </script>
+</body>
+</html>
