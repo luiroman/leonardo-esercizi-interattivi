@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compiti Blocco 1 — Consolida il Giorno 1</title>
+<style>
+  :root {
+    --accent: #0891B2; --accent2: #0077B6; --title: #0F4C75; --text: #1E293B;
+    --muted: #64748B; --bg: #F8F9FA; --card: #FFFFFF;
+    --success: #059669; --success-bg: #F0FDF4;
+    --danger: #DC2626; --danger-bg: #FEF2F2;
+    --warn: #D97706; --warn-bg: #FFFBEB;
+    --border: #E2E8F0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; padding: 0 0 3rem 0; }
+  header { background: var(--title); color: white; padding: 1.5rem 1rem; text-align: center; border-bottom: 4px solid var(--accent); }
+  header h1 { font-size: 1.3rem; margin-bottom: 0.3rem; }
+  header p { font-size: 0.85rem; opacity: 0.8; }
+  .container { max-width: 720px; margin: 0 auto; padding: 0 1rem; }
+  .stats-bar { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin: 1rem auto; padding: 0.8rem 1rem; display: flex; justify-content: space-between; align-items: center; max-width: 720px; font-size: 0.9rem; }
+  .stat { text-align: center; }
+  .stat-num { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; }
+  .section-title { margin: 1.5rem 0 0.5rem; padding: 0.6rem 1rem; background: var(--title); color: white; border-radius: 8px; font-size: 0.95rem; font-weight: 600; }
+  .exercise { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin: 0.8rem 0; overflow: hidden; }
+  .exercise-header { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .exercise-header h3 { font-size: 0.95rem; color: var(--title); }
+  .difficulty { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 12px; font-weight: 600; text-transform: uppercase; white-space: nowrap; }
+  .diff-easy { background: var(--success-bg); color: var(--success); }
+  .diff-medium { background: var(--warn-bg); color: var(--warn); }
+  .diff-hard { background: var(--danger-bg); color: var(--danger); }
+  .exercise-body { padding: 0.8rem 1rem; }
+  .exercise-body p { margin-bottom: 0.5rem; font-size: 0.88rem; }
+  code { background: #F1F5F9; padding: 0.12rem 0.35rem; border-radius: 3px; font-family: Consolas, 'Courier New', monospace; font-size: 0.83rem; }
+  pre { background: #F1F5F9; padding: 0.6rem; border-radius: 6px; font-size: 0.8rem; overflow-x: auto; margin: 0.5rem 0; font-family: Consolas, monospace; }
+  .question { background: #F8FAFC; border: 1px solid var(--border); border-radius: 6px; padding: 0.6rem; margin: 0.5rem 0; }
+  .question label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .question input[type="text"] { width: 100%; padding: 0.45rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.88rem; font-family: Consolas, monospace; }
+  .question input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(8,145,178,0.15); }
+  .question select { width: 100%; padding: 0.45rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.88rem; background: white; }
+  .feedback { margin-top: 0.3rem; padding: 0.35rem 0.5rem; border-radius: 4px; font-size: 0.8rem; display: none; }
+  .feedback.correct { display: block; background: var(--success-bg); color: var(--success); border: 1px solid #BBF7D0; }
+  .feedback.wrong { display: block; background: var(--danger-bg); color: var(--danger); border: 1px solid #FECACA; }
+  .btn-row { display: flex; gap: 0.4rem; margin-top: 0.6rem; flex-wrap: wrap; }
+  .btn { padding: 0.4rem 1rem; border: none; border-radius: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-secondary { background: var(--border); color: var(--text); }
+  .btn-secondary:hover { background: #CBD5E1; }
+  .exercise.completed-correct { border-left: 4px solid var(--success); }
+  .exercise.completed-wrong { border-left: 4px solid var(--danger); }
+  .hint { background: var(--warn-bg); border: 1px solid #FDE68A; border-radius: 6px; padding: 0.5rem 0.7rem; margin: 0.5rem 0 0; font-size: 0.8rem; color: var(--warn); display: none; }
+  .hint.visible { display: block; }
+  ul.scenario { margin: 0.3rem 0 0.5rem 1.2rem; font-size: 0.88rem; }
+  ul.scenario li { margin-bottom: 0.15rem; }
+  footer { text-align: center; padding: 1.5rem 1rem; color: var(--muted); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 2rem; }
+  @media (max-width: 480px) { header h1 { font-size: 1.1rem; } .exercise-body { padding: 0.6rem; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Blocco 1 — Consolida il Giorno 1</h1>
+  <p>Compiti 9 aprile • 18 esercizi • ~1 ora • Subnetting, VLSM, Segmentazione</p>
+</header>
+<div class="container">
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num" id="completed">0</div><div class="stat-label">Completati</div></div>
+  <div class="stat"><div class="stat-num" id="correct">0</div><div class="stat-label">Corretti</div></div>
+  <div class="stat"><div class="stat-num" id="total">18</div><div class="stat-label">Totali</div></div>
+  <div class="stat"><div class="stat-num" id="pct">0%</div><div class="stat-label">Precisione</div></div>
+</div>
+
+<!-- ══════════ SEZIONE A: SUBNETTING BASE ══════════ -->
+<div class="section-title">A. Subnetting Base — Calcoli e Conversioni (6 esercizi)</div>
+
+<div class="exercise" id="a1"><div class="exercise-header"><h3>A1 — Host per maschera</h3><span class="difficulty diff-easy">Facile</span></div><div class="exercise-body">
+<p>Calcola il numero di host utilizzabili per ciascuna maschera:</p>
+<div class="question"><label>/28</label><input type="text" id="a1_1" placeholder=""><div class="feedback" id="a1_1_fb"></div></div>
+<div class="question"><label>/21</label><input type="text" id="a1_2" placeholder=""><div class="feedback" id="a1_2_fb"></div></div>
+<div class="question"><label>/30</label><input type="text" id="a1_3" placeholder=""><div class="feedback" id="a1_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkA1()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('a1',['a1_1','a1_2','a1_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="a2"><div class="exercise-header"><h3>A2 — Conversioni maschera ↔ CIDR</h3><span class="difficulty diff-easy">Facile</span></div><div class="exercise-body">
+<p>Converti:</p>
+<div class="question"><label>255.255.255.128 → CIDR</label><input type="text" id="a2_1" placeholder="/..."><div class="feedback" id="a2_1_fb"></div></div>
+<div class="question"><label>255.255.240.0 → CIDR</label><input type="text" id="a2_2" placeholder="/..."><div class="feedback" id="a2_2_fb"></div></div>
+<div class="question"><label>/29 → Subnet mask decimale</label><input type="text" id="a2_3" placeholder="255.255.255.???"><div class="feedback" id="a2_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkA2()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('a2',['a2_1','a2_2','a2_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="a3"><div class="exercise-header"><h3>A3 — Network e Broadcast</h3><span class="difficulty diff-easy">Facile</span></div><div class="exercise-body">
+<p>Host: <code>10.0.5.200/22</code></p>
+<div class="question"><label>Network address</label><input type="text" id="a3_1" placeholder=""><div class="feedback" id="a3_1_fb"></div></div>
+<div class="question"><label>Broadcast address</label><input type="text" id="a3_2" placeholder=""><div class="feedback" id="a3_2_fb"></div></div>
+<div class="hint" id="a3_h">💡 /22 = blocco di 4 nel 3° ottetto. 5÷4=1 resto 1 → il blocco parte da 4 (1×4). Network: 10.0.4.0, Broadcast: 10.0.7.255</div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkA3()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('a3_h')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('a3',['a3_1','a3_2'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="a4"><div class="exercise-header"><h3>A4 — Appartiene alla sottorete?</h3><span class="difficulty diff-easy">Facile</span></div><div class="exercise-body">
+<p>Rete: <code>172.16.16.0/20</code>. Quali di questi host appartengono?</p>
+<div class="question"><label>172.16.25.100</label><select id="a4_1"><option value="">...</option><option value="si">Sì</option><option value="no">No</option></select><div class="feedback" id="a4_1_fb"></div></div>
+<div class="question"><label>172.16.31.254</label><select id="a4_2"><option value="">...</option><option value="si">Sì</option><option value="no">No</option></select><div class="feedback" id="a4_2_fb"></div></div>
+<div class="question"><label>172.16.32.1</label><select id="a4_3"><option value="">...</option><option value="si">Sì</option><option value="no">No</option></select><div class="feedback" id="a4_3_fb"></div></div>
+<div class="hint" id="a4_h">💡 /20 = blocco di 16 nel 3° ottetto. Da 16 a 31 (16+16−1). Il .32 è fuori.</div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkA4()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('a4_h')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('a4',['a4_1','a4_2','a4_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="a5"><div class="exercise-header"><h3>A5 — Magic Number</h3><span class="difficulty diff-easy">Facile</span></div><div class="exercise-body">
+<p>Il "magic number" è 256 meno l'ultimo ottetto della maschera. Calcolalo:</p>
+<div class="question"><label>255.255.255.192 → magic number?</label><input type="text" id="a5_1" placeholder=""><div class="feedback" id="a5_1_fb"></div></div>
+<div class="question"><label>255.255.255.240 → magic number?</label><input type="text" id="a5_2" placeholder=""><div class="feedback" id="a5_2_fb"></div></div>
+<div class="question"><label>Le sottoreti con mask .240 saltano di quanto in quanto?</label><input type="text" id="a5_3" placeholder=""><div class="feedback" id="a5_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkA5()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('a5',['a5_1','a5_2','a5_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="a6"><div class="exercise-header"><h3>A6 — Suddivisione uguale</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<p>Dividi <code>192.168.100.0/24</code> in <strong>4 sottoreti uguali</strong>.</p>
+<div class="question"><label>Subnet mask (CIDR)</label><input type="text" id="a6_1" placeholder="/..."><div class="feedback" id="a6_1_fb"></div></div>
+<div class="question"><label>Network 2ª sottorete</label><input type="text" id="a6_2" placeholder=""><div class="feedback" id="a6_2_fb"></div></div>
+<div class="question"><label>Broadcast 3ª sottorete</label><input type="text" id="a6_3" placeholder=""><div class="feedback" id="a6_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkA6()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('a6',['a6_1','a6_2','a6_3'])">Azzera</button></div>
+</div></div>
+
+<!-- ══════════ SEZIONE B: VLSM ══════════ -->
+<div class="section-title">B. VLSM — Sottoreti di dimensione diversa (5 esercizi)</div>
+
+<div class="exercise" id="b1"><div class="exercise-header"><h3>B1 — VLSM semplice</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<p>Rete: <code>192.168.20.0/24</code>. Crea sottoreti per:</p>
+<ul class="scenario"><li>Uffici: <strong>120 host</strong></li><li>Magazzino: <strong>30 host</strong></li></ul>
+<div class="question"><label>Uffici — mask e network (es: /25 192.168.20.0)</label><input type="text" id="b1_1" placeholder=""><div class="feedback" id="b1_1_fb"></div></div>
+<div class="question"><label>Magazzino — mask e network</label><input type="text" id="b1_2" placeholder=""><div class="feedback" id="b1_2_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkB1()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('b1',['b1_1','b1_2'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="b2"><div class="exercise-header"><h3>B2 — VLSM tre reparti</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<p>Rete: <code>10.1.0.0/24</code>. Sottoreti per:</p>
+<ul class="scenario"><li>Produzione: <strong>50 host</strong></li><li>Vendite: <strong>25 host</strong></li><li>IT: <strong>10 host</strong></li></ul>
+<div class="question"><label>Produzione — mask e network</label><input type="text" id="b2_1" placeholder=""><div class="feedback" id="b2_1_fb"></div></div>
+<div class="question"><label>Vendite — mask e network</label><input type="text" id="b2_2" placeholder=""><div class="feedback" id="b2_2_fb"></div></div>
+<div class="question"><label>IT — mask e network</label><input type="text" id="b2_3" placeholder=""><div class="feedback" id="b2_3_fb"></div></div>
+<div class="hint" id="b2_h">💡 50→/26(62), 25→/27(30), 10→/28(14). Parti dal più grande.</div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkB2()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('b2_h')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('b2',['b2_1','b2_2','b2_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="b3"><div class="exercise-header"><h3>B3 — VLSM con link</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<p>Rete: <code>172.16.10.0/24</code>. Sottoreti per:</p>
+<ul class="scenario"><li>LAN: <strong>100 host</strong></li><li>Server: <strong>14 host</strong></li><li>2 link punto-punto</li></ul>
+<div class="question"><label>LAN — mask e network</label><input type="text" id="b3_1" placeholder=""><div class="feedback" id="b3_1_fb"></div></div>
+<div class="question"><label>Server — mask e network</label><input type="text" id="b3_2" placeholder=""><div class="feedback" id="b3_2_fb"></div></div>
+<div class="question"><label>Link 1 — mask e network</label><input type="text" id="b3_3" placeholder=""><div class="feedback" id="b3_3_fb"></div></div>
+<div class="question"><label>Link 2 — mask e network</label><input type="text" id="b3_4" placeholder=""><div class="feedback" id="b3_4_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkB3()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('b3',['b3_1','b3_2','b3_3','b3_4'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="b4"><div class="exercise-header"><h3>B4 — Ci sta tutto?</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<p>Rete: <code>192.168.0.0/24</code> (254 host). Servono sottoreti per:</p>
+<ul class="scenario"><li>Reparto A: 100 host</li><li>Reparto B: 80 host</li><li>Reparto C: 50 host</li></ul>
+<div class="question"><label>Ci stanno tutte nella /24?</label><select id="b4_1"><option value="">...</option><option value="si">Sì</option><option value="no">No</option></select><div class="feedback" id="b4_1_fb"></div></div>
+<div class="question"><label>Perché? (scegli)</label><select id="b4_2"><option value="">...</option><option value="host">La somma degli host supera 254</option><option value="blocchi">I blocchi VLSM assegnati superano 256 indirizzi</option><option value="ok">Ci stanno senza problemi</option></select><div class="feedback" id="b4_2_fb"></div></div>
+<div class="hint" id="b4_h">💡 100→/25(128 indirizzi), 80→/25(128 indirizzi), 50→/26(64 indirizzi). Totale blocchi: 128+128+64 = 320 > 256!</div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkB4()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('b4_h')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('b4',['b4_1','b4_2'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="b5"><div class="exercise-header"><h3>B5 — Scenario sede</h3><span class="difficulty diff-hard">Difficile</span></div><div class="exercise-body">
+<p>Rete: <code>10.10.0.0/22</code> (1022 host). Progetta per:</p>
+<ul class="scenario"><li>Open space: 200 postazioni</li><li>Sala riunioni WiFi: 50 dispositivi</li><li>Server: 30 macchine</li><li>Stampanti: 10</li><li>1 link WAN punto-punto</li></ul>
+<div class="question"><label>Open space — mask e network</label><input type="text" id="b5_1" placeholder=""><div class="feedback" id="b5_1_fb"></div></div>
+<div class="question"><label>WiFi — mask e network</label><input type="text" id="b5_2" placeholder=""><div class="feedback" id="b5_2_fb"></div></div>
+<div class="question"><label>Server — mask e network</label><input type="text" id="b5_3" placeholder=""><div class="feedback" id="b5_3_fb"></div></div>
+<div class="question"><label>Stampanti — mask e network</label><input type="text" id="b5_4" placeholder=""><div class="feedback" id="b5_4_fb"></div></div>
+<div class="question"><label>Link WAN — mask e network</label><input type="text" id="b5_5" placeholder=""><div class="feedback" id="b5_5_fb"></div></div>
+<div class="hint" id="b5_h">💡 200→/24(256), 50→/26(64), 30→/27(32), 10→/28(16), link→/30(4). Attenzione al salto del 3° ottetto: dopo 10.10.0.0/24 viene 10.10.1.0.</div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkB5()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('b5_h')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('b5',['b5_1','b5_2','b5_3','b5_4','b5_5'])">Azzera</button></div>
+</div></div>
+
+<!-- ══════════ SEZIONE C: SEGMENTAZIONE ══════════ -->
+<div class="section-title">C. Segmentazione e Sicurezza di Rete (4 esercizi)</div>
+
+<div class="exercise" id="c1"><div class="exercise-header"><h3>C1 — Concetti chiave</h3><span class="difficulty diff-easy">Facile</span></div><div class="exercise-body">
+<div class="question"><label>Come si chiama una rete dove tutti i dispositivi sono nello stesso segmento?</label><select id="c1_1"><option value="">...</option><option value="flat">Rete piatta (flat network)</option><option value="mesh">Rete mesh</option><option value="star">Rete a stella</option></select><div class="feedback" id="c1_1_fb"></div></div>
+<div class="question"><label>Qual è il rischio principale di una rete piatta?</label><select id="c1_2"><option value="">...</option><option value="slow">Le prestazioni sono basse</option><option value="lateral">Un attaccante può muoversi liberamente tra tutti i dispositivi</option><option value="cost">Costa troppo da mantenere</option></select><div class="feedback" id="c1_2_fb"></div></div>
+<div class="question"><label>Cos'è il "blast radius" in cybersecurity?</label><select id="c1_3"><option value="">...</option><option value="range">La portata del segnale WiFi</option><option value="impact">L'impatto di una compromissione — quanti sistemi sono esposti</option><option value="speed">La velocità di propagazione del malware</option></select><div class="feedback" id="c1_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkC1()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('c1',['c1_1','c1_2','c1_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="c2"><div class="exercise-header"><h3>C2 — VLAN e sicurezza</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<div class="question"><label>Le VLAN da sole garantiscono la sicurezza tra segmenti?</label><select id="c2_1"><option value="">...</option><option value="si">Sì</option><option value="no">No, serve anche un firewall</option></select><div class="feedback" id="c2_1_fb"></div></div>
+<div class="question"><label>Il routing inter-VLAN senza ACL/firewall cosa fa?</label><select id="c2_2"><option value="">...</option><option value="blocks">Blocca il traffico tra VLAN</option><option value="connects">Riconnette tutto — le VLAN comunicano liberamente</option><option value="encrypts">Cripta il traffico tra VLAN</option></select><div class="feedback" id="c2_2_fb"></div></div>
+<div class="question"><label>Quale standard definisce le VLAN?</label><select id="c2_3"><option value="">...</option><option value="80211">IEEE 802.11</option><option value="8021q">IEEE 802.1Q</option><option value="8023">IEEE 802.3</option></select><div class="feedback" id="c2_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkC2()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('c2',['c2_1','c2_2','c2_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="c3"><div class="exercise-header"><h3>C3 — DMZ</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<p>Un'azienda ha un web server pubblico, un database interno e PC dipendenti.</p>
+<div class="question"><label>Dove metti il web server?</label><select id="c3_1"><option value="">...</option><option value="lan">Nella VLAN dei PC</option><option value="server">Nella VLAN server interna</option><option value="dmz">In DMZ</option></select><div class="feedback" id="c3_1_fb"></div></div>
+<div class="question"><label>Il database deve essere raggiungibile da internet?</label><select id="c3_2"><option value="">...</option><option value="si">Sì, per le query</option><option value="no">No, solo il web server in DMZ ci accede</option></select><div class="feedback" id="c3_2_fb"></div></div>
+<div class="question"><label>Se il web server in DMZ viene compromesso, l'attaccante raggiunge il DB?</label><select id="c3_3"><option value="">...</option><option value="si">Sì, sono nella stessa rete</option><option value="dipende">Dipende: solo se il firewall DMZ→LAN lo consente sulla porta del DB</option><option value="no">No, mai</option></select><div class="feedback" id="c3_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkC3()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('c3',['c3_1','c3_2','c3_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="c4"><div class="exercise-header"><h3>C4 — Progetta le VLAN</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<p>Assegna ogni dispositivo alla VLAN corretta:</p>
+<div class="question"><label>Telecamere IP di sorveglianza</label><select id="c4_1"><option value="">...</option><option value="uffici">VLAN Uffici</option><option value="iot">VLAN IoT (isolata)</option><option value="server">VLAN Server</option><option value="ospiti">VLAN Ospiti</option></select><div class="feedback" id="c4_1_fb"></div></div>
+<div class="question"><label>Laptop di un consulente esterno</label><select id="c4_2"><option value="">...</option><option value="uffici">VLAN Uffici</option><option value="iot">VLAN IoT</option><option value="server">VLAN Server</option><option value="ospiti">VLAN Ospiti</option></select><div class="feedback" id="c4_2_fb"></div></div>
+<div class="question"><label>Switch e router (accesso admin)</label><select id="c4_3"><option value="">...</option><option value="uffici">VLAN Uffici</option><option value="mgmt">VLAN Management</option><option value="server">VLAN Server</option><option value="ospiti">VLAN Ospiti</option></select><div class="feedback" id="c4_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkC4()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('c4',['c4_1','c4_2','c4_3'])">Azzera</button></div>
+</div></div>
+
+<!-- ══════════ SEZIONE D: TROUBLESHOOTING ══════════ -->
+<div class="section-title">D. Troubleshooting e Scenari (3 esercizi)</div>
+
+<div class="exercise" id="d1"><div class="exercise-header"><h3>D1 — Trova l'errore: VLAN</h3><span class="difficulty diff-hard">Difficile</span></div><div class="exercise-body">
+<pre>Rete: 10.0.0.0/24
+
+VLAN 10: 10.0.0.0/26   (host .1–.62)
+VLAN 20: 10.0.0.60/26  (host .61–.126)
+VLAN 30: 10.0.0.128/25 (host .129–.254)</pre>
+<div class="question"><label>Qual è il problema?</label><select id="d1_1"><option value="">...</option><option value="overlap">VLAN 10 e 20 si sovrappongono</option><option value="gap">C'è un buco tra VLAN 20 e 30</option><option value="mask">La mask di VLAN 30 è sbagliata</option></select><div class="feedback" id="d1_1_fb"></div></div>
+<div class="question"><label>Network address corretto per VLAN 20?</label><input type="text" id="d1_2" placeholder=""><div class="feedback" id="d1_2_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkD1()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('d1',['d1_1','d1_2'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="d2"><div class="exercise-header"><h3>D2 — Trova l'errore: Gateway</h3><span class="difficulty diff-hard">Difficile</span></div><div class="exercise-body">
+<pre>VLAN 10: 172.16.0.0/25
+  Gateway: 172.16.0.128
+VLAN 20: 172.16.0.128/26
+  Gateway: 172.16.0.129</pre>
+<div class="question"><label>Quale gateway è sbagliato?</label><select id="d2_1"><option value="">...</option><option value="10">Gateway VLAN 10</option><option value="20">Gateway VLAN 20</option><option value="both">Entrambi</option></select><div class="feedback" id="d2_1_fb"></div></div>
+<div class="question"><label>Perché?</label><select id="d2_2"><option value="">...</option><option value="broadcast">Il gateway è l'indirizzo di broadcast</option><option value="outside">Il gateway è fuori dalla sottorete</option><option value="network">Il gateway è l'indirizzo di rete</option></select><div class="feedback" id="d2_2_fb"></div></div>
+<div class="question"><label>Gateway VLAN 10 corretto?</label><input type="text" id="d2_3" placeholder=""><div class="feedback" id="d2_3_fb"></div></div>
+<div class="hint" id="d2_h">💡 VLAN 10 è .0/25 → host validi .1–.126, broadcast .127. Il gateway .128 è fuori: è il network address di VLAN 20!</div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkD2()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('d2_h')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('d2',['d2_1','d2_2','d2_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="d3"><div class="exercise-header"><h3>D3 — Scenario: incidente di sicurezza</h3><span class="difficulty diff-hard">Difficile</span></div><div class="exercise-body">
+<p>Un'azienda ha una rete piatta 10.0.0.0/24. Un PC (10.0.0.50) è stato compromesso tramite phishing. L'attaccante ha usato <code>nmap</code> per scoprire un database server a 10.0.0.200.</p>
+<div class="question"><label>Come ha fatto l'attaccante a trovare il DB server?</label><select id="d3_1"><option value="">...</option><option value="scan">Scansione di rete: nella rete piatta tutti i dispositivi sono visibili</option><option value="dns">Ha interrogato il DNS aziendale</option><option value="guess">Ha indovinato l'IP</option></select><div class="feedback" id="d3_1_fb"></div></div>
+<div class="question"><label>Con la segmentazione, cosa sarebbe cambiato?</label><select id="d3_2"><option value="">...</option><option value="nothing">Nulla, l'attaccante avrebbe comunque trovato il DB</option><option value="firewall">Il DB sarebbe stato in un'altra VLAN con firewall: la scansione non lo avrebbe raggiunto</option><option value="encrypt">Il traffico sarebbe stato cifrato</option></select><div class="feedback" id="d3_2_fb"></div></div>
+<div class="question"><label>Come si chiama la tecnica dell'attaccante di muoversi dal PC al DB?</label><input type="text" id="d3_3" placeholder=""><div class="feedback" id="d3_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkD3()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('d3',['d3_1','d3_2','d3_3'])">Azzera</button></div>
+</div></div>
+
+</div>
+<footer>Corso Cybersecurity — Leonardo SpA | Modulo 1 | Compiti 9 aprile — Blocco 1</footer>
+
+<script>
+let stats={completed:new Set(),correct:new Set()};
+function updateStats(){
+  document.getElementById('completed').textContent=stats.completed.size;
+  document.getElementById('correct').textContent=stats.correct.size;
+  document.getElementById('pct').textContent=stats.completed.size?Math.round(stats.correct.size/stats.completed.size*100)+'%':'0%';
+}
+function markEx(id,ok){const e=document.getElementById(id);e.classList.remove('completed-correct','completed-wrong');stats.completed.add(id);if(ok){stats.correct.add(id);e.classList.add('completed-correct');}else{stats.correct.delete(id);e.classList.add('completed-wrong');}updateStats();}
+function norm(s){return s.trim().replace(/\s+/g,' ').toLowerCase();}
+function setFB(id,ok,msg){const e=document.getElementById(id);e.className='feedback '+(ok?'correct':'wrong');e.textContent=(ok?'✓ ':'✗ ')+msg;e.style.display='block';}
+function val(id){const e=document.getElementById(id);return e.tagName==='SELECT'?e.value:e.value.trim();}
+function toggleHint(id){document.getElementById(id).classList.toggle('visible');}
+function resetEx(exId,fields){fields.forEach(f=>{const e=document.getElementById(f);if(e.tagName==='SELECT')e.selectedIndex=0;else e.value='';const fb=document.getElementById(f+'_fb');if(fb){fb.style.display='none';fb.className='feedback';}});const ex=document.getElementById(exId);ex.classList.remove('completed-correct','completed-wrong');stats.completed.delete(exId);stats.correct.delete(exId);updateStats();}
+function chk(fid,acc,disp){const v=norm(val(fid));const ok=acc.some(a=>norm(a)===v);setFB(fid+'_fb',ok,ok?'Corretto!':'Risposta: '+disp);return ok;}
+function chkSel(fid,correct,msgOk,msgNo){const v=val(fid);const ok=v===correct;setFB(fid+'_fb',ok,ok?msgOk:msgNo);return ok;}
+
+// A
+function checkA1(){const a=chk('a1_1',['14'],'14');const b=chk('a1_2',['2046'],'2046');const c=chk('a1_3',['2'],'2');markEx('a1',a&&b&&c);}
+function checkA2(){const a=chk('a2_1',['/25','25'],'/25');const b=chk('a2_2',['/20','20'],'/20');const c=chk('a2_3',['255.255.255.248'],'255.255.255.248');markEx('a2',a&&b&&c);}
+function checkA3(){const a=chk('a3_1',['10.0.4.0'],'10.0.4.0');const b=chk('a3_2',['10.0.7.255'],'10.0.7.255');markEx('a3',a&&b);}
+function checkA4(){const a=chkSel('a4_1','si','Corretto! .25 è tra 16 e 31.','Sì: 25 è nel range 16–31.');const b=chkSel('a4_2','si','Corretto! .31 è l\'ultimo del range.','Sì: 31 è l\'ultimo del blocco 16–31.');const c=chkSel('a4_3','no','Corretto! .32 è fuori dal range 16–31.','No: 32 > 31, è fuori dalla /20 che copre 16–31.');markEx('a4',a&&b&&c);}
+function checkA5(){const a=chk('a5_1',['64'],'64 (256−192)');const b=chk('a5_2',['16'],'16 (256−240)');const c=chk('a5_3',['16'],'16 (le sottoreti partono a .0, .16, .32, .48...)');markEx('a5',a&&b&&c);}
+function checkA6(){const a=chk('a6_1',['/26','26'],'/26');const b=chk('a6_2',['192.168.100.64'],'192.168.100.64');const c=chk('a6_3',['192.168.100.191'],'192.168.100.191');markEx('a6',a&&b&&c);}
+
+// B
+function checkB1(){const a=chk('b1_1',['/25 192.168.20.0'],'/25 192.168.20.0');const b=chk('b1_2',['/27 192.168.20.128'],'/27 192.168.20.128 (32−2=30≥30)');markEx('b1',a&&b);}
+function checkB2(){const a=chk('b2_1',['/26 10.1.0.0'],'/26 10.1.0.0 (62≥50)');const b=chk('b2_2',['/27 10.1.0.64'],'/27 10.1.0.64 (30≥25)');const c=chk('b2_3',['/28 10.1.0.96'],'/28 10.1.0.96 (14≥10)');markEx('b2',a&&b&&c);}
+function checkB3(){const a=chk('b3_1',['/25 172.16.10.0'],'/25 172.16.10.0 (126≥100)');const b=chk('b3_2',['/28 172.16.10.128'],'/28 172.16.10.128 (14≥14)');const c=chk('b3_3',['/30 172.16.10.144'],'/30 172.16.10.144');const d=chk('b3_4',['/30 172.16.10.148'],'/30 172.16.10.148');markEx('b3',a&&b&&c&&d);}
+function checkB4(){const a=chkSel('b4_1','no','Corretto! Non ci stanno.','No: i blocchi VLSM superano lo spazio disponibile.');const b=chkSel('b4_2','blocchi','Corretto! 128+128+64=320 > 256.','I blocchi VLSM (128+128+64=320) superano i 256 indirizzi della /24.');markEx('b4',a&&b);}
+function checkB5(){const a=chk('b5_1',['/24 10.10.0.0'],'/24 10.10.0.0 (254≥200)');const b=chk('b5_2',['/26 10.10.1.0'],'/26 10.10.1.0 (62≥50)');const c=chk('b5_3',['/27 10.10.1.64'],'/27 10.10.1.64 (30≥30)');const d=chk('b5_4',['/28 10.10.1.96'],'/28 10.10.1.96 (14≥10)');const e=chk('b5_5',['/30 10.10.1.112'],'/30 10.10.1.112');markEx('b5',a&&b&&c&&d&&e);}
+
+// C
+function checkC1(){const a=chkSel('c1_1','flat','Corretto!','Rete piatta (flat network).');const b=chkSel('c1_2','lateral','Corretto!','Un attaccante può muoversi liberamente (lateral movement).');const c=chkSel('c1_3','impact','Corretto!','È l\'impatto di una compromissione — quanti sistemi sono esposti.');markEx('c1',a&&b&&c);}
+function checkC2(){const a=chkSel('c2_1','no','Corretto! VLAN + Firewall = sicurezza.','No: le VLAN separano L2, ma il routing inter-VLAN riconnette. Serve un firewall.');const b=chkSel('c2_2','connects','Corretto! Senza regole, tutto comunica.','Riconnette tutto: le VLAN comunicano liberamente via routing.');const c=chkSel('c2_3','8021q','Corretto!','IEEE 802.1Q è lo standard VLAN tagging.');markEx('c2',a&&b&&c);}
+function checkC3(){const a=chkSel('c3_1','dmz','Corretto! Il web server va in DMZ.','In DMZ: è accessibile dall\'esterno ma isolato dalla LAN.');const b=chkSel('c3_2','no','Corretto! Il DB resta interno.','No: il DB è nella rete interna. Solo il web server in DMZ ci accede.');const c=chkSel('c3_3','dipende','Corretto! Dipende dalle regole firewall.','Dipende: solo se il firewall consente il traffico DMZ→LAN sulla porta del DB.');markEx('c3',a&&b&&c);}
+function checkC4(){const a=chkSel('c4_1','iot','Corretto! Dispositivi IoT vanno isolati.','VLAN IoT: le telecamere sono dispositivi IoT spesso non aggiornabili.');const b=chkSel('c4_2','ospiti','Corretto! Esterni nella VLAN Ospiti.','VLAN Ospiti: i consulenti esterni non hanno accesso alla rete interna.');const c=chkSel('c4_3','mgmt','Corretto! Apparati di rete nella VLAN Management.','VLAN Management: accesso riservato agli admin.');markEx('c4',a&&b&&c);}
+
+// D
+function checkD1(){const a=chkSel('d1_1','overlap','Corretto! VLAN 20 parte da .60, dentro VLAN 10 (0–63).','VLAN 10 (.0–.63) e VLAN 20 (.60–) si sovrappongono: .60 è dentro VLAN 10.');const b=chk('d1_2',['10.0.0.64'],'10.0.0.64 (multiplo di 64)');markEx('d1',a&&b);}
+function checkD2(){const a=chkSel('d2_1','10','Corretto!','Gateway VLAN 10: .128 è fuori dalla sottorete .0/25 (host validi: .1–.126).');const b=chkSel('d2_2','outside','Corretto! .128 è il network address di VLAN 20.','Il gateway .128 è fuori dalla /25 (che va da .0 a .127). È il network address di VLAN 20.');const c=chk('d2_3',['172.16.0.1'],'172.16.0.1 (primo host della /25)');markEx('d2',a&&b&&c);}
+function checkD3(){const a=chkSel('d3_1','scan','Corretto! Nella rete piatta tutto è visibile.','Scansione di rete: nmap vede tutti i dispositivi nella stessa subnet.');const b=chkSel('d3_2','firewall','Corretto! Il firewall avrebbe bloccato la scansione.','Il DB in VLAN separata con firewall: la scansione non lo avrebbe raggiunto.');const v=norm(val('d3_3'));const cOk=v.includes('lateral')&&v.includes('movement');setFB('d3_3_fb',cOk,cOk?'Corretto!':'Risposta: lateral movement');markEx('d3',a&&b&&cOk);}
+</script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compiti Blocco 2 — Preparati per il Giorno 2</title>
+<style>
+  :root { --accent: #0891B2; --accent2: #0077B6; --title: #0F4C75; --text: #1E293B; --muted: #64748B; --bg: #F8F9FA; --card: #FFFFFF; --success: #059669; --success-bg: #F0FDF4; --danger: #DC2626; --danger-bg: #FEF2F2; --warn: #D97706; --warn-bg: #FFFBEB; --border: #E2E8F0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; padding: 0 0 3rem 0; }
+  header { background: var(--title); color: white; padding: 1.5rem 1rem; text-align: center; border-bottom: 4px solid var(--accent); }
+  header h1 { font-size: 1.3rem; margin-bottom: 0.3rem; }
+  header p { font-size: 0.85rem; opacity: 0.8; }
+  .container { max-width: 720px; margin: 0 auto; padding: 0 1rem; }
+  .stats-bar { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin: 1rem auto; padding: 0.8rem 1rem; display: flex; justify-content: space-between; align-items: center; max-width: 720px; font-size: 0.9rem; }
+  .stat { text-align: center; } .stat-num { font-size: 1.3rem; font-weight: 700; color: var(--accent); } .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; }
+  .section-title { margin: 1.5rem 0 0.5rem; padding: 0.6rem 1rem; background: var(--title); color: white; border-radius: 8px; font-size: 0.95rem; font-weight: 600; }
+  .exercise { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin: 0.8rem 0; overflow: hidden; }
+  .exercise-header { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .exercise-header h3 { font-size: 0.95rem; color: var(--title); }
+  .difficulty { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 12px; font-weight: 600; text-transform: uppercase; white-space: nowrap; }
+  .diff-easy { background: var(--success-bg); color: var(--success); } .diff-medium { background: var(--warn-bg); color: var(--warn); } .diff-hard { background: var(--danger-bg); color: var(--danger); }
+  .exercise-body { padding: 0.8rem 1rem; } .exercise-body p { margin-bottom: 0.5rem; font-size: 0.88rem; }
+  code { background: #F1F5F9; padding: 0.12rem 0.35rem; border-radius: 3px; font-family: Consolas, 'Courier New', monospace; font-size: 0.83rem; }
+  pre { background: #F1F5F9; padding: 0.6rem; border-radius: 6px; font-size: 0.8rem; overflow-x: auto; margin: 0.5rem 0; font-family: Consolas, monospace; }
+  .question { background: #F8FAFC; border: 1px solid var(--border); border-radius: 6px; padding: 0.6rem; margin: 0.5rem 0; }
+  .question label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .question input[type="text"] { width: 100%; padding: 0.45rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.88rem; font-family: Consolas, monospace; }
+  .question input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(8,145,178,0.15); }
+  .question select { width: 100%; padding: 0.45rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.88rem; background: white; }
+  .feedback { margin-top: 0.3rem; padding: 0.35rem 0.5rem; border-radius: 4px; font-size: 0.8rem; display: none; }
+  .feedback.correct { display: block; background: var(--success-bg); color: var(--success); border: 1px solid #BBF7D0; }
+  .feedback.wrong { display: block; background: var(--danger-bg); color: var(--danger); border: 1px solid #FECACA; }
+  .btn-row { display: flex; gap: 0.4rem; margin-top: 0.6rem; flex-wrap: wrap; }
+  .btn { padding: 0.4rem 1rem; border: none; border-radius: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+  .btn-primary { background: var(--accent); color: white; } .btn-primary:hover { background: var(--accent2); }
+  .btn-secondary { background: var(--border); color: var(--text); } .btn-secondary:hover { background: #CBD5E1; }
+  .exercise.completed-correct { border-left: 4px solid var(--success); } .exercise.completed-wrong { border-left: 4px solid var(--danger); }
+  .hint { background: var(--warn-bg); border: 1px solid #FDE68A; border-radius: 6px; padding: 0.5rem 0.7rem; margin: 0.5rem 0 0; font-size: 0.8rem; color: var(--warn); display: none; } .hint.visible { display: block; }
+  .info-box { background: #F0F9FF; border: 1px solid #BAE6FD; border-radius: 6px; padding: 0.6rem 0.8rem; margin: 0.5rem 0; font-size: 0.83rem; color: var(--accent2); }
+  footer { text-align: center; padding: 1.5rem 1rem; color: var(--muted); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 2rem; }
+  @media (max-width: 480px) { header h1 { font-size: 1.1rem; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Blocco 2 — Preparati per il Giorno 2</h1>
+  <p>Compiti 9 aprile • 16 esercizi • ~1 ora • Supernetting, Routing, DNS, TCP</p>
+</header>
+<div class="container">
+<div class="info-box">⚡ Prima di iniziare, assicurati di aver letto il materiale su routing statico e dinamico. Questi esercizi verificano la comprensione della lettura.</div>
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num" id="completed">0</div><div class="stat-label">Completati</div></div>
+  <div class="stat"><div class="stat-num" id="correct">0</div><div class="stat-label">Corretti</div></div>
+  <div class="stat"><div class="stat-num" id="total">16</div><div class="stat-label">Totali</div></div>
+  <div class="stat"><div class="stat-num" id="pct">0%</div><div class="stat-label">Precisione</div></div>
+</div>
+
+<!-- ══════════ SEZIONE A: SUPERNETTING ══════════ -->
+<div class="section-title">A. Supernetting e Route Summarization (4 esercizi)</div>
+
+<div class="exercise" id="a1"><div class="exercise-header"><h3>A1 — Aggregazione base</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<p>Aggrega queste rotte in una sola summary route:</p>
+<pre>192.168.8.0/24
+192.168.9.0/24
+192.168.10.0/24
+192.168.11.0/24</pre>
+<div class="question"><label>Summary route (es: 192.168.8.0/22)</label><input type="text" id="a1_1" placeholder=""><div class="feedback" id="a1_1_fb"></div></div>
+<div class="hint" id="a1_h">💡 4 rotte contigue. 8 in binario: 0000 1000. 9: 0000 1001. 10: 0000 1010. 11: 0000 1011. I primi 22 bit sono uguali → /22.</div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkA1()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('a1_h')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('a1',['a1_1'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="a2"><div class="exercise-header"><h3>A2 — Si può aggregare?</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<p>Queste 4 rotte possono essere aggregate in una singola /22?</p>
+<pre>10.0.1.0/24
+10.0.2.0/24
+10.0.3.0/24
+10.0.4.0/24</pre>
+<div class="question"><label>Si possono aggregare in una /22?</label><select id="a2_1"><option value="">...</option><option value="si">Sì</option><option value="no">No</option></select><div class="feedback" id="a2_1_fb"></div></div>
+<div class="question"><label>Perché?</label><select id="a2_2"><option value="">...</option><option value="align">Non sono allineate: una /22 deve partire da un multiplo di 4</option><option value="gap">C'è un buco tra le rotte</option><option value="ok">Sono contigue e allineate</option></select><div class="feedback" id="a2_2_fb"></div></div>
+<div class="hint" id="a2_h">💡 Una /22 copre 4 rotte /24 a partire da un multiplo di 4 nel terzo ottetto (0, 4, 8, 12...). Le rotte 1-4 non partono da un multiplo di 4.</div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkA2()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('a2_h')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('a2',['a2_1','a2_2'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="a3"><div class="exercise-header"><h3>A3 — Aggregazione a 8 rotte</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<pre>172.16.16.0/24 … 172.16.23.0/24  (8 rotte contigue)</pre>
+<div class="question"><label>Summary route?</label><input type="text" id="a3_1" placeholder=""><div class="feedback" id="a3_1_fb"></div></div>
+<div class="question"><label>Quanti bit "guadagni" nella tabella di routing? (da /24 a /?)</label><input type="text" id="a3_2" placeholder="Es: 3"><div class="feedback" id="a3_2_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkA3()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('a3',['a3_1','a3_2'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="a4"><div class="exercise-header"><h3>A4 — Summary con aggiunta</h3><span class="difficulty diff-hard">Difficile</span></div><div class="exercise-body">
+<p>Hai la summary route <code>10.1.0.0/22</code> (copre .0, .1, .2, .3). Aggiungi la rete <code>10.1.4.0/24</code>.</p>
+<div class="question"><label>Quale nuova summary route copre tutte e 5?</label><input type="text" id="a4_1" placeholder=""><div class="feedback" id="a4_1_fb"></div></div>
+<div class="question"><label>Quante rotte /24 "fantasma" copre che non esistono?</label><input type="text" id="a4_2" placeholder=""><div class="feedback" id="a4_2_fb"></div></div>
+<div class="hint" id="a4_h">💡 Per coprire .0–.4 serve almeno /21 (copre 8 rotte: .0–.7). Le rotte .5, .6, .7 non esistono ma sono coperte.</div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkA4()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('a4_h')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('a4',['a4_1','a4_2'])">Azzera</button></div>
+</div></div>
+
+<!-- ══════════ SEZIONE B: ROUTING ══════════ -->
+<div class="section-title">B. Routing — Concetti dalla lettura (5 esercizi)</div>
+
+<div class="exercise" id="b1"><div class="exercise-header"><h3>B1 — Tabella di routing</h3><span class="difficulty diff-easy">Facile</span></div><div class="exercise-body">
+<div class="question"><label>Cos'è una tabella di routing?</label><select id="b1_1"><option value="">...</option><option value="list">Un elenco di regole che dice al router dove inviare i pacchetti per ogni rete</option><option value="firewall">L'elenco delle regole del firewall</option><option value="dns">La cache delle risoluzioni DNS</option></select><div class="feedback" id="b1_1_fb"></div></div>
+<div class="question"><label>Cosa contiene ogni voce della tabella?</label><select id="b1_2"><option value="">...</option><option value="correct">Rete di destinazione, next hop (prossimo router), interfaccia di uscita</option><option value="mac">Indirizzo MAC di destinazione e porta dello switch</option><option value="dns">Nome dominio e indirizzo IP corrispondente</option></select><div class="feedback" id="b1_2_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkB1()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('b1',['b1_1','b1_2'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="b2"><div class="exercise-header"><h3>B2 — Statico vs Dinamico</h3><span class="difficulty diff-easy">Facile</span></div><div class="exercise-body">
+<div class="question"><label>Nel routing statico, chi inserisce le rotte?</label><select id="b2_1"><option value="">...</option><option value="admin">L'amministratore, manualmente</option><option value="router">Il router, automaticamente</option><option value="dhcp">Il server DHCP</option></select><div class="feedback" id="b2_1_fb"></div></div>
+<div class="question"><label>Nel routing dinamico, i router si scambiano informazioni usando...</label><select id="b2_2"><option value="">...</option><option value="proto">Protocolli di routing (OSPF, BGP, ecc.)</option><option value="arp">Richieste ARP</option><option value="ping">Comandi ping periodici</option></select><div class="feedback" id="b2_2_fb"></div></div>
+<div class="question"><label>Se un link cade, quale tipo si adatta automaticamente?</label><select id="b2_3"><option value="">...</option><option value="static">Statico</option><option value="dynamic">Dinamico</option><option value="both">Entrambi</option></select><div class="feedback" id="b2_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkB2()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('b2',['b2_1','b2_2','b2_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="b3"><div class="exercise-header"><h3>B3 — Default route</h3><span class="difficulty diff-easy">Facile</span></div><div class="exercise-body">
+<div class="question"><label>Come si scrive la default route in notazione CIDR?</label><input type="text" id="b3_1" placeholder=""><div class="feedback" id="b3_1_fb"></div></div>
+<div class="question"><label>Quando viene usata?</label><select id="b3_2"><option value="">...</option><option value="default">Quando il pacchetto non corrisponde a nessuna rotta più specifica</option><option value="always">Sempre, per tutti i pacchetti</option><option value="local">Solo per il traffico locale</option></select><div class="feedback" id="b3_2_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkB3()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('b3',['b3_1','b3_2'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="b4"><div class="exercise-header"><h3>B4 — Protocolli di routing</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<div class="question"><label>OSPF è un protocollo di routing...</label><select id="b4_1"><option value="">...</option><option value="igp">Interior Gateway Protocol (IGP) — usato dentro un'organizzazione</option><option value="egp">Exterior Gateway Protocol (EGP) — usato tra organizzazioni</option></select><div class="feedback" id="b4_1_fb"></div></div>
+<div class="question"><label>BGP è usato principalmente...</label><select id="b4_2"><option value="">...</option><option value="lan">All'interno di una singola azienda</option><option value="internet">Tra provider internet e grandi organizzazioni</option><option value="wifi">Per le reti WiFi</option></select><div class="feedback" id="b4_2_fb"></div></div>
+<div class="question"><label>In una rete aziendale con 50 router, meglio statico o dinamico?</label><select id="b4_3"><option value="">...</option><option value="static">Statico — più sicuro</option><option value="dynamic">Dinamico — impossibile gestire 50 router manualmente</option></select><div class="feedback" id="b4_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkB4()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('b4',['b4_1','b4_2','b4_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="b5"><div class="exercise-header"><h3>B5 — Leggi la tabella di routing</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<p>Tabella di routing di un router:</p>
+<pre>Destinazione      Next Hop        Tipo
+10.0.1.0/24       10.0.0.2        Statica
+10.0.2.0/24       10.0.0.3        OSPF
+192.168.0.0/16    10.0.0.1        Statica
+0.0.0.0/0         10.0.0.254      Statica</pre>
+<div class="question"><label>Un pacchetto per 10.0.2.100 dove viene mandato?</label><input type="text" id="b5_1" placeholder="Next hop: ..."><div class="feedback" id="b5_1_fb"></div></div>
+<div class="question"><label>Un pacchetto per 192.168.5.10 dove viene mandato?</label><input type="text" id="b5_2" placeholder="Next hop: ..."><div class="feedback" id="b5_2_fb"></div></div>
+<div class="question"><label>Un pacchetto per 8.8.8.8 dove viene mandato?</label><input type="text" id="b5_3" placeholder="Next hop: ..."><div class="feedback" id="b5_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkB5()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('b5',['b5_1','b5_2','b5_3'])">Azzera</button></div>
+</div></div>
+
+<!-- ══════════ SEZIONE C: DNS ══════════ -->
+<div class="section-title">C. DNS — Preparazione al Giorno 2 (3 esercizi)</div>
+
+<div class="exercise" id="c1"><div class="exercise-header"><h3>C1 — Come funziona il DNS</h3><span class="difficulty diff-easy">Facile</span></div><div class="exercise-body">
+<div class="question"><label>A cosa serve il DNS?</label><select id="c1_1"><option value="">...</option><option value="correct">Tradurre nomi di dominio in indirizzi IP</option><option value="route">Instradare i pacchetti sulla rete</option><option value="encrypt">Cifrare le comunicazioni web</option></select><div class="feedback" id="c1_1_fb"></div></div>
+<div class="question"><label>Quando digiti "www.google.com" nel browser, cosa succede per primo?</label><select id="c1_2"><option value="">...</option><option value="dns">Il PC chiede al server DNS l'indirizzo IP di google.com</option><option value="connect">Il PC si connette direttamente a google.com</option><option value="arp">Il PC manda una richiesta ARP per google.com</option></select><div class="feedback" id="c1_2_fb"></div></div>
+<div class="question"><label>Su quale porta opera il DNS (di default)?</label><input type="text" id="c1_3" placeholder=""><div class="feedback" id="c1_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkC1()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('c1',['c1_1','c1_2','c1_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="c2"><div class="exercise-header"><h3>C2 — Gerarchia DNS</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<p>Metti in ordine la risoluzione DNS (dal primo al'ultimo passo):</p>
+<div class="question"><label>Primo passo</label><select id="c2_1"><option value="">...</option><option value="cache">Controlla la cache locale del PC</option><option value="root">Chiede al root server</option><option value="isp">Chiede al DNS del provider</option></select><div class="feedback" id="c2_1_fb"></div></div>
+<div class="question"><label>Se non è in cache locale, il passo dopo?</label><select id="c2_2"><option value="">...</option><option value="cache">Controlla la cache locale</option><option value="resolver">Chiede al resolver DNS (di solito il DNS del provider o aziendale)</option><option value="root">Chiede direttamente al root server</option></select><div class="feedback" id="c2_2_fb"></div></div>
+<div class="question"><label>Il resolver, se non ha la risposta in cache, chi contatta?</label><select id="c2_3"><option value="">...</option><option value="root">Root server → TLD server → Authoritative server</option><option value="google">Google 8.8.8.8</option><option value="isp">Il router dell'ISP</option></select><div class="feedback" id="c2_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkC2()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('c2',['c2_1','c2_2','c2_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="c3"><div class="exercise-header"><h3>C3 — DNS e sicurezza</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<div class="question"><label>Un attaccante modifica le risposte DNS per reindirizzare a un sito malevolo. Come si chiama?</label><select id="c3_1"><option value="">...</option><option value="spoofing">DNS spoofing / DNS poisoning</option><option value="ddos">DDoS</option><option value="mitm">Man-in-the-middle</option></select><div class="feedback" id="c3_1_fb"></div></div>
+<div class="question"><label>Quale tecnologia protegge l'integrità delle risposte DNS?</label><select id="c3_2"><option value="">...</option><option value="ssl">SSL/TLS</option><option value="dnssec">DNSSEC</option><option value="vpn">VPN</option></select><div class="feedback" id="c3_2_fb"></div></div>
+<div class="question"><label>Le query DNS di default sono cifrate?</label><select id="c3_3"><option value="">...</option><option value="si">Sì, sempre</option><option value="no">No, viaggiano in chiaro (serve DoH o DoT per cifrarle)</option></select><div class="feedback" id="c3_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkC3()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('c3',['c3_1','c3_2','c3_3'])">Azzera</button></div>
+</div></div>
+
+<!-- ══════════ SEZIONE D: TCP E WIRESHARK ══════════ -->
+<div class="section-title">D. TCP e Wireshark — Cosa vedrai nella cattura (4 esercizi)</div>
+
+<div class="exercise" id="d1"><div class="exercise-header"><h3>D1 — TCP three-way handshake</h3><span class="difficulty diff-easy">Facile</span></div><div class="exercise-body">
+<p>Il TCP three-way handshake stabilisce la connessione. Quali sono i 3 passaggi?</p>
+<div class="question"><label>Passo 1: il client invia...</label><select id="d1_1"><option value="">...</option><option value="syn">SYN</option><option value="ack">ACK</option><option value="fin">FIN</option></select><div class="feedback" id="d1_1_fb"></div></div>
+<div class="question"><label>Passo 2: il server risponde con...</label><select id="d1_2"><option value="">...</option><option value="synack">SYN-ACK</option><option value="syn">SYN</option><option value="rst">RST</option></select><div class="feedback" id="d1_2_fb"></div></div>
+<div class="question"><label>Passo 3: il client conferma con...</label><select id="d1_3"><option value="">...</option><option value="ack">ACK</option><option value="syn">SYN</option><option value="fin">FIN</option></select><div class="feedback" id="d1_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkD1()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('d1',['d1_1','d1_2','d1_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="d2"><div class="exercise-header"><h3>D2 — Porte comuni</h3><span class="difficulty diff-easy">Facile</span></div><div class="exercise-body">
+<p>Associa il servizio alla porta:</p>
+<div class="question"><label>HTTP</label><input type="text" id="d2_1" placeholder=""><div class="feedback" id="d2_1_fb"></div></div>
+<div class="question"><label>HTTPS</label><input type="text" id="d2_2" placeholder=""><div class="feedback" id="d2_2_fb"></div></div>
+<div class="question"><label>DNS</label><input type="text" id="d2_3" placeholder=""><div class="feedback" id="d2_3_fb"></div></div>
+<div class="question"><label>SSH</label><input type="text" id="d2_4" placeholder=""><div class="feedback" id="d2_4_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkD2()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('d2',['d2_1','d2_2','d2_3','d2_4'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="d3"><div class="exercise-header"><h3>D3 — Cosa vedi in Wireshark</h3><span class="difficulty diff-medium">Medio</span></div><div class="exercise-body">
+<p>Nella tua cattura .pcap, vedrai diversi protocolli. Rispondi:</p>
+<div class="question"><label>Puoi vedere il contenuto (payload) di una connessione HTTPS?</label><select id="d3_1"><option value="">...</option><option value="si">Sì, Wireshark decifra tutto</option><option value="no">No, è cifrato — ma vedi IP sorgente/destinazione, DNS e handshake TLS</option></select><div class="feedback" id="d3_1_fb"></div></div>
+<div class="question"><label>Se vedi un pacchetto con porta destinazione 443, quale protocollo è?</label><select id="d3_2"><option value="">...</option><option value="http">HTTP</option><option value="https">HTTPS (HTTP over TLS)</option><option value="ssh">SSH</option></select><div class="feedback" id="d3_2_fb"></div></div>
+<div class="question"><label>Il protocollo ARP serve a...</label><select id="d3_3"><option value="">...</option><option value="ip2mac">Trovare l'indirizzo MAC dato un indirizzo IP (nella rete locale)</option><option value="route">Instradare pacchetti verso internet</option><option value="dns">Risolvere nomi di dominio</option></select><div class="feedback" id="d3_3_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkD3()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('d3',['d3_1','d3_2','d3_3'])">Azzera</button></div>
+</div></div>
+
+<div class="exercise" id="d4"><div class="exercise-header"><h3>D4 — Analisi scenario cattura</h3><span class="difficulty diff-hard">Difficile</span></div><div class="exercise-body">
+<p>Nella tua cattura Wireshark vedi questa sequenza:</p>
+<pre>1. PC → 192.168.1.1   DNS Query: www.example.com
+2. 192.168.1.1 → PC   DNS Response: 93.184.216.34
+3. PC → 93.184.216.34  TCP SYN (porta dst: 443)
+4. 93.184.216.34 → PC  TCP SYN-ACK
+5. PC → 93.184.216.34  TCP ACK
+6. PC → 93.184.216.34  TLS Client Hello</pre>
+<div class="question"><label>Cosa succede al passo 1-2?</label><select id="d4_1"><option value="">...</option><option value="dns">Risoluzione DNS: il PC chiede l'IP di www.example.com</option><option value="connect">Connessione TCP al server</option><option value="tls">Handshake TLS</option></select><div class="feedback" id="d4_1_fb"></div></div>
+<div class="question"><label>Cosa succede ai passi 3-4-5?</label><select id="d4_2"><option value="">...</option><option value="dns">Risoluzione DNS</option><option value="tcp">Three-way handshake TCP (SYN → SYN-ACK → ACK)</option><option value="tls">Negoziazione TLS</option></select><div class="feedback" id="d4_2_fb"></div></div>
+<div class="question"><label>Cosa inizia al passo 6?</label><select id="d4_3"><option value="">...</option><option value="http">Trasferimento dati HTTP</option><option value="tls">Handshake TLS per stabilire la connessione cifrata HTTPS</option><option value="close">Chiusura della connessione</option></select><div class="feedback" id="d4_3_fb"></div></div>
+<div class="question"><label>192.168.1.1 probabilmente è...</label><select id="d4_4"><option value="">...</option><option value="router">Il router/gateway (e server DNS locale)</option><option value="server">Il web server</option><option value="pc">Un altro PC nella rete</option></select><div class="feedback" id="d4_4_fb"></div></div>
+<div class="btn-row"><button class="btn btn-primary" onclick="checkD4()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('d4',['d4_1','d4_2','d4_3','d4_4'])">Azzera</button></div>
+</div></div>
+
+</div>
+<footer>Corso Cybersecurity — Leonardo SpA | Modulo 1 | Compiti 9 aprile — Blocco 2<br>Giovedì 10 aprile: porta il file .pcap e Wireshark installato!</footer>
+
+<script>
+let stats={completed:new Set(),correct:new Set()};
+function updateStats(){document.getElementById('completed').textContent=stats.completed.size;document.getElementById('correct').textContent=stats.correct.size;document.getElementById('pct').textContent=stats.completed.size?Math.round(stats.correct.size/stats.completed.size*100)+'%':'0%';}
+function markEx(id,ok){const e=document.getElementById(id);e.classList.remove('completed-correct','completed-wrong');stats.completed.add(id);if(ok){stats.correct.add(id);e.classList.add('completed-correct');}else{stats.correct.delete(id);e.classList.add('completed-wrong');}updateStats();}
+function norm(s){return s.trim().replace(/\s+/g,' ').toLowerCase();}
+function setFB(id,ok,msg){const e=document.getElementById(id);e.className='feedback '+(ok?'correct':'wrong');e.textContent=(ok?'✓ ':'✗ ')+msg;e.style.display='block';}
+function val(id){const e=document.getElementById(id);return e.tagName==='SELECT'?e.value:e.value.trim();}
+function toggleHint(id){document.getElementById(id).classList.toggle('visible');}
+function resetEx(exId,fields){fields.forEach(f=>{const e=document.getElementById(f);if(e.tagName==='SELECT')e.selectedIndex=0;else e.value='';const fb=document.getElementById(f+'_fb');if(fb){fb.style.display='none';fb.className='feedback';}});const ex=document.getElementById(exId);ex.classList.remove('completed-correct','completed-wrong');stats.completed.delete(exId);stats.correct.delete(exId);updateStats();}
+function chk(fid,acc,disp){const v=norm(val(fid));const ok=acc.some(a=>norm(a)===v);setFB(fid+'_fb',ok,ok?'Corretto!':'Risposta: '+disp);return ok;}
+function chkSel(fid,correct,msgOk,msgNo){const v=val(fid);const ok=v===correct;setFB(fid+'_fb',ok,ok?msgOk:msgNo);return ok;}
+
+// A - Supernetting
+function checkA1(){const a=chk('a1_1',['192.168.8.0/22'],'192.168.8.0/22');markEx('a1',a);}
+function checkA2(){const a=chkSel('a2_1','no','Corretto!','No: le rotte 1–4 non sono allineate a una /22.');const b=chkSel('a2_2','align','Corretto! Una /22 deve partire da 0, 4, 8, 12...','Non sono allineate: una /22 deve partire da un multiplo di 4 (0, 4, 8...). 1 non è multiplo di 4.');markEx('a2',a&&b);}
+function checkA3(){const a=chk('a3_1',['172.16.16.0/21'],'172.16.16.0/21');const b=chk('a3_2',['3'],'3 (da /24 a /21)');markEx('a3',a&&b);}
+function checkA4(){const a=chk('a4_1',['10.1.0.0/21'],'10.1.0.0/21 (copre .0–.7)');const b=chk('a4_2',['3'],'3 (le rotte .5, .6, .7 non esistono ma sono coperte)');markEx('a4',a&&b);}
+
+// B - Routing
+function checkB1(){const a=chkSel('b1_1','list','Corretto!','È l\'elenco di regole che dice al router dove inviare i pacchetti.');const b=chkSel('b1_2','correct','Corretto!','Ogni voce contiene: rete di destinazione, next hop, interfaccia.');markEx('b1',a&&b);}
+function checkB2(){const a=chkSel('b2_1','admin','Corretto!','L\'amministratore inserisce le rotte manualmente.');const b=chkSel('b2_2','proto','Corretto!','Protocolli come OSPF e BGP.');const c=chkSel('b2_3','dynamic','Corretto! Il routing dinamico ricalcola le rotte.','Dinamico: i router si scambiano aggiornamenti e ricalcolano le rotte.');markEx('b2',a&&b&&c);}
+function checkB3(){const a=chk('b3_1',['0.0.0.0/0'],'0.0.0.0/0');const b=chkSel('b3_2','default','Corretto!','Quando nessuna rotta più specifica corrisponde.');markEx('b3',a&&b);}
+function checkB4(){const a=chkSel('b4_1','igp','Corretto! OSPF è un IGP.','OSPF è un Interior Gateway Protocol, usato all\'interno di un\'organizzazione.');const b=chkSel('b4_2','internet','Corretto! BGP è il protocollo di internet.','BGP è usato tra provider internet e grandi organizzazioni.');const c=chkSel('b4_3','dynamic','Corretto! 50 router richiedono routing dinamico.','Dinamico: gestire manualmente 50 router sarebbe impraticabile.');markEx('b4',a&&b&&c);}
+function checkB5(){const a=chk('b5_1',['10.0.0.3'],'10.0.0.3 (match con 10.0.2.0/24 → OSPF)');const b=chk('b5_2',['10.0.0.1'],'10.0.0.1 (match con 192.168.0.0/16)');const c=chk('b5_3',['10.0.0.254'],'10.0.0.254 (nessun match specifico → default route 0.0.0.0/0)');markEx('b5',a&&b&&c);}
+
+// C - DNS
+function checkC1(){const a=chkSel('c1_1','correct','Corretto!','Traduce nomi di dominio in indirizzi IP.');const b=chkSel('c1_2','dns','Corretto!','Prima risolve il nome via DNS, poi si connette.');const c=chk('c1_3',['53'],'53 (UDP/TCP porta 53)');markEx('c1',a&&b&&c);}
+function checkC2(){const a=chkSel('c2_1','cache','Corretto! Prima la cache locale.','Primo passo: controlla la cache DNS locale del PC.');const b=chkSel('c2_2','resolver','Corretto!','Chiede al resolver DNS configurato (ISP o aziendale).');const c=chkSel('c2_3','root','Corretto! Root → TLD → Authoritative.','Il resolver segue la gerarchia: root server → TLD → authoritative.');markEx('c2',a&&b&&c);}
+function checkC3(){const a=chkSel('c3_1','spoofing','Corretto!','DNS spoofing/poisoning: risposte DNS falsificate.');const b=chkSel('c3_2','dnssec','Corretto!','DNSSEC firma digitalmente le risposte DNS.');const c=chkSel('c3_3','no','Corretto! Le query DNS standard sono in chiaro.','No: le query DNS sono in chiaro. DNS over HTTPS (DoH) o DNS over TLS (DoT) le cifrano.');markEx('c3',a&&b&&c);}
+
+// D - TCP/Wireshark
+function checkD1(){const a=chkSel('d1_1','syn','Corretto!','Il client invia SYN.');const b=chkSel('d1_2','synack','Corretto!','Il server risponde SYN-ACK.');const c=chkSel('d1_3','ack','Corretto!','Il client conferma con ACK.');markEx('d1',a&&b&&c);}
+function checkD2(){const a=chk('d2_1',['80'],'80');const b=chk('d2_2',['443'],'443');const c=chk('d2_3',['53'],'53');const d=chk('d2_4',['22'],'22');markEx('d2',a&&b&&c&&d);}
+function checkD3(){const a=chkSel('d3_1','no','Corretto! HTTPS è cifrato, ma i metadati restano visibili.','No: il payload HTTPS è cifrato. Puoi vedere IP, DNS query e l\'handshake TLS.');const b=chkSel('d3_2','https','Corretto! Porta 443 = HTTPS.','HTTPS: porta 443 è HTTP over TLS.');const c=chkSel('d3_3','ip2mac','Corretto!','ARP trova il MAC address dato un IP, nella rete locale.');markEx('d3',a&&b&&c);}
+function checkD4(){const a=chkSel('d4_1','dns','Corretto!','Passi 1-2: risoluzione DNS del nome dominio.');const b=chkSel('d4_2','tcp','Corretto! SYN → SYN-ACK → ACK.','Passi 3-4-5: three-way handshake TCP.');const c=chkSel('d4_3','tls','Corretto! Client Hello inizia l\'handshake TLS.','Passo 6: inizio handshake TLS per cifrare la connessione HTTPS.');const d=chkSel('d4_4','router','Corretto!','192.168.1.1 è tipicamente il router/gateway che funge anche da DNS forwarder.');markEx('d4',a&&b&&c&&d);}
+</script>
+</body>
+</html>
