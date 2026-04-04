@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guida Studente — Lezione 1: Fondamenti di Rete e Segmentazione</title>
+<style>
+:root{--accent:#0891B2;--accent2:#0077B6;--title:#0F4C75;--text:#1E293B;--muted:#64748B;--bg:#F8F9FA;--card:#FFF;--border:#E2E8F0;--success:#059669;--danger:#DC2626;--warn:#D97706}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Calibri,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+header{background:var(--title);color:#fff;padding:2rem 1rem;text-align:center;border-bottom:4px solid var(--accent)}
+header h1{font-size:1.5rem;margin-bottom:.3rem}
+header p{font-size:.9rem;opacity:.8}
+.container{max-width:800px;margin:0 auto;padding:0 1rem 3rem}
+nav.toc{background:var(--card);border:1px solid var(--border);border-radius:8px;margin:1.5rem 0;padding:1.2rem 1.5rem}
+nav.toc h2{font-size:1.1rem;color:var(--title);margin-bottom:.8rem}
+nav.toc ol{padding-left:1.2rem}
+nav.toc li{margin:.3rem 0;font-size:.9rem}
+nav.toc a{color:var(--accent);text-decoration:none}
+nav.toc a:hover{text-decoration:underline}
+nav.toc ol ol{margin-top:.2rem}
+h2.section{font-size:1.3rem;color:var(--title);margin:2rem 0 .5rem;padding-bottom:.4rem;border-bottom:3px solid var(--accent)}
+h3.topic{font-size:1.1rem;color:var(--accent2);margin:1.5rem 0 .5rem}
+h4.sub{font-size:1rem;color:var(--text);margin:1rem 0 .4rem;font-weight:600}
+p{margin-bottom:.8rem;font-size:.92rem}
+.content-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.2rem;margin:1rem 0}
+.key-concept{background:#F0F9FF;border-left:4px solid var(--accent);padding:.8rem 1rem;margin:.8rem 0;border-radius:0 6px 6px 0;font-size:.88rem}
+.key-concept strong{color:var(--accent)}
+.warning-box{background:#FEF2F2;border-left:4px solid var(--danger);padding:.8rem 1rem;margin:.8rem 0;border-radius:0 6px 6px 0;font-size:.88rem}
+.warning-box strong{color:var(--danger)}
+.tip-box{background:#FFFBEB;border-left:4px solid var(--warn);padding:.8rem 1rem;margin:.8rem 0;border-radius:0 6px 6px 0;font-size:.88rem}
+.tip-box strong{color:var(--warn)}
+.security-box{background:#F0FDF4;border-left:4px solid var(--success);padding:.8rem 1rem;margin:.8rem 0;border-radius:0 6px 6px 0;font-size:.88rem}
+.security-box strong{color:var(--success)}
+table{width:100%;border-collapse:collapse;margin:.8rem 0;font-size:.85rem}
+th{background:var(--accent);color:#fff;padding:.5rem .6rem;text-align:left;font-weight:600}
+td{padding:.4rem .6rem;border-bottom:1px solid var(--border)}
+tr:nth-child(even){background:#F1F5F9}
+code{background:#F1F5F9;padding:.1rem .3rem;border-radius:3px;font-family:Consolas,'Courier New',monospace;font-size:.85rem}
+pre{background:#F1F5F9;padding:.8rem;border-radius:6px;font-size:.82rem;overflow-x:auto;margin:.6rem 0;font-family:Consolas,monospace;line-height:1.5}
+ul,ol{margin:.4rem 0 .8rem 1.4rem;font-size:.9rem}
+li{margin:.2rem 0}
+.exercise-links{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem;margin:1rem 0}
+.ex-link{background:var(--card);border:2px solid var(--accent);border-radius:8px;padding:1rem;text-align:center;text-decoration:none;color:var(--text);transition:all .15s}
+.ex-link:hover{background:var(--accent);color:#fff}
+.ex-link h4{color:var(--accent);font-size:.95rem;margin-bottom:.3rem}
+.ex-link:hover h4{color:#fff}
+.ex-link p{font-size:.75rem;color:var(--muted);margin:0}
+.ex-link:hover p{color:rgba(255,255,255,.8)}
+.agenda-table{width:100%}
+.agenda-table td:first-child{width:100px;font-family:Consolas,monospace;font-size:.82rem;color:var(--muted);white-space:nowrap}
+.tag{display:inline-block;padding:.1rem .4rem;border-radius:10px;font-size:.65rem;font-weight:600;text-transform:uppercase;margin-left:.3rem}
+.tag-passive{background:#E2E8F0;color:var(--muted)}
+.tag-active{background:#CFFAFE;color:var(--accent)}
+.tag-practical{background:#D1FAE5;color:var(--success)}
+details{margin:.6rem 0}
+details summary{cursor:pointer;font-weight:600;color:var(--accent2);font-size:.92rem;padding:.3rem 0}
+details summary:hover{color:var(--accent)}
+footer{text-align:center;padding:1.5rem;color:var(--muted);font-size:.75rem;border-top:1px solid var(--border);margin-top:2rem}
+@media(max-width:600px){header h1{font-size:1.2rem}.exercise-links{grid-template-columns:1fr}h2.section{font-size:1.1rem}}
+</style>
+</head>
+<body>
+<header>
+<h1>Guida Studente — Lezione 1</h1>
+<p>Fondamenti di Rete e Segmentazione | 8 aprile 2026 | Modulo 1: Reti, SO e Hardening</p>
+</header>
+<div class="container">
+
+<nav class="toc">
+<h2>Indice</h2>
+<ol>
+<li><a href="#s1">Il Percorso Formativo</a></li>
+<li><a href="#s2">Fondamenti TCP/IP</a>
+  <ol>
+    <li><a href="#s2a">Il modello TCP/IP a 4 livelli</a></li>
+    <li><a href="#s2b">Layer 1: Accesso alla rete</a></li>
+    <li><a href="#s2c">Layer 2: Internet (IP)</a></li>
+    <li><a href="#s2d">Layer 3: Trasporto (TCP e UDP)</a></li>
+    <li><a href="#s2e">Porte e servizi</a></li>
+    <li><a href="#s2f">Incapsulamento</a></li>
+  </ol>
+</li>
+<li><a href="#s3">Indirizzamento IPv4 e Subnetting</a>
+  <ol>
+    <li><a href="#s3a">Indirizzamento IPv4</a></li>
+    <li><a href="#s3b">Subnetting: il metodo</a></li>
+    <li><a href="#s3c">VLSM: sottoreti di dimensione diversa</a></li>
+    <li><a href="#s3d">Supernetting e route summarization</a></li>
+  </ol>
+</li>
+<li><a href="#s4">Segmentazione e Sicurezza di Rete</a>
+  <ol>
+    <li><a href="#s4a">La rete piatta e il lateral movement</a></li>
+    <li><a href="#s4b">Principi di segmentazione</a></li>
+    <li><a href="#s4c">VLAN</a></li>
+    <li><a href="#s4d">DMZ e zone di sicurezza</a></li>
+  </ol>
+</li>
+<li><a href="#s5">Esercizi interattivi</a></li>
+<li><a href="#s6">Preparati per il Giorno 2</a></li>
+<li><a href="#s7">Strumenti da installare</a></li>
+<li><a href="#s8">Tabelle di riferimento</a></li>
+</ol>
+</nav>
+
+<!-- ══════════════════════════════════════ -->
+<h2 class="section" id="s1">1. Il Percorso Formativo</h2>
+
+<p>Il corso di Cybersecurity in Leonardo è un percorso di 252 ore distribuite in 16 settimane, strutturato in 6 moduli progressivi. Ogni modulo costruisce sul precedente:</p>
+
+<div class="content-card">
+<ul>
+<li><strong>M1 — Reti, SO e Hardening</strong> (settimane 1–3, 48h): come funziona e come si difende una rete</li>
+<li><strong>M2 — Compute & Database</strong> (settimane 4–5, 32h): cosa gira sulla rete e come si gestisce</li>
+<li><strong>M3 — Cloud Architecture & Security</strong> (settimane 6–9, 64h): dove si sposta tutto e come cambia la sicurezza</li>
+<li><strong>M4 — DevSecOps & Automation</strong> (settimane 10–12, 48h): come si automatizza la sicurezza nel ciclo di sviluppo</li>
+<li><strong>M5 — SOC, Monitoring & Incident Response</strong> (settimane 13–15, 48h): come si monitora e si reagisce in tempo reale</li>
+<li><strong>M6 — Project Work Finale</strong> (settimana 16, 12h): sintesi di tutto in un progetto reale</li>
+</ul>
+</div>
+
+<div class="key-concept">
+<strong>Progressione di carriera.</strong> Questa sequenza — fondamenta → sistemi → cloud → automazione → operazioni — è anche la progressione tipica di un professionista della cybersecurity: si parte dal networking, si passa ai sistemi, poi al cloud, poi al DevSecOps, poi al SOC management.
+</div>
+
+<p>Il Modulo 1 in cui ci troviamo è strutturato internamente in 5 macro-sezioni che seguono il pattern <em>come funziona → come si rompe → come si protegge</em>:</p>
+<ol>
+<li><strong>Lezioni 1-2</strong> (W1): Fondamenti di rete — TCP/IP, subnetting, routing</li>
+<li><strong>Lezione 3</strong> (W2): Servizi e protocolli — DNS, SSL/TLS, VPN</li>
+<li><strong>Lezione 4</strong> (W2): Sicurezza perimetrale — firewall, WAF, NAT</li>
+<li><strong>Lezione 5</strong> (W3): Architettura di rete sicura — microsegmentazione, SDN</li>
+<li><strong>Lezione 6</strong> (W3): Hardening e attacchi laterali — offensivo + difensivo</li>
+</ol>
+
+<p>La settimana tipo prevede 2 giorni con il docente (martedì online + giovedì in presenza a Napoli) e 3 giorni di studio autonomo con compiti strutturati e deliverable verificabili.</p>
+
+<!-- ══════════════════════════════════════ -->
+<h2 class="section" id="s2">2. Fondamenti TCP/IP</h2>
+
+<div class="key-concept">
+<strong>Perché TCP/IP è fondamentale per la cybersecurity?</strong> La rete è il campo di battaglia della cybersecurity. I tool di sicurezza (firewall, IDS, SIEM) sono essenzialmente "lettori di pacchetti" — senza capire come è fatto un pacchetto, non si capiscono i tool. Ogni concetto di networking ha un'applicazione diretta sia nella difesa che nell'attacco.
+</div>
+
+<h3 class="topic" id="s2a">2.1 Il modello TCP/IP a 4 livelli</h3>
+
+<p>Il modello TCP/IP organizza la comunicazione di rete in 4 livelli, ciascuno con un ruolo specifico:</p>
+
+<table>
+<tr><th>Livello</th><th>Nome</th><th>Ruolo</th><th>Protocolli</th><th>Tool di sicurezza</th></tr>
+<tr><td>4</td><td>Applicazione</td><td>Interfaccia con l'utente</td><td>HTTP, DNS, SMTP, SSH</td><td>WAF, Proxy</td></tr>
+<tr><td>3</td><td>Trasporto</td><td>Comunicazione end-to-end</td><td>TCP, UDP</td><td>Firewall L4</td></tr>
+<tr><td>2</td><td>Internet</td><td>Indirizzamento e routing</td><td>IP, ICMP, ARP</td><td>Firewall L3, IDS/IPS</td></tr>
+<tr><td>1</td><td>Accesso alla rete</td><td>Trasmissione fisica</td><td>Ethernet, Wi-Fi</td><td>Port Security, 802.1X</td></tr>
+</table>
+
+<p>Ogni livello <strong>incapsula</strong> i dati del livello superiore aggiungendo il proprio header. Il processo inverso (de-incapsulamento) avviene sul dispositivo ricevente. La terminologia cambia per livello: messaggio (applicazione), segmento/datagramma (trasporto), pacchetto (internet), frame (accesso alla rete).</p>
+
+<div class="tip-box">
+<strong>Nota sull'ambiguità OSI/TCP/IP.</strong> In ambito professionale si usa spesso la numerazione OSI (7 livelli) anche quando si parla di TCP/IP (4 livelli). "Layer 7" si riferisce all'applicazione, "Layer 3" all'IP, ecc. Non è tecnicamente preciso ma è una convenzione molto diffusa.
+</div>
+
+<h3 class="topic" id="s2b">2.2 Layer 1: Accesso alla rete (Fisico + Data Link)</h3>
+
+<h4 class="sub">Indirizzo MAC</h4>
+<p>L'indirizzo MAC (Media Access Control) è un identificatore univoco a 48 bit assegnato dal produttore della scheda di rete. I primi 24 bit sono l'OUI (Organizationally Unique Identifier) che identifica il vendor. Formato: sei gruppi di due cifre esadecimali separati da <code>:</code> o <code>-</code> (es: <code>AA:BB:CC:DD:EE:FF</code>).</p>
+
+<h4 class="sub">Frame Ethernet</h4>
+<p>Il frame Ethernet è l'unità di dati a livello 2. La struttura: Preamble (8 byte) + MAC destinazione (6 byte) + MAC sorgente (6 byte) + EtherType (2 byte — es: <code>0x0800</code> = IPv4) + Payload (46-1500 byte) + FCS (4 byte, controllo errori).</p>
+
+<h4 class="sub">ARP (Address Resolution Protocol)</h4>
+<p>ARP risolve la corrispondenza IP → MAC nella rete locale. Funziona con request (broadcast: "chi ha questo IP?") e reply (unicast: "sono io, ecco il mio MAC"). La tabella ARP è una cache locale consultabile con il comando <code>arp -a</code>.</p>
+
+<h4 class="sub">Switch vs Hub</h4>
+<p>Uno switch instrada i frame solo alla porta corretta usando la tabella CAM (Content Addressable Memory) che mappa MAC address → porta. Un hub replica tutto su tutte le porte.</p>
+
+<div class="security-box">
+<strong>Attacchi a Layer 2.</strong> L'attacco <em>ARP Spoofing</em> invia risposte ARP false per dirottare il traffico (tool: arpspoof, ettercap, Bettercap). Il <em>MAC Flooding</em> satura la tabella CAM dello switch costringendolo a comportarsi come un hub (tool: macof). Difese: Port Security, DHCP Snooping + DAI, 802.1X.
+</div>
+
+<h3 class="topic" id="s2c">2.3 Layer 2: Internet (IP)</h3>
+
+<p>Il protocollo IP (RFC 791) gestisce l'indirizzamento logico e il routing dei pacchetti.</p>
+
+<h4 class="sub">Header IPv4 — campi principali</h4>
+<table>
+<tr><th>Campo</th><th>Bit</th><th>Funzione</th></tr>
+<tr><td>Version</td><td>4</td><td>Sempre 4 per IPv4</td></tr>
+<tr><td>IHL</td><td>4</td><td>Lunghezza header in word da 32 bit (min 5 = 20 byte)</td></tr>
+<tr><td>Total Length</td><td>16</td><td>Dimensione totale del pacchetto</td></tr>
+<tr><td>TTL</td><td>8</td><td>Time To Live — decrementato ad ogni hop</td></tr>
+<tr><td>Protocol</td><td>8</td><td>Protocollo superiore (6=TCP, 17=UDP, 1=ICMP)</td></tr>
+<tr><td>Source Address</td><td>32</td><td>IP sorgente</td></tr>
+<tr><td>Destination Address</td><td>32</td><td>IP destinazione</td></tr>
+<tr><td>Header Checksum</td><td>16</td><td>Integrità dell'header (non del payload!)</td></tr>
+</table>
+
+<div class="security-box">
+<strong>IP Spoofing.</strong> Il campo Source Address non è autenticato — chiunque può inserire un IP falso. Questo è alla base degli attacchi DDoS con amplificazione (DNS amplification, NTP amplification): l'attaccante manda richieste con l'IP della vittima come sorgente. Difesa: ingress filtering (BCP 38/RFC 2827).
+</div>
+
+<h3 class="topic" id="s2d">2.4 Layer 3: Trasporto (TCP e UDP)</h3>
+
+<h4 class="sub">TCP (RFC 793)</h4>
+<p>TCP è <em>connection-oriented</em> e <em>reliable</em>: stabilisce una connessione prima di trasmettere, numera ogni segmento (Sequence Number), conferma la ricezione (ACK), ritrasmette i segmenti persi, e riordina quelli arrivati fuori sequenza.</p>
+
+<p><strong>TCP Flags</strong> — fondamentali per capire sia il funzionamento normale sia gli attacchi:</p>
+<ul>
+<li><code>SYN</code>: inizio connessione</li>
+<li><code>ACK</code>: conferma ricezione</li>
+<li><code>FIN</code>: chiusura ordinata</li>
+<li><code>RST</code>: chiusura immediata (reset)</li>
+<li><code>PSH</code>: push immediato dei dati all'applicazione</li>
+<li><code>URG</code>: dati urgenti</li>
+</ul>
+
+<h4 class="sub">TCP Three-Way Handshake</h4>
+<p>Il meccanismo che stabilisce una connessione TCP:</p>
+<ol>
+<li><strong>SYN</strong>: il client sceglie un ISN (Initial Sequence Number) pseudo-casuale e lo invia. Flag SYN attivo.</li>
+<li><strong>SYN-ACK</strong>: il server sceglie il proprio ISN, mette in Acknowledgment Number il valore ISN_client + 1. Flag SYN e ACK attivi.</li>
+<li><strong>ACK</strong>: il client conferma con Acknowledgment Number = ISN_server + 1. Solo flag ACK attivo.</li>
+</ol>
+
+<div class="key-concept">
+<strong>Perché ISN casuali?</strong> Se i numeri di sequenza fossero prevedibili, un attaccante potrebbe iniettare pacchetti in una connessione TCP esistente (TCP Sequence Prediction Attack). I sistemi moderni usano ISN pseudo-casuali per prevenire questo.
+</div>
+
+<h4 class="sub">UDP (RFC 768)</h4>
+<p>UDP è <em>connectionless</em>, <em>unreliable</em> e <em>unordered</em>. Header minimale di soli 8 byte. Usato quando la velocità è più importante dell'affidabilità (DNS, streaming, VoIP).</p>
+
+<div class="security-box">
+<strong>Attacchi a Layer 3-4.</strong> <em>SYN Flood</em>: esaurisce la coda di connessioni pendenti (difesa: SYN cookies). <em>UDP Flood</em>: inonda la vittima di pacchetti UDP. <em>Port Scanning</em> con Nmap: SYN scan (<code>-sS</code>, stealth), Connect scan (<code>-sT</code>), UDP scan (<code>-sU</code>). <em>Xmas scan</em> (<code>-sX</code>): flag FIN+PSH+URG per eludere firewall che filtrano solo i SYN.
+</div>
+
+<h3 class="topic" id="s2e">2.5 Porte e servizi</h3>
+
+<p>Le porte TCP/UDP (0-65535) identificano l'applicazione sull'host. Classificazione IANA:</p>
+<ul>
+<li><strong>0-1023</strong>: Well-Known Ports — servizi standard, richiedono root su Linux</li>
+<li><strong>1024-49151</strong>: Registered Ports — assegnate su richiesta</li>
+<li><strong>49152-65535</strong>: Dynamic/Ephemeral — porte sorgente dei client</li>
+</ul>
+
+<p>Porte critiche da conoscere per la cybersecurity:</p>
+<table>
+<tr><th>Porta</th><th>Servizio</th><th>Nota sicurezza</th></tr>
+<tr><td>20/21</td><td>FTP</td><td>Credenziali in chiaro</td></tr>
+<tr><td>22</td><td>SSH</td><td>Sicuro ma target di brute force</td></tr>
+<tr><td>23</td><td>Telnet</td><td>Tutto in chiaro — non usare mai</td></tr>
+<tr><td>25/587</td><td>SMTP</td><td>Email, vettore di phishing</td></tr>
+<tr><td>53</td><td>DNS</td><td>UDP query, TCP zone transfer</td></tr>
+<tr><td>80/443</td><td>HTTP/HTTPS</td><td>Web</td></tr>
+<tr><td>88</td><td>Kerberos</td><td>Autenticazione Active Directory</td></tr>
+<tr><td>139/445</td><td>NetBIOS/SMB</td><td>Condivisione file Windows, lateral movement</td></tr>
+<tr><td>389/636</td><td>LDAP/LDAPS</td><td>Directory Active Directory</td></tr>
+<tr><td>3389</td><td>RDP</td><td>Accesso remoto Windows</td></tr>
+<tr><td>5985/5986</td><td>WinRM</td><td>PowerShell remoto</td></tr>
+</table>
+
+<h3 class="topic" id="s2f">2.6 Incapsulamento</h3>
+
+<p>L'incapsulamento è il principio per cui ogni livello aggiunge il proprio header ai dati ricevuti dal livello superiore. In Wireshark, la vista a pannelli riflette questa struttura: il pannello centrale mostra i layer espandibili, dal frame Ethernet al payload applicativo.</p>
+
+<details>
+<summary>Esempio completo: cosa succede quando apri https://www.google.com</summary>
+<ol>
+<li>Il browser risolve il nome DNS (query UDP porta 53)</li>
+<li>Il browser apre una connessione TCP (three-way handshake verso porta 443)</li>
+<li>TLS handshake (negoziazione chiavi di cifratura)</li>
+<li>HTTP GET request (cifrata dentro il tunnel TLS)</li>
+<li>Il server risponde con il contenuto della pagina</li>
+<li>Il browser chiude la connessione (FIN-ACK)</li>
+</ol>
+<p><em>Questo percorso sarà sviluppato praticamente nel Giorno 2 con Wireshark.</em></p>
+</details>
+
+<!-- ══════════════════════════════════════ -->
+<h2 class="section" id="s3">3. Indirizzamento IPv4 e Subnetting</h2>
+
+<h3 class="topic" id="s3a">3.1 Indirizzamento IPv4</h3>
+
+<p>Un indirizzo IPv4 è un numero a 32 bit in "dotted decimal notation" (es: <code>192.168.1.100</code>). Ogni ottetto è un byte (0-255). L'indirizzo è composto da <strong>Network Part + Host Part</strong>, separati dalla subnet mask.</p>
+
+<p>La notazione CIDR (RFC 4632) indica quanti bit appartengono alla parte di rete: <code>/24</code> = i primi 24 bit sono rete, gli ultimi 8 sono host.</p>
+
+<div class="content-card">
+<h4 class="sub">Indirizzi riservati in ogni subnet</h4>
+<ul>
+<li><strong>Primo indirizzo</strong> (bit host tutti a 0): indirizzo di rete — identifica la subnet</li>
+<li><strong>Ultimo indirizzo</strong> (bit host tutti a 1): indirizzo di broadcast — raggiunge tutti gli host</li>
+<li><strong>Formula host utilizzabili</strong>: 2<sup>(32−n)</sup> − 2, dove n è il prefisso CIDR</li>
+</ul>
+
+<h4 class="sub">Indirizzi privati (RFC 1918)</h4>
+<ul>
+<li><code>10.0.0.0/8</code> — Classe A privata</li>
+<li><code>172.16.0.0/12</code> — Classe B privata</li>
+<li><code>192.168.0.0/16</code> — Classe C privata</li>
+</ul>
+<p>Non instradabili su Internet. Il NAT traduce privato → pubblico per l'accesso esterno.</p>
+</div>
+
+<h3 class="topic" id="s3b">3.2 Subnetting: il metodo</h3>
+
+<p>Il subnetting è una competenza meccanica che si automatizza con la pratica. Il metodo più pratico usa le <strong>potenze di 2</strong>: la dimensione del blocco è 2<sup>(32−prefix)</sup>. Per /26: 2<sup>6</sup> = 64 → i blocchi partono da multipli di 64.</p>
+
+<div class="content-card">
+<h4 class="sub">Metodo in 5 passi</h4>
+<ol>
+<li><strong>Quanti host servono?</strong> — identificare il requisito</li>
+<li><strong>Quanti bit per gli host?</strong> — trovare n dove 2<sup>n</sup> − 2 ≥ host richiesti</li>
+<li><strong>Maschera di sottorete</strong> — 32 − n = prefisso CIDR</li>
+<li><strong>Intervallo e broadcast</strong> — network address, range, broadcast</li>
+<li><strong>Verifica</strong> — controllare sovrapposizioni e spreco</li>
+</ol>
+</div>
+
+<div class="warning-box">
+<strong>Errori comuni.</strong> Dimenticare di sottrarre 2 dal totale (network + broadcast). Confondere /26 con "26 host" (sono 62). Non capire che il broadcast della subnet 1 e il network della subnet 2 sono consecutivi ma appartengono a subnet diverse.
+</div>
+
+<div class="tip-box">
+<strong>Il "magic number".</strong> È 256 meno l'ultimo ottetto della maschera. Per <code>255.255.255.192</code> (/26): 256 − 192 = 64. Le sottoreti saltano di 64 in 64: .0, .64, .128, .192.
+</div>
+
+<h3 class="topic" id="s3c">3.3 VLSM: sottoreti di dimensione diversa</h3>
+
+<p>VLSM (Variable Length Subnet Mask) permette di assegnare maschere diverse a sottoreti diverse nello stesso blocco. Regola fondamentale: <strong>assegnare sempre partendo dalla sottorete più grande</strong>, perché le sottoreti grandi hanno vincoli di allineamento più stringenti.</p>
+
+<div class="content-card">
+<h4 class="sub">Processo VLSM</h4>
+<ol>
+<li>Ordinare le sottoreti dalla più grande alla più piccola</li>
+<li>Per ogni sottorete, calcolare la maschera minima: 2<sup>n</sup> − 2 ≥ host richiesti</li>
+<li>Ogni sottorete parte dove finisce la precedente</li>
+<li>Verificare che non ci siano sovrapposizioni</li>
+</ol>
+</div>
+
+<h3 class="topic" id="s3d">3.4 Supernetting e route summarization</h3>
+
+<p>Il supernetting è il processo inverso del subnetting: dato un insieme di rotte contigue, trovare la rotta più specifica che le copre tutte. Il metodo: scrivere gli indirizzi in binario e contare i bit comuni da sinistra. La summarization funziona solo se le rotte sono <strong>contigue e allineate</strong> ai confini della maschera.</p>
+
+<div class="warning-box">
+<strong>Attenzione all'allineamento.</strong> Una /22 copre 4 rotte /24, ma solo a partire da un multiplo di 4 nel terzo ottetto (0, 4, 8, 12...). Le rotte 10.0.1.0–10.0.4.0 <em>non</em> si aggregano in una /22 perché 1 non è multiplo di 4.
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<h2 class="section" id="s4">4. Segmentazione e Sicurezza di Rete</h2>
+
+<h3 class="topic" id="s4a">4.1 La rete piatta e il lateral movement</h3>
+
+<p>Una <strong>rete piatta</strong> (flat network) è una topologia in cui tutti i dispositivi sono nello stesso dominio di broadcast e nella stessa subnet. Non ci sono barriere: qualsiasi host può comunicare direttamente con qualsiasi altro.</p>
+
+<div class="key-concept">
+<strong>Blast radius.</strong> In una rete piatta, un singolo dispositivo compromesso espone l'intera infrastruttura. Il "blast radius" (raggio dell'esplosione) misura l'impatto di una compromissione — quanti sistemi sono esposti. La segmentazione riduce il blast radius.
+</div>
+
+<p>Il <strong>lateral movement</strong> è la fase della cyber kill chain in cui un attaccante, dopo l'accesso iniziale a un host, si muove all'interno della rete per raggiungere asset di maggior valore. Le 4 fasi tipiche:</p>
+<ol>
+<li><strong>Accesso iniziale</strong> — phishing, credenziali rubate, vulnerabilità</li>
+<li><strong>Ricognizione interna</strong> — scansione rete (arp-scan, nmap)</li>
+<li><strong>Movimento laterale</strong> — pass-the-hash, exploit SMB, pivot</li>
+<li><strong>Escalation e obiettivo</strong> — domain admin, esfiltrazione, ransomware</li>
+</ol>
+
+<div class="security-box">
+<strong>Tecniche di lateral movement.</strong> (1) <em>Pass-the-hash</em>: uso di hash NTLM per autenticarsi senza password. (2) <em>Exploit di servizi</em>: vulnerabilità come EternalBlue (SMB). (3) <em>Living off the land</em>: strumenti legittimi (PowerShell, WMI, PsExec). La segmentazione interviene tra il passo 2 e il 3: se i server sono in un'altra VLAN con firewall, l'attaccante non li raggiunge.
+</div>
+
+<h3 class="topic" id="s4b">4.2 Principi di segmentazione</h3>
+<ol>
+<li><strong>Separazione per funzione</strong> — server, utenti, ospiti, management, IoT in segmenti distinti</li>
+<li><strong>Least privilege di rete</strong> — ogni segmento accede solo a ciò che gli serve. Default: deny all.</li>
+<li><strong>Punti di controllo</strong> — firewall L3/L7 tra segmenti. Ogni flusso inter-VLAN passa per una regola.</li>
+<li><strong>Monitoraggio ai confini</strong> — IDS/IPS e log tra segmenti. Il traffico Est-Ovest (laterale) diventa visibile.</li>
+</ol>
+
+<div class="key-concept">
+<strong>Traffico Nord-Sud vs Est-Ovest.</strong> Nord-Sud è il traffico da/verso internet. Est-Ovest è il traffico laterale tra host interni. Nelle reti moderne, la maggior parte degli attacchi si sviluppa Est-Ovest — ed è invisibile senza segmentazione.
+</div>
+
+<h3 class="topic" id="s4c">4.3 VLAN (IEEE 802.1Q)</h3>
+
+<p>Una VLAN (Virtual LAN) è una rete logica indipendente dal cablaggio fisico. Lo switch aggiunge un tag di 4 byte al frame Ethernet che identifica la VLAN di appartenenza.</p>
+
+<ul>
+<li><strong>Access port</strong>: membro di una sola VLAN, tag rimosso verso l'host</li>
+<li><strong>Trunk port</strong>: trasporta frame di più VLAN con i tag, usata tra switch e tra switch-router</li>
+</ul>
+
+<div class="warning-box">
+<strong>Le VLAN da sole NON sono sicurezza.</strong> Le VLAN separano i domini di broadcast a layer 2, ma il routing inter-VLAN (layer 3) riconnette tutto. Senza regole firewall/ACL, la VLAN è solo organizzazione. <strong>VLAN + Firewall = Segmentazione vera.</strong>
+</div>
+
+<p>Il routing inter-VLAN può avvenire tramite: (1) <em>Router-on-a-stick</em> con sub-interface, (2) <em>Switch layer 3</em> con SVI, (3) <em>Firewall come default gateway</em> — la soluzione più sicura.</p>
+
+<h3 class="topic" id="s4d">4.4 DMZ e zone di sicurezza</h3>
+
+<p>La <strong>DMZ</strong> (DeMilitarized Zone) è un segmento per servizi accessibili dall'esterno (web server, mail server), isolato sia dalla rete interna sia da internet. L'architettura classica prevede un firewall con 3+ interfacce o due firewall in serie.</p>
+
+<p>Regole tipiche tra le zone:</p>
+<ul>
+<li><strong>Outside → DMZ</strong>: solo porte specifiche (HTTP/443, SMTP/25)</li>
+<li><strong>DMZ → Inside</strong>: molto restrittivo (es: solo il web server accede al DB su una porta specifica)</li>
+<li><strong>Inside → DMZ</strong>: consentito per management</li>
+<li><strong>DMZ → Outside</strong>: limitato (aggiornamenti, DNS)</li>
+</ul>
+
+<div class="key-concept">
+<strong>Evoluzione: microsegmentazione.</strong> L'architettura Zero Trust (NIST SP 800-207) porta la segmentazione all'estremo: ogni workload ha il suo set di regole, indipendentemente dalla rete fisica. Tecnologie: VMware NSX, Cisco ACI, cloud security groups. Ne parleremo nel Modulo 3.
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<h2 class="section" id="s5">5. Esercizi Interattivi</h2>
+
+<p>Tre set di esercizi disponibili, tutti accessibili da smartphone, tablet e PC:</p>
+
+<div class="exercise-links">
+<a href="https://luiroman.github.io/leonardo-esercizi-interattivi/esercizi-subnetting-aula-g1.html" class="ex-link" target="_blank">
+  <h4>Esercizi Aula</h4>
+  <p>10 esercizi<br>Subnetting base → difficile</p>
+</a>
+<a href="https://luiroman.github.io/leonardo-esercizi-interattivi/esercizi-compiti-blocco1.html" class="ex-link" target="_blank">
+  <h4>Blocco 1 — Consolida</h4>
+  <p>18 esercizi<br>Subnetting, VLSM, Segmentazione</p>
+</a>
+<a href="https://luiroman.github.io/leonardo-esercizi-interattivi/esercizi-compiti-blocco2.html" class="ex-link" target="_blank">
+  <h4>Blocco 2 — Preparati</h4>
+  <p>16 esercizi<br>Supernetting, Routing, DNS, TCP</p>
+</a>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<h2 class="section" id="s6">6. Preparati per il Giorno 2 (10 aprile)</h2>
+
+<p>Il Giorno 2 sarà in presenza a Napoli. Gli argomenti:</p>
+<ul>
+<li><strong>Routing statico e dinamico</strong> — OSPF, BGP, tabella di routing, default route</li>
+<li><strong>Workshop Wireshark</strong> — analisi del traffico reale con i file .pcap che avrete catturato</li>
+<li><strong>DNS in profondità</strong> — gerarchia, risoluzione, DNS spoofing, DNSSEC</li>
+<li><strong>Certificati SSL/TLS e PKI</strong> — handshake TLS, catena di fiducia</li>
+<li><strong>VPN</strong> — concetti, tipologie, protocolli</li>
+</ul>
+
+<div class="content-card">
+<h4 class="sub">Agenda studio autonomo — 9 aprile</h4>
+<table class="agenda-table">
+<tr><td>9:00–10:00</td><td>Ripasso lezione G1 (questa guida!) <span class="tag tag-passive">Passivo</span></td></tr>
+<tr><td>10:00–11:00</td><td>Blocco 1 esercizi — Consolida il Giorno 1 <span class="tag tag-active">Attivo</span></td></tr>
+<tr><td>11:00–12:00</td><td>Installa Wireshark + cattura .pcap <span class="tag tag-practical">Pratico</span></td></tr>
+<tr><td>12:00–13:00</td><td><em>Pausa pranzo</em></td></tr>
+<tr><td>13:00–14:00</td><td>Lettura: routing statico e dinamico <span class="tag tag-passive">Passivo</span></td></tr>
+<tr><td>14:00–15:00</td><td>Blocco 2 esercizi — Preparati per il G2 <span class="tag tag-active">Attivo</span></td></tr>
+<tr><td>15:00–16:00</td><td>Installa VirtualBox + Ubuntu Server <span class="tag tag-practical">Pratico</span></td></tr>
+<tr><td>16:00–17:00</td><td>Approfondimento libero o esercizi extra <span class="tag tag-passive">Flessibile</span></td></tr>
+</table>
+</div>
+
+<h4 class="sub">Domande guida per la lettura sul routing</h4>
+<p>Dopo aver letto il materiale, dovresti saper rispondere a:</p>
+<ol>
+<li>Cos'è una tabella di routing e cosa contiene ogni voce?</li>
+<li>Qual è la differenza tra routing statico e dinamico?</li>
+<li>Cos'è la default route (<code>0.0.0.0/0</code>) e quando viene usata?</li>
+<li>OSPF è un protocollo IGP o EGP? E BGP?</li>
+</ol>
+
+<!-- ══════════════════════════════════════ -->
+<h2 class="section" id="s7">7. Strumenti da installare</h2>
+
+<div class="content-card">
+<h4 class="sub">Wireshark (obbligatorio — serve per il Giorno 2)</h4>
+<ol>
+<li>Scarica da <a href="https://www.wireshark.org/download.html" target="_blank">wireshark.org/download.html</a></li>
+<li>Installa:
+  <ul>
+    <li><strong>Windows</strong>: esegui il .exe, accetta Npcap durante l'installazione</li>
+    <li><strong>macOS</strong>: apri il .dmg, oppure <code>brew install --cask wireshark</code></li>
+    <li><strong>Linux</strong>: <code>sudo apt install wireshark</code> poi <code>sudo usermod -aG wireshark $USER</code> e rilogga</li>
+  </ul>
+</li>
+<li>Avvia Wireshark, seleziona l'interfaccia di rete attiva</li>
+<li>Avvia la cattura, naviga su 3-4 siti per 5 minuti, ferma e salva come <code>cattura_[tuo_nome].pcapng</code></li>
+</ol>
+<p><strong>Problemi comuni:</strong> "Nessuna interfaccia" → verifica Npcap (Windows) o gruppo wireshark (Linux). "Traffico cifrato" → è normale! HTTPS cifra il payload, ma IP, DNS e handshake TLS restano visibili.</p>
+</div>
+
+<div class="content-card">
+<h4 class="sub">VirtualBox + Ubuntu Server (facoltativo ma consigliato)</h4>
+<ol>
+<li>Scarica VirtualBox da <a href="https://www.virtualbox.org/wiki/Downloads" target="_blank">virtualbox.org</a></li>
+<li>Scarica Ubuntu Server 24.04 LTS da <a href="https://ubuntu.com/download/server" target="_blank">ubuntu.com</a> (~2.5 GB)</li>
+<li>Crea una VM: nome <code>Ubuntu-Lab</code>, 2 GB RAM, 20 GB disco, rete NAT</li>
+<li>Monta la ISO, installa con opzioni predefinite, verifica che faccia boot</li>
+</ol>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<h2 class="section" id="s8">8. Tabelle di Riferimento</h2>
+
+<div class="content-card">
+<h4 class="sub">Maschere di sottorete più comuni</h4>
+<table>
+<tr><th>CIDR</th><th>Subnet Mask</th><th>Totale</th><th>Usabili</th><th>Uso tipico</th></tr>
+<tr><td>/30</td><td>255.255.255.252</td><td>4</td><td>2</td><td>Link punto-punto</td></tr>
+<tr><td>/28</td><td>255.255.255.240</td><td>16</td><td>14</td><td>Management VLAN</td></tr>
+<tr><td>/27</td><td>255.255.255.224</td><td>32</td><td>30</td><td>Piccoli uffici, DMZ</td></tr>
+<tr><td>/26</td><td>255.255.255.192</td><td>64</td><td>62</td><td>Reparti medi</td></tr>
+<tr><td>/25</td><td>255.255.255.128</td><td>128</td><td>126</td><td>Reparti grandi</td></tr>
+<tr><td>/24</td><td>255.255.255.0</td><td>256</td><td>254</td><td>Rete standard</td></tr>
+<tr><td>/22</td><td>255.255.252.0</td><td>1024</td><td>1022</td><td>Sedi grandi</td></tr>
+<tr><td>/16</td><td>255.255.0.0</td><td>65536</td><td>65534</td><td>Rete campus</td></tr>
+</table>
+</div>
+
+<div class="content-card">
+<h4 class="sub">Porte da conoscere</h4>
+<table>
+<tr><th>Porta</th><th>Servizio</th><th>Porta</th><th>Servizio</th></tr>
+<tr><td>20/21</td><td>FTP</td><td>443</td><td>HTTPS</td></tr>
+<tr><td>22</td><td>SSH</td><td>445</td><td>SMB</td></tr>
+<tr><td>23</td><td>Telnet</td><td>1433</td><td>MSSQL</td></tr>
+<tr><td>25</td><td>SMTP</td><td>3306</td><td>MySQL</td></tr>
+<tr><td>53</td><td>DNS</td><td>3389</td><td>RDP</td></tr>
+<tr><td>80</td><td>HTTP</td><td>5432</td><td>PostgreSQL</td></tr>
+<tr><td>88</td><td>Kerberos</td><td>8080</td><td>HTTP proxy</td></tr>
+</table>
+</div>
+
+</div>
+
+<footer>
+Corso Cybersecurity — Leonardo SpA | Modulo 1: Reti, SO e Hardening<br>
+Lezione 1 — Fondamenti di Rete e Segmentazione | 8 aprile 2026<br>
+<em>Questa guida è un supporto allo studio. Per domande: contattare il docente.</em>
+</footer>
+</body>
+</html>
