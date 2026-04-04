@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Risoluzione DNS — Animazione</title>
+<style>
+:root {
+  --title: #0F4C75;
+  --text: #1E293B;
+  --muted: #64748B;
+  --bg: #F8F9FA;
+  --border: #E2E8F0;
+  --success: #059669;
+  --browser: #7C3AED;
+  --resolver: #0891B2;
+  --root: #DC2626;
+  --tld: #D97706;
+  --auth: #059669;
+  --cached: #2563EB;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+  background: var(--bg); color: var(--text);
+  display: flex; flex-direction: column; align-items: center;
+  min-height: 100vh; overflow-x: hidden;
+}
+
+.header {
+  background: var(--title); color: white; width: 100%;
+  padding: 14px 24px; text-align: center;
+}
+.header h1 { font-size: 1.3em; font-weight: bold; }
+
+.stage {
+  position: relative; width: 100%; max-width: 920px;
+  height: 560px; background: white;
+  border: 1px solid var(--border); border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
+
+/* ── Entities ── */
+.entity {
+  position: absolute; display: flex; flex-direction: column;
+  align-items: center; width: 110px;
+}
+.entity-icon {
+  width: 54px; height: 54px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; color: white; transition: box-shadow 0.4s;
+}
+.entity-label {
+  font-weight: bold; font-size: 0.75em; margin-top: 5px;
+  text-align: center; line-height: 1.2;
+}
+.entity-sub {
+  font-size: 0.6em; color: var(--muted); text-align: center;
+  margin-top: 2px;
+}
+.entity.glow .entity-icon { box-shadow: 0 0 18px rgba(0,0,0,0.3); }
+
+/* Positions */
+#browser  { left: 30px;  top: 200px; }
+#resolver { left: 240px; top: 200px; }
+#root     { right: 60px; top: 40px; }
+#tld      { right: 60px; top: 200px; }
+#auth     { right: 60px; top: 360px; }
+
+/* ── SVG connection lines ── */
+.paths-svg {
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+  pointer-events: none;
+}
+.path-line {
+  fill: none; stroke: var(--border); stroke-width: 2.5;
+}
+.path-line.active {
+  stroke-width: 3.5;
+  transition: stroke 0.3s;
+}
+
+/* ── Message bubbles ── */
+.msg-bubble {
+  position: absolute; padding: 4px 12px; border-radius: 12px;
+  font-size: 0.68em; font-weight: 600; color: white;
+  white-space: nowrap; opacity: 0; z-index: 5;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.msg-bubble.visible { opacity: 1; }
+
+/* ── Cache box ── */
+.cache-box {
+  position: absolute; left: 215px; top: 310px;
+  width: 140px; padding: 6px 10px; border-radius: 8px;
+  border: 2px solid var(--cached); background: #EFF6FF;
+  font-size: 0.62em; text-align: center; color: var(--cached);
+  font-weight: 600; opacity: 0; transform: scale(0.85);
+  transition: opacity 0.5s, transform 0.5s;
+}
+.cache-box.visible { opacity: 1; transform: scale(1); }
+
+/* ── URL bar ── */
+.url-bar {
+  position: absolute; left: 10px; top: 145px;
+  width: 160px; padding: 6px 10px; border-radius: 8px;
+  border: 2px solid var(--border); background: white;
+  font-size: 0.7em; font-family: Consolas, monospace;
+  color: var(--text); opacity: 0;
+  transition: opacity 0.4s, border-color 0.3s, color 0.3s;
+}
+.url-bar.visible { opacity: 1; }
+.url-bar.resolved { border-color: var(--success); color: var(--success); }
+
+/* ── Status bar ── */
+.status-bar {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 52px;
+  background: var(--title);
+  display: flex; align-items: center; justify-content: center;
+}
+.status-text {
+  color: white; font-size: 0.82em; font-weight: 500; text-align: center;
+}
+.step-dots { display: flex; gap: 5px; position: absolute; left: 16px; }
+.step-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: rgba(255,255,255,0.2); transition: background 0.3s;
+}
+.step-dot.active { background: var(--resolver); }
+.step-dot.done { background: var(--success); }
+
+.phase-label {
+  position: absolute; right: 16px; bottom: 60px;
+  font-size: 0.65em; color: var(--muted); font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  opacity: 0; transition: opacity 0.4s;
+}
+.phase-label.visible { opacity: 1; }
+
+footer {
+  text-align: center; color: var(--muted); font-size: 0.7em;
+  padding: 10px; width: 100%;
+}
+
+@media (max-width: 750px) {
+  .stage { height: 520px; }
+  .entity { width: 80px; }
+  .entity-icon { width: 42px; height: 42px; font-size: 18px; }
+  .entity-label { font-size: 0.65em; }
+  #browser  { left: 10px; top: 190px; }
+  #resolver { left: 170px; top: 190px; }
+  #root { right: 20px; top: 30px; }
+  #tld  { right: 20px; top: 190px; }
+  #auth { right: 20px; top: 340px; }
+  .url-bar { width: 120px; font-size: 0.6em; left: 2px; }
+  .cache-box { left: 150px; width: 110px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header"><h1>🌐 Risoluzione DNS — Come si Risolve un Dominio</h1></div>
+
+<div class="stage">
+
+  <!-- URL bar -->
+  <div class="url-bar" id="urlBar">www.leonardo.com</div>
+
+  <!-- Entities -->
+  <div class="entity" id="browser">
+    <div class="entity-icon" style="background:var(--browser);">💻</div>
+    <div class="entity-label" style="color:var(--browser)">Browser</div>
+    <div class="entity-sub">Utente</div>
+  </div>
+
+  <div class="entity" id="resolver">
+    <div class="entity-icon" style="background:var(--resolver);">🔍</div>
+    <div class="entity-label" style="color:var(--resolver)">Resolver DNS</div>
+    <div class="entity-sub">8.8.8.8</div>
+  </div>
+
+  <div class="entity" id="root">
+    <div class="entity-icon" style="background:var(--root);">🌍</div>
+    <div class="entity-label" style="color:var(--root)">Root Server</div>
+    <div class="entity-sub">13 gruppi (A-M)</div>
+  </div>
+
+  <div class="entity" id="tld">
+    <div class="entity-icon" style="background:var(--tld);">📂</div>
+    <div class="entity-label" style="color:var(--tld)">TLD Server</div>
+    <div class="entity-sub">.com</div>
+  </div>
+
+  <div class="entity" id="auth">
+    <div class="entity-icon" style="background:var(--auth);">📋</div>
+    <div class="entity-label" style="color:var(--auth)">Authoritative NS</div>
+    <div class="entity-sub">ns1.leonardo.com</div>
+  </div>
+
+  <!-- SVG paths — all straight lines -->
+  <svg class="paths-svg" viewBox="0 0 920 560" preserveAspectRatio="xMidYMid meet">
+    <line id="pathBR"    class="path-line" x1="140" y1="227" x2="240" y2="227"/>
+    <line id="pathRRoot" class="path-line" x1="350" y1="220" x2="750" y2="67"/>
+    <line id="pathRTLD"  class="path-line" x1="350" y1="227" x2="750" y2="227"/>
+    <line id="pathRAuth" class="path-line" x1="350" y1="235" x2="750" y2="390"/>
+  </svg>
+
+  <!-- Message bubbles -->
+  <div class="msg-bubble" id="mb1" style="left:130px; top:180px; background:var(--browser);">www.leonardo.com = ?</div>
+
+  <div class="msg-bubble" id="mb2q" style="left:440px; top:100px; background:var(--resolver);">Chi gestisce .com?</div>
+  <div class="msg-bubble" id="mb2r" style="left:440px; top:130px; background:var(--root);">→ Chiedi ai TLD .com</div>
+
+  <div class="msg-bubble" id="mb3q" style="left:440px; top:190px; background:var(--resolver);">Chi gestisce leonardo.com?</div>
+  <div class="msg-bubble" id="mb3r" style="left:440px; top:220px; background:var(--tld);">→ Chiedi a ns1.leonardo.com</div>
+
+  <div class="msg-bubble" id="mb4q" style="left:420px; top:310px; background:var(--resolver);">IP di www.leonardo.com?</div>
+  <div class="msg-bubble" id="mb4r" style="left:420px; top:340px; background:var(--auth);">185.X.X.X (TTL: 3600s)</div>
+
+  <div class="msg-bubble" id="mb5" style="left:130px; top:265px; background:var(--success);">185.X.X.X ✓</div>
+
+  <!-- Cache box -->
+  <div class="cache-box" id="cacheBox">💾 Cache<br>leonardo.com → 185.X.X.X<br>TTL: 3600s (1 ora)</div>
+
+  <!-- Phase label -->
+  <div class="phase-label" id="phaseLabel"></div>
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <div class="step-dots">
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="status-text" id="statusText"></div>
+  </div>
+</div>
+
+<footer>Corso Cybersecurity — Leonardo SpA · Modulo 1</footer>
+
+<script>
+const STEP = 3400;
+
+function show(id) { document.getElementById(id).classList.add('visible'); }
+function hide(id) { document.getElementById(id).classList.remove('visible'); }
+function setStatus(t) { document.getElementById('statusText').textContent = t; }
+function setPhase(t) {
+  const el = document.getElementById('phaseLabel');
+  el.textContent = t; el.classList.add('visible');
+}
+function hidePhase() { document.getElementById('phaseLabel').classList.remove('visible'); }
+function glow(id) { document.getElementById(id).classList.add('glow'); }
+function unglow(id) { document.getElementById(id).classList.remove('glow'); }
+function dotActive(i) { document.querySelectorAll('.step-dot')[i].className = 'step-dot active'; }
+function dotDone(i) { document.querySelectorAll('.step-dot')[i].className = 'step-dot done'; }
+function dotsReset() { document.querySelectorAll('.step-dot').forEach(d => d.className = 'step-dot'); }
+
+function activatePath(id, color) {
+  const p = document.getElementById(id);
+  p.classList.add('active'); p.style.stroke = color;
+}
+function deactivatePath(id) {
+  const p = document.getElementById(id);
+  p.classList.remove('active'); p.style.stroke = '';
+}
+function resetPaths() {
+  ['pathBR','pathRRoot','pathRTLD','pathRAuth'].forEach(id => deactivatePath(id));
+}
+
+function resetAll() {
+  document.querySelectorAll('.msg-bubble').forEach(e => e.classList.remove('visible'));
+  document.getElementById('cacheBox').classList.remove('visible');
+  document.getElementById('urlBar').classList.remove('visible','resolved');
+  hidePhase(); resetPaths(); dotsReset(); setStatus('');
+  ['browser','resolver','root','tld','auth'].forEach(id => unglow(id));
+}
+
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function animate() {
+  resetAll();
+
+  // Step 0 — User types URL
+  dotActive(0);
+  setStatus("L'utente digita www.leonardo.com nel browser");
+  document.getElementById('urlBar').classList.add('visible');
+  glow('browser');
+  await wait(STEP);
+
+  // Step 1 — Browser → Resolver
+  dotDone(0); dotActive(1);
+  unglow('browser'); glow('resolver');
+  setStatus('① Il browser chiede al Resolver DNS: "qual è l\'IP?"');
+  setPhase('query ricorsiva');
+  activatePath('pathBR', 'var(--browser)');
+  show('mb1');
+  await wait(STEP);
+
+  // Step 2 — Resolver → Root → Resolver
+  dotDone(1); dotActive(2);
+  hide('mb1'); deactivatePath('pathBR');
+  unglow('resolver'); glow('root');
+  setStatus('② Il Resolver chiede al Root Server → "chiedi al TLD .com"');
+  activatePath('pathRRoot', 'var(--root)');
+  show('mb2q');
+  await wait(1550);
+  hide('mb2q');
+  show('mb2r');
+  await wait(STEP - 1550);
+
+  // Step 3 — Resolver → TLD → Resolver
+  dotDone(2); dotActive(3);
+  hide('mb2r'); deactivatePath('pathRRoot');
+  unglow('root'); glow('tld');
+  setStatus('③ Il Resolver chiede al TLD .com → "chiedi a ns1.leonardo.com"');
+  activatePath('pathRTLD', 'var(--tld)');
+  show('mb3q');
+  await wait(1550);
+  hide('mb3q');
+  show('mb3r');
+  await wait(STEP - 1550);
+
+  // Step 4 — Resolver → Auth → Resolver
+  dotDone(3); dotActive(4);
+  hide('mb3r'); deactivatePath('pathRTLD');
+  unglow('tld'); glow('auth');
+  setStatus('④ Il Resolver chiede all\'Authoritative NS → "185.X.X.X"');
+  setPhase('risposta autorevole');
+  activatePath('pathRAuth', 'var(--auth)');
+  show('mb4q');
+  await wait(1550);
+  hide('mb4q');
+  show('mb4r');
+  await wait(STEP - 1550);
+
+  // Step 5 — Cache + return
+  dotDone(4); dotActive(5);
+  hide('mb4r'); deactivatePath('pathRAuth');
+  unglow('auth'); glow('resolver');
+  setStatus('⑤ Il Resolver memorizza in cache (TTL) e restituisce l\'IP al browser');
+  setPhase('caching · TTL 3600s');
+  show('cacheBox');
+  await wait(1300);
+  activatePath('pathBR', 'var(--success)');
+  show('mb5');
+  await wait(STEP - 800);
+
+  // Step 6 — Done
+  dotDone(5); dotActive(6);
+  unglow('resolver'); glow('browser');
+  setStatus('✅ Risoluzione completata — il browser si connette a 185.X.X.X');
+  const urlBar = document.getElementById('urlBar');
+  urlBar.classList.add('resolved');
+  urlBar.textContent = 'www.leonardo.com → 185.X.X.X';
+  setPhase('la prossima volta → risposta dalla cache');
+  await wait(5800);
+
+  // Reset & loop
+  dotDone(6);
+  urlBar.textContent = 'www.leonardo.com';
+  resetAll();
+  await wait(2000);
+  animate();
+}
+
+window.addEventListener('load', () => setTimeout(animate, 800));
+</script>
+</body>
+</html>
