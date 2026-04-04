@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esercizi Compiti Blocco 2 — Preparati per G5</title>
+<style>
+:root{--accent:#0891B2;--accent2:#0077B6;--title:#0F4C75;--text:#1E293B;--muted:#64748B;--bg:#F8F9FA;--card:#FFFFFF;--border:#E2E8F0;--success:#059669;--success-bg:#F0FDF4;--success-border:#BBF7D0;--danger:#DC2626;--danger-bg:#FEF2F2;--danger-border:#FECACA;--warn:#D97706;--warn-bg:#FFFBEB;--warn-border:#FDE68A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Calibri,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:1rem;max-width:900px;margin:0 auto}
+header{background:var(--title);color:#fff;padding:1.5rem;border-radius:12px;margin-bottom:1.5rem}
+header h1{font-size:1.4rem;margin-bottom:.3rem}
+header p{color:#94A3B8;font-size:.9rem}
+.stats-bar{display:flex;gap:1rem;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;margin-bottom:1.5rem;font-size:.85rem}
+.stats-bar .stat{display:flex;align-items:center;gap:.3rem}
+.stats-bar .stat b{color:var(--accent)}
+.section-title{color:var(--title);font-size:1.1rem;font-weight:700;margin:1.5rem 0 .8rem;padding-bottom:.4rem;border-bottom:2px solid var(--accent)}
+.exercise{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:1rem;overflow:hidden}
+.ex-header{display:flex;justify-content:space-between;align-items:center;padding:.6rem 1rem;background:#F1F5F9}
+.ex-header h3{font-size:.95rem;color:var(--title)}
+.badge{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff}
+.badge.easy{background:var(--success)}.badge.medium{background:var(--warn)}.badge.hard{background:var(--danger)}
+.ex-body{padding:1rem}
+.ex-body p,.ex-body li{margin-bottom:.5rem;font-size:.9rem}
+.ex-body code{background:#E2E8F0;padding:1px 5px;border-radius:3px;font-family:Consolas,monospace;font-size:.85rem}
+input[type=text],select{border:1px solid var(--border);border-radius:5px;padding:6px 10px;font-size:.85rem;width:100%;max-width:350px;margin:4px 0}
+select{max-width:360px}
+.btn{display:inline-block;padding:6px 16px;border:none;border-radius:5px;cursor:pointer;font-size:.8rem;font-weight:600;margin:4px 4px 4px 0;color:#fff}
+.btn-check{background:var(--accent)}.btn-check:hover{background:var(--accent2)}
+.btn-reset{background:var(--muted)}.btn-reset:hover{background:#475569}
+.btn-hint{background:var(--warn)}.btn-hint:hover{background:#B45309}
+.feedback{margin-top:.5rem;padding:.5rem .8rem;border-radius:5px;font-size:.85rem;display:none}
+.feedback.correct{display:block;background:var(--success-bg);color:var(--success);border:1px solid var(--success-border)}
+.feedback.wrong{display:block;background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
+.hint{display:none;background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);padding:.5rem .8rem;border-radius:5px;margin-top:.5rem;font-size:.85rem}
+.completed{border-left:3px solid var(--success)}
+.failed{border-left:3px solid var(--danger)}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:2rem;padding:1rem}
+@media(max-width:600px){body{padding:.5rem}.stats-bar{flex-direction:column;gap:.3rem}input[type=text],select{max-width:100%}}
+</style>
+</head>
+<body>
+<header>
+<h1>Blocco 2 — Preparati per il Giorno 5</h1>
+<p>Microsegmentazione, SDN e Zero Trust — ~1 ora di svolgimento</p>
+</header>
+<div class="stats-bar">
+<div class="stat">Completati: <b id="done">0</b>/16</div>
+<div class="stat">Corretti: <b id="ok">0</b>/16</div>
+<div class="stat">Precisione: <b id="prec">—</b></div>
+</div>
+
+<!-- SEZIONE A: Limiti segmentazione tradizionale -->
+<div class="section-title">A — Limiti della Segmentazione Tradizionale (4 esercizi)</div>
+
+<div class="exercise" id="ex1"><div class="ex-header"><h3>1 — VLAN e sicurezza</h3><span class="badge easy">Facile</span></div><div class="ex-body">
+<p>Nel G1 abbiamo studiato la segmentazione con VLAN. Le VLAN operano a quale livello del modello TCP/IP?</p>
+<select id="f1"><option value="">— Scegli —</option><option value="a">Layer 1 (Fisico)</option><option value="b">Layer 2 (Data Link)</option><option value="c">Layer 3 (Network)</option><option value="d">Layer 4 (Transport)</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f1','b','Corretto! Le VLAN (802.1Q) operano a Layer 2 — separano i domini di broadcast sullo switch.','No. Le VLAN operano a Layer 2 (Data Link). Usano il tag 802.1Q nell\'header Ethernet per separare il traffico a livello di switch.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex1',['f1'])">Reset</button>
+<div class="feedback" id="f1_fb"></div></div></div>
+
+<div class="exercise" id="ex2"><div class="ex-header"><h3>2 — Problema della rete piatta</h3><span class="badge easy">Facile</span></div><div class="ex-body">
+<p>In una rete piatta (senza segmentazione), un attaccante che compromette un PC può muoversi liberamente. Come si chiama questa tecnica?</p>
+<input type="text" id="f2" placeholder="Due parole in inglese">
+<br><button class="btn btn-check" onclick="chk('f2',['lateral movement','movimento laterale'],'Lateral movement — l\'attaccante si muove \"lateralmente\" tra i sistemi sulla stessa rete')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex2',['f2'])">Reset</button>
+<div class="feedback" id="f2_fb"></div></div></div>
+
+<div class="exercise" id="ex3"><div class="ex-header"><h3>3 — Limiti delle VLAN</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>Un'azienda ha 500 server in un datacenter, tutti nella stessa VLAN "Server". Un attaccante compromette un server web e ora può raggiungere tutti gli altri 499. Perché la VLAN non basta?</p>
+<select id="f3"><option value="">— Scegli —</option><option value="a">Le VLAN non supportano 500 server</option><option value="b">Le VLAN separano segmenti diversi ma NON il traffico tra macchine nella stessa VLAN</option><option value="c">Le VLAN non funzionano nei datacenter</option><option value="d">Le VLAN richiedono un firewall per ogni server</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f3','b','Corretto! Il traffico tra macchine nella stessa VLAN (east-west) non attraversa il firewall — la VLAN non protegge server da server.','No. Le VLAN separano segmenti diversi (es: VLAN utenti vs VLAN server), ma all\'interno della stessa VLAN il traffico è libero. Servono politiche più granulari: la microsegmentazione.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex3',['f3'])">Reset</button>
+<div class="feedback" id="f3_fb"></div></div></div>
+
+<div class="exercise" id="ex4"><div class="ex-header"><h3>4 — Traffico north-south vs east-west</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>Il traffico tra un client interno e Internet si chiama "north-south". Come si chiama il traffico tra due server nello stesso datacenter?</p>
+<input type="text" id="f4" placeholder="Due parole in inglese">
+<br><button class="btn btn-check" onclick="chk('f4',['east-west','east west','est-ovest'],'East-west — il traffico \"laterale\" tra macchine interne, spesso invisibile al firewall perimetrale')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex4',['f4'])">Reset</button>
+<button class="btn btn-hint" onclick="toggleHint('h4')">Suggerimento</button>
+<div class="hint" id="h4">Se il traffico client→Internet va "da nord a sud" (verticale), il traffico server→server va in quale direzione?</div>
+<div class="feedback" id="f4_fb"></div></div></div>
+
+<!-- SEZIONE B: Microsegmentazione -->
+<div class="section-title">B — Microsegmentazione (5 esercizi)</div>
+
+<div class="exercise" id="ex5"><div class="ex-header"><h3>5 — Definizione</h3><span class="badge easy">Facile</span></div><div class="ex-body">
+<p>La microsegmentazione crea politiche di sicurezza a livello di singolo workload (server, container, VM). È più granulare delle VLAN?</p>
+<select id="f5"><option value="">— Scegli —</option><option value="si">Sì, molto più granulare</option><option value="no">No, è uguale</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f5','si','Corretto! La microsegmentazione opera a livello di singola VM/container, mentre le VLAN operano a livello di segmento di rete.','No. La microsegmentazione è MOLTO più granulare: può definire regole tra singole VM o container, non solo tra segmenti di rete.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex5',['f5'])">Reset</button>
+<div class="feedback" id="f5_fb"></div></div></div>
+
+<div class="exercise" id="ex6"><div class="ex-header"><h3>6 — Dove si applica</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>La microsegmentazione si applica tipicamente tramite firewall software sull'hypervisor o sull'host, non sullo switch fisico. Perché?</p>
+<select id="f6"><option value="">— Scegli —</option><option value="a">Perché gli switch non supportano le regole</option><option value="b">Perché il traffico east-west tra VM sullo stesso host non passa dallo switch fisico</option><option value="c">Perché i firewall software sono più veloci</option><option value="d">Perché è più economico</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f6','b','Corretto! Due VM sullo stesso hypervisor comunicano tramite lo switch virtuale — il traffico non esce mai dall\'host e lo switch fisico non lo vede.','No. Il traffico tra VM sullo stesso hypervisor passa dallo switch virtuale interno e non raggiunge mai lo switch fisico. Per controllarlo, servono firewall/policy a livello di hypervisor.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex6',['f6'])">Reset</button>
+<div class="feedback" id="f6_fb"></div></div></div>
+
+<div class="exercise" id="ex7"><div class="ex-header"><h3>7 — Scenario microsegmentazione</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>Un datacenter ha 3 tier: web server, application server, database. Con la microsegmentazione, quale regola ha più senso?</p>
+<select id="f7"><option value="">— Scegli —</option><option value="a">Web può parlare con DB direttamente</option><option value="b">Web può parlare solo con App, App può parlare solo con DB</option><option value="c">Tutti possono parlare con tutti</option><option value="d">Solo il DB può iniziare connessioni</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f7','b','Corretto! Il pattern classico è: Web→App→DB. Il web server non dovrebbe mai raggiungere il database direttamente — passa per l\'application server.','No. La regola corretta è il flusso a cascata: Web→App→DB. Ogni tier parla solo con quello adiacente. Se il web server è compromesso, non può raggiungere il DB direttamente.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex7',['f7'])">Reset</button>
+<div class="feedback" id="f7_fb"></div></div></div>
+
+<div class="exercise" id="ex8"><div class="ex-header"><h3>8 — Strumenti</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>Quale di questi è uno strumento di microsegmentazione usato nei datacenter VMware?</p>
+<select id="f8"><option value="">— Scegli —</option><option value="a">pfSense</option><option value="b">VMware NSX</option><option value="c">Wireshark</option><option value="d">Snort</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f8','b','Corretto! VMware NSX è la piattaforma di microsegmentazione e SDN per datacenter VMware. Implementa firewall distribuito a livello di ogni VM.','No. VMware NSX è la piattaforma di microsegmentazione più usata nei datacenter VMware. Implementa un firewall distribuito che applica le policy direttamente sull\'hypervisor, per ogni singola VM.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex8',['f8'])">Reset</button>
+<div class="feedback" id="f8_fb"></div></div></div>
+
+<div class="exercise" id="ex9"><div class="ex-header"><h3>9 — Vantaggi</h3><span class="badge easy">Facile</span></div><div class="ex-body">
+<p>Qual è il principale vantaggio della microsegmentazione rispetto alla segmentazione tradizionale con VLAN?</p>
+<select id="f9"><option value="">— Scegli —</option><option value="a">È gratis</option><option value="b">Riduce il blast radius di un attacco controllando il traffico east-west</option><option value="c">Elimina la necessità di firewall</option><option value="d">Rende la rete più veloce</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f9','b','Corretto! La microsegmentazione riduce il blast radius: se un server è compromesso, non può raggiungere gli altri anche se sono nello stesso segmento.','No. Il vantaggio principale è la riduzione del blast radius: controllando il traffico east-west (tra server/VM), un attacco a un singolo workload non si propaga agli altri.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex9',['f9'])">Reset</button>
+<div class="feedback" id="f9_fb"></div></div></div>
+
+<!-- SEZIONE C: SDN -->
+<div class="section-title">C — Software Defined Networking (4 esercizi)</div>
+
+<div class="exercise" id="ex10"><div class="ex-header"><h3>10 — Concetto SDN</h3><span class="badge easy">Facile</span></div><div class="ex-body">
+<p>SDN separa due "piani" del networking. Quali sono?</p>
+<select id="f10"><option value="">— Scegli —</option><option value="a">Piano fisico e piano logico</option><option value="b">Control plane (decisioni) e Data plane (inoltro pacchetti)</option><option value="c">Piano pubblico e piano privato</option><option value="d">Piano di rete e piano applicativo</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f10','b','Corretto! SDN separa il control plane (dove si decide dove mandare il traffico) dal data plane (dove i pacchetti vengono effettivamente inoltrati).','No. SDN separa il control plane (intelligenza, decisioni di routing) dal data plane (inoltro fisico dei pacchetti). In una rete tradizionale, ogni switch ha entrambi; in SDN, il control plane è centralizzato.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex10',['f10'])">Reset</button>
+<div class="feedback" id="f10_fb"></div></div></div>
+
+<div class="exercise" id="ex11"><div class="ex-header"><h3>11 — Controller SDN</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>In una rete SDN, chi prende le decisioni di routing/forwarding?</p>
+<select id="f11"><option value="">— Scegli —</option><option value="a">Ogni switch individualmente</option><option value="b">Il controller SDN centralizzato</option><option value="c">Il firewall perimetrale</option><option value="d">Il DNS server</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f11','b','Corretto! Il controller SDN è il \"cervello\" centralizzato che programma gli switch (che diventano semplici data plane).','No. Il controller SDN centralizzato prende tutte le decisioni di forwarding e programma gli switch, che diventano dispositivi \"stupidi\" che eseguono le istruzioni del controller.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex11',['f11'])">Reset</button>
+<div class="feedback" id="f11_fb"></div></div></div>
+
+<div class="exercise" id="ex12"><div class="ex-header"><h3>12 — OpenFlow</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>Come si chiama il protocollo standard usato tra il controller SDN e gli switch per programmare le regole di forwarding?</p>
+<input type="text" id="f12" placeholder="Nome del protocollo">
+<br><button class="btn btn-check" onclick="chk('f12',['openflow','open flow'],'OpenFlow — il protocollo standard (southbound API) tra controller e switch')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex12',['f12'])">Reset</button>
+<button class="btn btn-hint" onclick="toggleHint('h12')">Suggerimento</button>
+<div class="hint" id="h12">Il nome suggerisce qualcosa di "aperto" e relativo al "flusso" dei dati...</div>
+<div class="feedback" id="f12_fb"></div></div></div>
+
+<div class="exercise" id="ex13"><div class="ex-header"><h3>13 — SDN e sicurezza</h3><span class="badge hard">Difficile</span></div><div class="ex-body">
+<p>SDN può migliorare la sicurezza perché permette di cambiare le regole di rete in tempo reale da un punto centrale. Quale rischio introduce però il controller centralizzato?</p>
+<select id="f13"><option value="">— Scegli —</option><option value="a">I pacchetti sono più lenti</option><option value="b">Single point of failure: se il controller è compromesso, l'intera rete è controllata dall'attaccante</option><option value="c">Le VLAN smettono di funzionare</option><option value="d">I switch devono essere sostituiti</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f13','b','Corretto! Il controller SDN è un single point of failure e un bersaglio di alto valore. Se compromesso, l\'attaccante controlla l\'intera rete.','No. Il controller centralizzato è un single point of failure: se viene compromesso o va offline, l\'attaccante potrebbe controllare tutte le regole di rete. Per questo in produzione si usano controller ridondati e hardened.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex13',['f13'])">Reset</button>
+<div class="feedback" id="f13_fb"></div></div></div>
+
+<!-- SEZIONE D: Zero Trust -->
+<div class="section-title">D — Zero Trust Architecture (3 esercizi)</div>
+
+<div class="exercise" id="ex14"><div class="ex-header"><h3>14 — Principio Zero Trust</h3><span class="badge easy">Facile</span></div><div class="ex-body">
+<p>Qual è il motto della Zero Trust Architecture?</p>
+<input type="text" id="f14" placeholder="Frase in inglese">
+<br><button class="btn btn-check" onclick="chk('f14',['never trust, always verify','never trust always verify','mai fidarsi, sempre verificare'],'\"Never trust, always verify\" — non fidarti mai, verifica sempre')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex14',['f14'])">Reset</button>
+<div class="feedback" id="f14_fb"></div></div></div>
+
+<div class="exercise" id="ex15"><div class="ex-header"><h3>15 — Differenza dal perimetrale</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>Nella sicurezza perimetrale tradizionale, il traffico interno è considerato "trusted". Nel modello Zero Trust, cosa cambia?</p>
+<select id="f15"><option value="">— Scegli —</option><option value="a">Anche il traffico interno è considerato non fidato e deve essere verificato</option><option value="b">Si elimina il firewall perimetrale</option><option value="c">Si cripta solo il traffico esterno</option><option value="d">Si usa solo VPN per tutto il traffico</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f15','a','Corretto! Zero Trust elimina il concetto di \"rete trusted\": ogni richiesta viene autenticata e autorizzata, indipendentemente da dove proviene.','No. Zero Trust significa che NESSUN traffico è automaticamente trusted — anche una richiesta dalla LAN interna deve essere autenticata e autorizzata. Non ci si fida della posizione di rete.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex15',['f15'])">Reset</button>
+<div class="feedback" id="f15_fb"></div></div></div>
+
+<div class="exercise" id="ex16"><div class="ex-header"><h3>16 — Pilastri Zero Trust</h3><span class="badge hard">Difficile</span></div><div class="ex-body">
+<p>Quale di questi NON è un pilastro del modello Zero Trust?</p>
+<select id="f16"><option value="">— Scegli —</option><option value="a">Verifica esplicita (autenticazione continua)</option><option value="b">Accesso con privilegio minimo (least privilege)</option><option value="c">Fiducia basata sulla posizione di rete (trusted network)</option><option value="d">Assume la violazione (assume breach)</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f16','c','Corretto! La \"trusted network\" è esattamente ciò che Zero Trust ELIMINA. I pilastri sono: verifica esplicita, least privilege, assume breach.','No. \"Trusted network\" è il concetto opposto a Zero Trust. I tre pilastri sono: 1) Verifica esplicita, 2) Privilegio minimo, 3) Assume breach (presumi che la rete sia già compromessa).')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex16',['f16'])">Reset</button>
+<div class="feedback" id="f16_fb"></div></div></div>
+
+<footer>Corso Cybersecurity — Leonardo SpA | Modulo 1 | Compiti G4 — Blocco 2 "Preparati per G5"</footer>
+
+<script>
+let total=16,done=0,correct=0;
+function updateStats(){document.getElementById('done').textContent=done;document.getElementById('ok').textContent=correct;document.getElementById('prec').textContent=done>0?Math.round(correct/done*100)+'%':'—'}
+function markEx(id,ok){const el=document.getElementById(id);el.classList.remove('completed','failed');el.classList.add(ok?'completed':'failed');done++;if(ok)correct++;updateStats()}
+function chkSel(fid,val,msgOk,msgNo){const sel=document.getElementById(fid);const fb=document.getElementById(fid+'_fb');if(!sel.value)return;const ok=sel.value===val;fb.className='feedback '+(ok?'correct':'wrong');fb.textContent=ok?'✓ '+msgOk:'✗ '+msgNo;fb.style.display='block';sel.disabled=true;markEx(sel.closest('.exercise').id,ok)}
+function chk(fid,answers,display){const inp=document.getElementById(fid);const fb=document.getElementById(fid+'_fb');const v=inp.value.trim().toLowerCase().replace(/\s+/g,' ');if(!v)return;const ok=answers.map(a=>a.toLowerCase()).includes(v);fb.className='feedback '+(ok?'correct':'wrong');fb.textContent=ok?'✓ Corretto! '+display:'✗ Sbagliato. La risposta corretta è: '+display;fb.style.display='block';inp.disabled=true;markEx(inp.closest('.exercise').id,ok)}
+function resetEx(exId,fields){const el=document.getElementById(exId);el.classList.remove('completed','failed');fields.forEach(f=>{const e=document.getElementById(f);if(e.tagName==='SELECT'){e.selectedIndex=0;e.disabled=false}else{e.value='';e.disabled=false}});const fb=el.querySelector('.feedback');if(fb){fb.style.display='none';fb.className='feedback'}const h=el.querySelector('.hint');if(h)h.style.display='none';done=Math.max(0,done-1);updateStats()}
+function toggleHint(id){const h=document.getElementById(id);h.style.display=h.style.display==='none'||!h.style.display?'block':'none'}
+</script>
+</body>
+</html>

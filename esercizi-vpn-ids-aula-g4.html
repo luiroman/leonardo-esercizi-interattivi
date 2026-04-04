@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esercizi Aula G4 — VPN, IDS/IPS e Sicurezza Perimetrale</title>
+<style>
+:root{--accent:#0891B2;--accent2:#0077B6;--title:#0F4C75;--text:#1E293B;--muted:#64748B;--bg:#F8F9FA;--card:#FFFFFF;--border:#E2E8F0;--success:#059669;--success-bg:#F0FDF4;--success-border:#BBF7D0;--danger:#DC2626;--danger-bg:#FEF2F2;--danger-border:#FECACA;--warn:#D97706;--warn-bg:#FFFBEB;--warn-border:#FDE68A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Calibri,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:1rem;max-width:900px;margin:0 auto}
+header{background:var(--title);color:#fff;padding:1.5rem;border-radius:12px;margin-bottom:1.5rem}
+header h1{font-size:1.5rem;margin-bottom:.3rem}
+header p{color:#94A3B8;font-size:.9rem}
+.stats-bar{display:flex;gap:1rem;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;margin-bottom:1.5rem;font-size:.85rem}
+.stats-bar .stat{display:flex;align-items:center;gap:.3rem}
+.stats-bar .stat b{color:var(--accent)}
+.section-title{color:var(--title);font-size:1.15rem;font-weight:700;margin:1.5rem 0 .8rem;padding-bottom:.4rem;border-bottom:2px solid var(--accent)}
+.exercise{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:1rem;overflow:hidden}
+.ex-header{display:flex;justify-content:space-between;align-items:center;padding:.6rem 1rem;background:#F1F5F9}
+.ex-header h3{font-size:.95rem;color:var(--title)}
+.badge{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff}
+.badge.easy{background:var(--success)}.badge.medium{background:var(--warn)}.badge.hard{background:var(--danger)}
+.ex-body{padding:1rem}
+.ex-body p,.ex-body li{margin-bottom:.5rem;font-size:.9rem}
+.ex-body code{background:#E2E8F0;padding:1px 5px;border-radius:3px;font-family:Consolas,monospace;font-size:.85rem}
+.ex-body pre{background:#1E293B;color:#A5D6A7;padding:.8rem;border-radius:6px;font-family:Consolas,monospace;font-size:.8rem;overflow-x:auto;margin:.5rem 0}
+input[type=text],select{border:1px solid var(--border);border-radius:5px;padding:6px 10px;font-size:.85rem;width:100%;max-width:350px;margin:4px 0}
+select{max-width:360px}
+.btn{display:inline-block;padding:6px 16px;border:none;border-radius:5px;cursor:pointer;font-size:.8rem;font-weight:600;margin:4px 4px 4px 0;color:#fff}
+.btn-check{background:var(--accent)}.btn-check:hover{background:var(--accent2)}
+.btn-reset{background:var(--muted)}.btn-reset:hover{background:#475569}
+.btn-hint{background:var(--warn)}.btn-hint:hover{background:#B45309}
+.feedback{margin-top:.5rem;padding:.5rem .8rem;border-radius:5px;font-size:.85rem;display:none}
+.feedback.correct{display:block;background:var(--success-bg);color:var(--success);border:1px solid var(--success-border)}
+.feedback.wrong{display:block;background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
+.hint{display:none;background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);padding:.5rem .8rem;border-radius:5px;margin-top:.5rem;font-size:.85rem}
+.completed{border-left:3px solid var(--success)}
+.failed{border-left:3px solid var(--danger)}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:2rem;padding:1rem}
+@media(max-width:600px){body{padding:.5rem}.stats-bar{flex-direction:column;gap:.3rem}input[type=text],select{max-width:100%}}
+</style>
+</head>
+<body>
+<header>
+<h1>Esercizi Aula — Giorno 4</h1>
+<p>VPN, IDS/IPS e Sicurezza Perimetrale — 17 aprile 2026</p>
+</header>
+
+<div class="stats-bar">
+<div class="stat">Completati: <b id="done">0</b>/12</div>
+<div class="stat">Corretti: <b id="ok">0</b>/12</div>
+<div class="stat">Precisione: <b id="prec">—</b></div>
+</div>
+
+<!-- ========== SEZIONE A: VPN ========== -->
+<div class="section-title">A — VPN: OpenVPN e IPSec</div>
+
+<div class="exercise" id="ex1">
+<div class="ex-header"><h3>Esercizio 1 — Tipo di VPN</h3><span class="badge easy">Facile</span></div>
+<div class="ex-body">
+<p>Un'azienda vuole collegare la sede di Roma con la sede di Milano in modo permanente, con alto throughput per applicativi SAP.</p>
+<p>Quale tipo di VPN è più appropriato?</p>
+<select id="f1"><option value="">— Scegli —</option><option value="ra">Remote Access</option><option value="s2s">Site-to-Site</option><option value="mesh">Full Mesh</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f1','s2s','Corretto! Site-to-Site è per collegamento permanente tra sedi.','No. Per collegare due sedi in modo permanente si usa Site-to-Site, non Remote Access.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex1',['f1'])">Reset</button>
+<div class="feedback" id="f1_fb"></div>
+</div></div>
+
+<div class="exercise" id="ex2">
+<div class="ex-header"><h3>Esercizio 2 — Protocollo VPN</h3><span class="badge easy">Facile</span></div>
+<div class="ex-body">
+<p>Per la VPN site-to-site Roma↔Milano dell'esercizio precedente, quale protocollo è più appropriato?</p>
+<select id="f2"><option value="">— Scegli —</option><option value="openvpn">OpenVPN</option><option value="ipsec">IPSec (IKEv2)</option><option value="wireguard">WireGuard</option><option value="pptp">PPTP</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f2','ipsec','Corretto! IPSec è lo standard per S2S: interoperabile, hardware accelerato, supportato da tutti i vendor.','No. Per site-to-site enterprise, IPSec (IKEv2) è lo standard: interoperabile tra vendor diversi e con accelerazione hardware.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex2',['f2'])">Reset</button>
+<div class="feedback" id="f2_fb"></div>
+</div></div>
+
+<div class="exercise" id="ex3">
+<div class="ex-header"><h3>Esercizio 3 — Componenti OpenVPN</h3><span class="badge medium">Medio</span></div>
+<div class="ex-body">
+<p>Metti in ordine i componenti necessari per configurare OpenVPN Remote Access su pfSense. Quale si crea per <b>primo</b>?</p>
+<select id="f3"><option value="">— Scegli —</option><option value="server">Server OpenVPN</option><option value="ca">Certificate Authority (CA)</option><option value="regole">Regole firewall</option><option value="export">File .ovpn export</option><option value="cert">Certificato server</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f3','ca','Corretto! La CA è il primo passo: firma tutti gli altri certificati (server e client).','No. Il primo passo è creare la Certificate Authority (CA), perché firma tutti i certificati successivi.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex3',['f3'])">Reset</button>
+<div class="feedback" id="f3_fb"></div>
+</div></div>
+
+<div class="exercise" id="ex4">
+<div class="ex-header"><h3>Esercizio 4 — Tunnel Network</h3><span class="badge medium">Medio</span></div>
+<div class="ex-body">
+<p>La LAN di pfSense è <code>10.0.1.0/24</code>. Stai configurando il server OpenVPN. Quale di queste è una buona scelta per la <b>Tunnel Network</b>?</p>
+<select id="f4"><option value="">— Scegli —</option><option value="a">10.0.1.0/24</option><option value="b">10.0.8.0/24</option><option value="c">0.0.0.0/0</option><option value="d">192.168.1.0/24</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f4','b','Corretto! 10.0.8.0/24 è diversa dalla LAN (10.0.1.0/24) — evita conflitti IP.','No. La tunnel network DEVE essere diversa dalla LAN. 10.0.1.0/24 crea conflitto, 0.0.0.0/0 non è una rete valida. La scelta giusta è 10.0.8.0/24.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex4',['f4'])">Reset</button>
+<button class="btn btn-hint" onclick="toggleHint('h4')">Suggerimento</button>
+<div class="hint" id="h4">La tunnel network è la rete dedicata ai client VPN. Se è uguale alla LAN, si crea un conflitto di routing.</div>
+<div class="feedback" id="f4_fb"></div>
+</div></div>
+
+<div class="exercise" id="ex5">
+<div class="ex-header"><h3>Esercizio 5 — Troubleshooting VPN</h3><span class="badge medium">Medio</span></div>
+<div class="ex-body">
+<p>Un utente VPN riesce a fare ping al gateway del tunnel (<code>10.0.8.1</code>) ma NON riesce a raggiungere la LAN (<code>10.0.1.0/24</code>). Quale è la causa più probabile?</p>
+<select id="f5"><option value="">— Scegli —</option><option value="a">Certificato scaduto</option><option value="b">Password errata</option><option value="c">Manca "Local Network" nella config server o regola firewall OpenVPN</option><option value="d">Porta 1194 bloccata</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f5','c','Corretto! Se il tunnel funziona ma la LAN no, manca il routing verso la LAN (Local Network) o la regola che permette il traffico dall\'interfaccia OpenVPN alla LAN.','No. Se il ping al tunnel funziona, la connessione VPN è stabilita (certificati e password sono OK, porta non bloccata). Il problema è il routing: manca \"Local Network\" nella configurazione server o la regola firewall sull\'interfaccia OpenVPN.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex5',['f5'])">Reset</button>
+<div class="feedback" id="f5_fb"></div>
+</div></div>
+
+<!-- ========== SEZIONE B: IPSec e WireGuard ========== -->
+<div class="section-title">B — IPSec e WireGuard</div>
+
+<div class="exercise" id="ex6">
+<div class="ex-header"><h3>Esercizio 6 — Fasi IPSec</h3><span class="badge medium">Medio</span></div>
+<div class="ex-body">
+<p>Nella negoziazione IPSec, cosa viene stabilito nella <b>Fase 1 (IKE SA)</b>?</p>
+<select id="f6"><option value="">— Scegli —</option><option value="a">Il tunnel dati con ESP e le reti protette</option><option value="b">Un canale sicuro tra i due firewall per negoziare i parametri del tunnel</option><option value="c">Le regole firewall per il traffico VPN</option><option value="d">I certificati client per ogni utente</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f6','b','Corretto! La Fase 1 stabilisce un canale sicuro (IKE SA) tra i due peer usando DH e autenticazione reciproca. La Fase 2 negozia il tunnel dati.','No. La Fase 1 stabilisce un canale sicuro per la negoziazione (autenticazione reciproca + Diffie-Hellman). Il tunnel dati con ESP e le reti protette vengono negoziati nella Fase 2.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex6',['f6'])">Reset</button>
+<div class="feedback" id="f6_fb"></div>
+</div></div>
+
+<div class="exercise" id="ex7">
+<div class="ex-header"><h3>Esercizio 7 — ESP vs AH</h3><span class="badge easy">Facile</span></div>
+<div class="ex-body">
+<p>Perché AH (Authentication Header) non viene praticamente mai usato in produzione? (Seleziona la ragione principale)</p>
+<select id="f7"><option value="">— Scegli —</option><option value="a">È troppo lento</option><option value="b">Non cripta il payload e non funziona con NAT</option><option value="c">Non è supportato da nessun vendor</option><option value="d">Richiede certificati speciali</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f7','b','Corretto! AH fornisce solo integrità (no crittografia) e non funziona con NAT perché il NAT modifica gli header IP, invalidando l\'hash di AH.','No. AH non è usato perché: 1) non cripta i dati (solo integrità), 2) non funziona con NAT (il NAT modifica gli header, rompendo l\'hash). ESP fa tutto quello che fa AH + crittografia + compatibilità NAT.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex7',['f7'])">Reset</button>
+<div class="feedback" id="f7_fb"></div>
+</div></div>
+
+<!-- ========== SEZIONE C: IDS/IPS ========== -->
+<div class="section-title">C — IDS/IPS</div>
+
+<div class="exercise" id="ex8">
+<div class="ex-header"><h3>Esercizio 8 — IDS vs IPS</h3><span class="badge easy">Facile</span></div>
+<div class="ex-body">
+<p>In pfSense con Snort, quale opzione trasforma l'IDS in IPS?</p>
+<select id="f8"><option value="">— Scegli —</option><option value="a">Attivare "Send Alerts to System Log"</option><option value="b">Attivare "Block Offenders"</option><option value="c">Selezionare più categorie di regole</option><option value="d">Cambiare l'interfaccia da LAN a WAN</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f8','b','Corretto! \"Block Offenders\" fa passare Snort da modalità IDS (solo alert) a IPS (blocco automatico degli IP sorgente).','No. Il toggle IDS→IPS in pfSense/Snort è \"Block Offenders\": se attivato, Snort blocca automaticamente l\'IP sorgente dell\'alert.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex8',['f8'])">Reset</button>
+<div class="feedback" id="f8_fb"></div>
+</div></div>
+
+<div class="exercise" id="ex9">
+<div class="ex-header"><h3>Esercizio 9 — Lettura regola Snort</h3><span class="badge hard">Difficile</span></div>
+<div class="ex-body">
+<p>Analizza questa regola Snort:</p>
+<pre>alert tcp $EXTERNAL_NET any -> $HOME_NET 443 (msg:"MALWARE-CNC Trojan beacon"; flow:to_server,established; content:"GET /update.php?id="; sid:2024001; rev:3;)</pre>
+<p>Cosa cerca questa regola?</p>
+<select id="f9"><option value="">— Scegli —</option><option value="a">Traffico DNS sospetto verso la porta 443</option><option value="b">Una richiesta HTTP GET specifica che sembra un beacon di un trojan verso un server C2</option><option value="c">Un attacco di tipo SQL injection sulla porta 443</option><option value="d">Un tentativo di brute force su HTTPS</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f9','b','Corretto! La regola cerca la stringa \"GET /update.php?id=\" nel traffico TCP verso la porta 443 — tipico pattern di un trojan che \"chiama casa\" (beacon C2).','No. La regola cerca content:\"GET /update.php?id=\" su TCP porta 443 — è il pattern di un trojan che invia beacon periodici a un server Command & Control (C2). Il msg conferma: \"MALWARE-CNC Trojan beacon\".')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex9',['f9'])">Reset</button>
+<button class="btn btn-hint" onclick="toggleHint('h9')">Suggerimento</button>
+<div class="hint" id="h9">Leggi il campo <code>msg</code> per capire cosa rileva. <code>content</code> è la stringa cercata nel payload. CNC = Command and Control.</div>
+<div class="feedback" id="f9_fb"></div>
+</div></div>
+
+<div class="exercise" id="ex10">
+<div class="ex-header"><h3>Esercizio 10 — Falsi positivi</h3><span class="badge medium">Medio</span></div>
+<div class="ex-body">
+<p>Il backup server (<code>10.0.1.50</code>) genera centinaia di alert "port scan" ogni notte perché scansiona le porte dei server per verificarne la disponibilità. Quale strategia di tuning è più appropriata?</p>
+<select id="f10"><option value="">— Scegli —</option><option value="a">Disattivare tutte le regole di scan</option><option value="b">Suppress: silenziare l'alert solo per l'IP 10.0.1.50</option><option value="c">Disattivare Snort di notte</option><option value="d">Passare da IDS a IPS per bloccare il backup</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f10','b','Corretto! Suppress è la strategia giusta: silenzia l\'alert per un IP specifico (il backup server) senza disattivare la regola per tutti gli altri.','No. La soluzione è suppress: silenziare l\'alert solo per l\'IP del backup server (10.0.1.50). Disattivare tutte le regole di scan sarebbe eccessivo (non rileveremmo scan malevoli). Disattivare Snort di notte lascia la rete scoperta.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex10',['f10'])">Reset</button>
+<div class="feedback" id="f10_fb"></div>
+</div></div>
+
+<!-- ========== SEZIONE D: Sicurezza Perimetrale ========== -->
+<div class="section-title">D — Sicurezza Perimetrale</div>
+
+<div class="exercise" id="ex11">
+<div class="ex-header"><h3>Esercizio 11 — DMZ Dual Firewall</h3><span class="badge medium">Medio</span></div>
+<div class="ex-body">
+<p>In una DMZ con doppio firewall, perché si usano vendor diversi (es: Palo Alto esterno + Fortinet interno)?</p>
+<select id="f11"><option value="">— Scegli —</option><option value="a">Perché costano meno se si comprano da vendor diversi</option><option value="b">Perché un singolo CVE non compromette entrambi i livelli (defense diversity)</option><option value="c">Perché i firewall di vendor diversi hanno interfacce più belle</option><option value="d">Perché è obbligatorio per legge in Italia</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f11','b','Corretto! La defense diversity fa sì che una singola vulnerabilità (CVE) in un vendor non comprometta entrambi i firewall.','No. La ragione è la defense diversity: se un attaccante trova un CVE nel firewall esterno (vendor A), il firewall interno (vendor B) non ha la stessa vulnerabilità.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex11',['f11'])">Reset</button>
+<div class="feedback" id="f11_fb"></div>
+</div></div>
+
+<div class="exercise" id="ex12">
+<div class="ex-header"><h3>Esercizio 12 — Hardening Firewall</h3><span class="badge easy">Facile</span></div>
+<div class="ex-body">
+<p>Quale di queste azioni di hardening è la <b>più urgente</b> dopo aver installato pfSense?</p>
+<select id="f12"><option value="">— Scegli —</option><option value="a">Installare Snort</option><option value="b">Configurare NTP</option><option value="c">Cambiare la password di default (admin/pfsense)</option><option value="d">Abilitare UPnP</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f12','c','Corretto! Cambiare le credenziali di default è sempre la prima azione. Le credenziali default sono note e ricercabili su Shodan.','No. La prima azione è SEMPRE cambiare la password di default. admin/pfsense è nota a tutti e Shodan trova migliaia di firewall con credenziali default accessibili da Internet.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex12',['f12'])">Reset</button>
+<div class="feedback" id="f12_fb"></div>
+</div></div>
+
+<footer>Corso Cybersecurity — Leonardo SpA | Modulo 1 | Giorno 4 — Esercizi Aula</footer>
+
+<script>
+let total=12,done=0,correct=0;
+function updateStats(){document.getElementById('done').textContent=done;document.getElementById('ok').textContent=correct;document.getElementById('prec').textContent=done>0?Math.round(correct/done*100)+'%':'—'}
+function markEx(id,ok){const el=document.getElementById(id);el.classList.remove('completed','failed');el.classList.add(ok?'completed':'failed');done++;if(ok)correct++;updateStats()}
+function chkSel(fid,val,msgOk,msgNo){const sel=document.getElementById(fid);const fb=document.getElementById(fid+'_fb');if(!sel.value)return;const ok=sel.value===val;fb.className='feedback '+(ok?'correct':'wrong');fb.textContent=ok?'✓ '+msgOk:'✗ '+msgNo;fb.style.display='block';sel.disabled=true;const ex=sel.closest('.exercise');markEx(ex.id,ok)}
+function chk(fid,answers,display){const inp=document.getElementById(fid);const fb=document.getElementById(fid+'_fb');const v=inp.value.trim().toLowerCase().replace(/\s+/g,' ');if(!v)return;const ok=answers.map(a=>a.toLowerCase()).includes(v);fb.className='feedback '+(ok?'correct':'wrong');fb.textContent=ok?'✓ Corretto! '+display:'✗ Sbagliato. La risposta corretta è: '+display;fb.style.display='block';inp.disabled=true;const ex=inp.closest('.exercise');markEx(ex.id,ok)}
+function resetEx(exId,fields){const el=document.getElementById(exId);el.classList.remove('completed','failed');fields.forEach(f=>{const e=document.getElementById(f);if(e.tagName==='SELECT'){e.selectedIndex=0;e.disabled=false}else{e.value='';e.disabled=false}});const fb=el.querySelector('.feedback');if(fb){fb.style.display='none';fb.className='feedback'}const h=el.querySelector('.hint');if(h)h.style.display='none';done--;if(el.classList.contains('completed'))correct--;done=Math.max(0,done);correct=Math.max(0,correct);updateStats()}
+function toggleHint(id){const h=document.getElementById(id);h.style.display=h.style.display==='none'||!h.style.display?'block':'none'}
+</script>
+</body>
+</html>

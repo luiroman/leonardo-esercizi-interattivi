@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esercizi Compiti Blocco 1 — Consolida G4</title>
+<style>
+:root{--accent:#0891B2;--accent2:#0077B6;--title:#0F4C75;--text:#1E293B;--muted:#64748B;--bg:#F8F9FA;--card:#FFFFFF;--border:#E2E8F0;--success:#059669;--success-bg:#F0FDF4;--success-border:#BBF7D0;--danger:#DC2626;--danger-bg:#FEF2F2;--danger-border:#FECACA;--warn:#D97706;--warn-bg:#FFFBEB;--warn-border:#FDE68A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Calibri,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:1rem;max-width:900px;margin:0 auto}
+header{background:var(--title);color:#fff;padding:1.5rem;border-radius:12px;margin-bottom:1.5rem}
+header h1{font-size:1.4rem;margin-bottom:.3rem}
+header p{color:#94A3B8;font-size:.9rem}
+.stats-bar{display:flex;gap:1rem;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;margin-bottom:1.5rem;font-size:.85rem}
+.stats-bar .stat{display:flex;align-items:center;gap:.3rem}
+.stats-bar .stat b{color:var(--accent)}
+.section-title{color:var(--title);font-size:1.1rem;font-weight:700;margin:1.5rem 0 .8rem;padding-bottom:.4rem;border-bottom:2px solid var(--accent)}
+.exercise{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:1rem;overflow:hidden}
+.ex-header{display:flex;justify-content:space-between;align-items:center;padding:.6rem 1rem;background:#F1F5F9}
+.ex-header h3{font-size:.95rem;color:var(--title)}
+.badge{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff}
+.badge.easy{background:var(--success)}.badge.medium{background:var(--warn)}.badge.hard{background:var(--danger)}
+.ex-body{padding:1rem}
+.ex-body p,.ex-body li{margin-bottom:.5rem;font-size:.9rem}
+.ex-body code{background:#E2E8F0;padding:1px 5px;border-radius:3px;font-family:Consolas,monospace;font-size:.85rem}
+.ex-body pre{background:#1E293B;color:#A5D6A7;padding:.8rem;border-radius:6px;font-family:Consolas,monospace;font-size:.8rem;overflow-x:auto;margin:.5rem 0}
+input[type=text],select{border:1px solid var(--border);border-radius:5px;padding:6px 10px;font-size:.85rem;width:100%;max-width:350px;margin:4px 0}
+select{max-width:360px}
+.btn{display:inline-block;padding:6px 16px;border:none;border-radius:5px;cursor:pointer;font-size:.8rem;font-weight:600;margin:4px 4px 4px 0;color:#fff}
+.btn-check{background:var(--accent)}.btn-check:hover{background:var(--accent2)}
+.btn-reset{background:var(--muted)}.btn-reset:hover{background:#475569}
+.btn-hint{background:var(--warn)}.btn-hint:hover{background:#B45309}
+.feedback{margin-top:.5rem;padding:.5rem .8rem;border-radius:5px;font-size:.85rem;display:none}
+.feedback.correct{display:block;background:var(--success-bg);color:var(--success);border:1px solid var(--success-border)}
+.feedback.wrong{display:block;background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
+.hint{display:none;background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);padding:.5rem .8rem;border-radius:5px;margin-top:.5rem;font-size:.85rem}
+.completed{border-left:3px solid var(--success)}
+.failed{border-left:3px solid var(--danger)}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:2rem;padding:1rem}
+@media(max-width:600px){body{padding:.5rem}.stats-bar{flex-direction:column;gap:.3rem}input[type=text],select{max-width:100%}}
+</style>
+</head>
+<body>
+<header>
+<h1>Blocco 1 — Consolida il Giorno 4</h1>
+<p>VPN, IPSec, IDS/IPS, Hardening — ~1 ora di svolgimento</p>
+</header>
+<div class="stats-bar">
+<div class="stat">Completati: <b id="done">0</b>/18</div>
+<div class="stat">Corretti: <b id="ok">0</b>/18</div>
+<div class="stat">Precisione: <b id="prec">—</b></div>
+</div>
+
+<!-- SEZIONE A: OpenVPN -->
+<div class="section-title">A — OpenVPN su pfSense (6 esercizi)</div>
+
+<div class="exercise" id="ex1"><div class="ex-header"><h3>1 — Porta OpenVPN</h3><span class="badge easy">Facile</span></div><div class="ex-body">
+<p>Quale porta e protocollo usa OpenVPN di default?</p>
+<input type="text" id="f1" placeholder="es: 443/TCP">
+<br><button class="btn btn-check" onclick="chk('f1',['1194/udp','1194 udp','udp 1194','1194/UDP'],'1194/UDP')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex1',['f1'])">Reset</button>
+<div class="feedback" id="f1_fb"></div></div></div>
+
+<div class="exercise" id="ex2"><div class="ex-header"><h3>2 — PKI OpenVPN</h3><span class="badge easy">Facile</span></div><div class="ex-body">
+<p>Quale componente firma tutti i certificati (server e client) in una configurazione OpenVPN?</p>
+<input type="text" id="f2" placeholder="Acronimo di 2 lettere">
+<br><button class="btn btn-check" onclick="chk('f2',['ca','certificate authority'],'CA (Certificate Authority)')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex2',['f2'])">Reset</button>
+<div class="feedback" id="f2_fb"></div></div></div>
+
+<div class="exercise" id="ex3"><div class="ex-header"><h3>3 — Modalità autenticazione</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>Su pfSense hai scelto "SSL/TLS + User Auth" come Server Mode. Cosa significa in pratica?</p>
+<select id="f3"><option value="">— Scegli —</option><option value="a">Solo certificato</option><option value="b">Solo username/password</option><option value="c">Certificato + username/password (doppia autenticazione)</option><option value="d">Chiave pre-condivisa (PSK)</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f3','c','Corretto! Doppia autenticazione: certificato TLS + credenziali utente.','No. SSL/TLS + User Auth = certificato + username/password. Il certificato autentica il dispositivo, la password autentica l\'utente.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex3',['f3'])">Reset</button>
+<div class="feedback" id="f3_fb"></div></div></div>
+
+<div class="exercise" id="ex4"><div class="ex-header"><h3>4 — File .ovpn</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>Il file .ovpn esportato da pfSense contiene diversi elementi. Quale di questi NON è incluso?</p>
+<select id="f4"><option value="">— Scegli —</option><option value="a">Indirizzo IP del server</option><option value="b">Certificato CA</option><option value="c">Chiave privata del client</option><option value="d">Password dell'utente</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f4','d','Corretto! La password non è nel file .ovpn — viene chiesta al momento della connessione. Il file contiene: IP server, porta, cert CA, cert client, chiave privata client.','No. Il file .ovpn contiene IP server, porta/protocollo, certificato CA, certificato client e chiave privata client. La password NON è inclusa — viene chiesta interattivamente.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex4',['f4'])">Reset</button>
+<div class="feedback" id="f4_fb"></div></div></div>
+
+<div class="exercise" id="ex5"><div class="ex-header"><h3>5 — TCP over TCP</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>Perché OpenVPN preferisce UDP rispetto a TCP per il tunnel?</p>
+<select id="f5"><option value="">— Scegli —</option><option value="a">TCP è più lento di UDP</option><option value="b">UDP evita il problema "TCP over TCP" (doppia ritrasmissione)</option><option value="c">TCP non supporta la crittografia</option><option value="d">UDP è più sicuro di TCP</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f5','b','Corretto! Se il tunnel usa TCP e il traffico interno è TCP, la doppia gestione delle ritrasmissioni causa latenza e stall.','No. La ragione principale è il problema \"TCP over TCP\": se il tunnel usa TCP e il traffico al suo interno è anche TCP, entrambi gestiscono la ritrasmissione dei pacchetti persi, causando ritardi e blocchi.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex5',['f5'])">Reset</button>
+<div class="feedback" id="f5_fb"></div></div></div>
+
+<div class="exercise" id="ex6"><div class="ex-header"><h3>6 — Regole firewall VPN</h3><span class="badge hard">Difficile</span></div><div class="ex-body">
+<p>Devi creare le regole firewall per OpenVPN su pfSense. Su quale interfaccia crei la regola per accettare le connessioni VPN dall'esterno?</p>
+<input type="text" id="f6" placeholder="Nome interfaccia">
+<br><button class="btn btn-check" onclick="chk('f6',['wan'],'WAN — le connessioni VPN arrivano dall\'esterno sulla porta 1194/UDP')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex6',['f6'])">Reset</button>
+<button class="btn btn-hint" onclick="toggleHint('h6')">Suggerimento</button>
+<div class="hint" id="h6">I client VPN si connettono dall'esterno (Internet). Su quale interfaccia di pfSense arriva il traffico da Internet?</div>
+<div class="feedback" id="f6_fb"></div></div></div>
+
+<!-- SEZIONE B: IPSec -->
+<div class="section-title">B — IPSec e confronto VPN (5 esercizi)</div>
+
+<div class="exercise" id="ex7"><div class="ex-header"><h3>7 — IPSec: protocollo dati</h3><span class="badge easy">Facile</span></div><div class="ex-body">
+<p>Quale protocollo IPSec fornisce sia crittografia che integrità ed è usato nel 99% dei casi?</p>
+<input type="text" id="f7" placeholder="Acronimo di 3 lettere">
+<br><button class="btn btn-check" onclick="chk('f7',['esp','encapsulating security payload'],'ESP (Encapsulating Security Payload)')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex7',['f7'])">Reset</button>
+<div class="feedback" id="f7_fb"></div></div></div>
+
+<div class="exercise" id="ex8"><div class="ex-header"><h3>8 — IKEv1 vs IKEv2</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>Quanti messaggi richiede la Fase 1 di IKEv2 (rispetto ai 6-9 di IKEv1)?</p>
+<input type="text" id="f8" placeholder="Numero">
+<br><button class="btn btn-check" onclick="chk('f8',['4','quattro'],'4 messaggi — IKEv2 è più efficiente')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex8',['f8'])">Reset</button>
+<div class="feedback" id="f8_fb"></div></div></div>
+
+<div class="exercise" id="ex9"><div class="ex-header"><h3>9 — Scelta VPN: remote access</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>50 dipendenti devono connettersi da casa con laptop aziendali. La rete aziendale è protetta da firewall restrittivi negli hotel che bloccano tutto tranne HTTP/HTTPS. Quale VPN scegli?</p>
+<select id="f9"><option value="">— Scegli —</option><option value="a">IPSec (IKEv2)</option><option value="b">OpenVPN con TCP 443</option><option value="c">IPSec con AH</option><option value="d">PPTP</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f9','b','Corretto! OpenVPN su TCP 443 sembra traffico HTTPS e passa i firewall restrittivi. IPSec potrebbe essere bloccato.','No. OpenVPN su TCP 443 è la scelta giusta perché \"sembra\" traffico HTTPS e passa i firewall restrittivi degli hotel. IPSec usa protocolli/porte che spesso vengono bloccati.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex9',['f9'])">Reset</button>
+<div class="feedback" id="f9_fb"></div></div></div>
+
+<div class="exercise" id="ex10"><div class="ex-header"><h3>10 — Config speculare</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>In una VPN IPSec site-to-site, la sede A ha LAN <code>10.1.0.0/24</code> e la sede B ha LAN <code>10.2.0.0/24</code>. Nella configurazione Phase 2 della sede A, cosa metti come "Remote Network"?</p>
+<input type="text" id="f10" placeholder="es: 10.x.x.x/xx">
+<br><button class="btn btn-check" onclick="chk('f10',['10.2.0.0/24'],'10.2.0.0/24 — la LAN della sede B è il \"Remote Network\" per la sede A')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex10',['f10'])">Reset</button>
+<div class="feedback" id="f10_fb"></div></div></div>
+
+<div class="exercise" id="ex11"><div class="ex-header"><h3>11 — WireGuard</h3><span class="badge easy">Facile</span></div><div class="ex-body">
+<p>WireGuard è noto per avere pochissime righe di codice rispetto a OpenVPN. Circa quante?</p>
+<select id="f11"><option value="">— Scegli —</option><option value="a">~400 righe</option><option value="b">~4.000 righe</option><option value="c">~40.000 righe</option><option value="d">~400.000 righe</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f11','b','Corretto! ~4.000 righe vs ~600.000 di OpenVPN. Meno codice = meno superficie d\'attacco.','No. WireGuard ha ~4.000 righe di codice. OpenVPN ne ha ~600.000. Questa differenza rende WireGuard molto più facile da auditare.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex11',['f11'])">Reset</button>
+<div class="feedback" id="f11_fb"></div></div></div>
+
+<!-- SEZIONE C: IDS/IPS -->
+<div class="section-title">C — IDS/IPS e Snort (5 esercizi)</div>
+
+<div class="exercise" id="ex12"><div class="ex-header"><h3>12 — Posizionamento IDS</h3><span class="badge easy">Facile</span></div><div class="ex-body">
+<p>Un IDS è collegato a un mirror port (SPAN) dello switch. Cosa significa per il traffico di rete?</p>
+<select id="f12"><option value="">— Scegli —</option><option value="a">Tutto il traffico passa attraverso l'IDS</option><option value="b">L'IDS riceve una copia del traffico senza interferire con il flusso</option><option value="c">L'IDS modifica il traffico per rimuovere i malware</option><option value="d">L'IDS blocca il traffico sospetto</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f12','b','Corretto! Il mirror port invia una copia del traffico all\'IDS, che lo analizza senza interferire. Il traffico originale continua normalmente.','No. Il mirror port (SPAN) invia una COPIA del traffico all\'IDS. L\'IDS analizza la copia senza interferire con il traffico reale — per questo non può bloccare, solo segnalare.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex12',['f12'])">Reset</button>
+<div class="feedback" id="f12_fb"></div></div></div>
+
+<div class="exercise" id="ex13"><div class="ex-header"><h3>13 — Signature vs Anomaly</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>Un server web normalmente serve 500 richieste/ora. Improvvisamente ne riceve 50.000/ora. Quale tipo di detection rileva questa situazione?</p>
+<select id="f13"><option value="">— Scegli —</option><option value="a">Signature-based</option><option value="b">Anomaly-based</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f13','b','Corretto! L\'anomaly detection rileva deviazioni dal comportamento \"normale\" (baseline). 500→50.000 è una deviazione enorme.','No. Questa è anomaly detection: il sistema ha una baseline di \"500 richieste/ora\" e rileva che 50.000 è una deviazione significativa. La signature detection cerca pattern specifici, non volumi anomali.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex13',['f13'])">Reset</button>
+<div class="feedback" id="f13_fb"></div></div></div>
+
+<div class="exercise" id="ex14"><div class="ex-header"><h3>14 — Azione Snort: drop</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>In una regola Snort, se cambi l'azione da <code>alert</code> a <code>drop</code>, cosa succede al pacchetto che corrisponde alla regola?</p>
+<select id="f14"><option value="">— Scegli —</option><option value="a">Viene loggato e basta</option><option value="b">Viene bloccato silenziosamente (scartato)</option><option value="c">Viene modificato e inoltrato</option><option value="d">Viene inviato a un honeypot</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f14','b','Corretto! Drop scarta il pacchetto — non arriva a destinazione. Questo è il comportamento IPS.','No. L\'azione drop scarta (blocca) il pacchetto silenziosamente. È la differenza tra IDS (alert = segnala) e IPS (drop = blocca).')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex14',['f14'])">Reset</button>
+<div class="feedback" id="f14_fb"></div></div></div>
+
+<div class="exercise" id="ex15"><div class="ex-header"><h3>15 — Variabili Snort</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>Nella configurazione Snort, <code>$HOME_NET</code> è impostata a <code>10.0.1.0/24</code>. Cosa rappresenta <code>$EXTERNAL_NET</code> di default?</p>
+<input type="text" id="f15" placeholder="Risposta">
+<br><button class="btn btn-check" onclick="chk('f15',['!$home_net','! $home_net','tutto il resto','tutto tranne home_net','any','!home_net','!$HOME_NET'],'!$HOME_NET (tutto tranne la rete locale) — cioè tutto il traffico esterno')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex15',['f15'])">Reset</button>
+<button class="btn btn-hint" onclick="toggleHint('h15')">Suggerimento</button>
+<div class="hint" id="h15">Se $HOME_NET è la tua rete, $EXTERNAL_NET è il suo complemento. In Snort si usa il simbolo "!" per negare.</div>
+<div class="feedback" id="f15_fb"></div></div></div>
+
+<div class="exercise" id="ex16"><div class="ex-header"><h3>16 — Lettura regola</h3><span class="badge hard">Difficile</span></div><div class="ex-body">
+<p>Analizza questa regola:</p>
+<pre>alert tcp $HOME_NET any -> $EXTERNAL_NET 25 (msg:"POLICY outbound SMTP"; flow:to_server,established; sid:100001; rev:1;)</pre>
+<p>Cosa monitora questa regola?</p>
+<select id="f16"><option value="">— Scegli —</option><option value="a">Email in arrivo dall'esterno</option><option value="b">Traffico dalla rete interna verso server SMTP esterni (porta 25) — possibile invio email non autorizzato</option><option value="c">Connessioni SSH verso l'esterno</option><option value="d">Traffico DNS sulla porta 25</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f16','b','Corretto! $HOME_NET → $EXTERNAL_NET porta 25 = traffico SMTP in uscita. Può indicare un client compromesso che invia spam o esfiltrazione dati via email.','No. La regola rileva traffico dalla rete interna ($HOME_NET) verso server email esterni ($EXTERNAL_NET, porta 25/SMTP). Questo può indicare un PC compromesso che invia spam o esfiltrazione dati.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex16',['f16'])">Reset</button>
+<div class="feedback" id="f16_fb"></div></div></div>
+
+<!-- SEZIONE D: Hardening e Sicurezza Perimetrale -->
+<div class="section-title">D — Hardening e Sicurezza Perimetrale (2 esercizi)</div>
+
+<div class="exercise" id="ex17"><div class="ex-header"><h3>17 — Defense in Depth</h3><span class="badge medium">Medio</span></div><div class="ex-body">
+<p>Nel modello Defense in Depth a 6 livelli, a quale livello appartiene un WAF (Web Application Firewall)?</p>
+<select id="f17"><option value="">— Scegli —</option><option value="a">Livello 1 — Perimetro</option><option value="b">Livello 2 — DMZ</option><option value="c">Livello 3 — Rete interna</option><option value="d">Livello 5 — Applicazione</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f17','b','Corretto! Il WAF si posiziona nella DMZ, proteggendo i server web pubblici dalle minacce applicative.','No. Il WAF opera nella DMZ (Livello 2): protegge i server web esposti filtrando le richieste HTTP/HTTPS prima che raggiungano l\'applicazione.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex17',['f17'])">Reset</button>
+<div class="feedback" id="f17_fb"></div></div></div>
+
+<div class="exercise" id="ex18"><div class="ex-header"><h3>18 — Hardening checklist</h3><span class="badge hard">Difficile</span></div><div class="ex-body">
+<p>Hai appena installato pfSense. Elenca le <b>prime 3 azioni di hardening</b> in ordine di priorità. Quale fai per prima?</p>
+<select id="f18"><option value="">— La PRIMA azione è... —</option><option value="a">Configurare NTP</option><option value="b">Installare Snort</option><option value="c">Cambiare la password di default</option><option value="d">Configurare le regole firewall avanzate</option></select>
+<br><button class="btn btn-check" onclick="chkSel('f18','c','Corretto! La primissima azione è cambiare le credenziali di default (admin/pfsense). Poi disabilitare servizi non necessari, poi limitare l\'accesso management.','No. La prima azione è SEMPRE cambiare la password di default. Credenziali note come admin/pfsense sono il vettore di attacco più comune — cercabili su Shodan.')">Verifica</button>
+<button class="btn btn-reset" onclick="resetEx('ex18',['f18'])">Reset</button>
+<div class="feedback" id="f18_fb"></div></div></div>
+
+<footer>Corso Cybersecurity — Leonardo SpA | Modulo 1 | Compiti G4 — Blocco 1 "Consolida"</footer>
+
+<script>
+let total=18,done=0,correct=0;
+function updateStats(){document.getElementById('done').textContent=done;document.getElementById('ok').textContent=correct;document.getElementById('prec').textContent=done>0?Math.round(correct/done*100)+'%':'—'}
+function markEx(id,ok){const el=document.getElementById(id);el.classList.remove('completed','failed');el.classList.add(ok?'completed':'failed');done++;if(ok)correct++;updateStats()}
+function chkSel(fid,val,msgOk,msgNo){const sel=document.getElementById(fid);const fb=document.getElementById(fid+'_fb');if(!sel.value)return;const ok=sel.value===val;fb.className='feedback '+(ok?'correct':'wrong');fb.textContent=ok?'✓ '+msgOk:'✗ '+msgNo;fb.style.display='block';sel.disabled=true;markEx(sel.closest('.exercise').id,ok)}
+function chk(fid,answers,display){const inp=document.getElementById(fid);const fb=document.getElementById(fid+'_fb');const v=inp.value.trim().toLowerCase().replace(/\s+/g,' ');if(!v)return;const ok=answers.map(a=>a.toLowerCase()).includes(v);fb.className='feedback '+(ok?'correct':'wrong');fb.textContent=ok?'✓ Corretto! '+display:'✗ Sbagliato. La risposta corretta è: '+display;fb.style.display='block';inp.disabled=true;markEx(inp.closest('.exercise').id,ok)}
+function resetEx(exId,fields){const el=document.getElementById(exId);el.classList.remove('completed','failed');fields.forEach(f=>{const e=document.getElementById(f);if(e.tagName==='SELECT'){e.selectedIndex=0;e.disabled=false}else{e.value='';e.disabled=false}});const fb=el.querySelector('.feedback');if(fb){fb.style.display='none';fb.className='feedback'}const h=el.querySelector('.hint');if(h)h.style.display='none';done=Math.max(0,done-1);updateStats()}
+function toggleHint(id){const h=document.getElementById(id);h.style.display=h.style.display==='none'||!h.style.display?'block':'none'}
+</script>
+</body>
+</html>

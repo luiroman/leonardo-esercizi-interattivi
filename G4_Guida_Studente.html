@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>G4 — Guida Studente | VPN Pratica e Sicurezza Perimetrale</title>
+<style>
+:root{--accent:#0891B2;--accent2:#0077B6;--title:#0F4C75;--text:#1E293B;--muted:#64748B;--bg:#F8F9FA;--card:#FFF;--border:#E2E8F0;--success:#059669;--danger:#DC2626;--warn:#D97706}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Calibri,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;max-width:900px;margin:0 auto;padding:1rem}
+header{background:var(--title);color:#fff;padding:2rem;border-radius:12px;margin-bottom:2rem}
+header h1{font-size:1.6rem;margin-bottom:.5rem}
+header p{color:#94A3B8;font-size:.95rem}
+nav{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem 1.5rem;margin-bottom:2rem}
+nav h2{font-size:1.1rem;color:var(--title);margin-bottom:.5rem}
+nav ol{padding-left:1.5rem}
+nav li{margin:.3rem 0}
+nav a{color:var(--accent);text-decoration:none;font-size:.9rem}
+nav a:hover{text-decoration:underline}
+h2{color:var(--title);font-size:1.3rem;margin:2rem 0 .8rem;padding-bottom:.4rem;border-bottom:2px solid var(--accent)}
+h3{color:var(--accent);font-size:1.1rem;margin:1.2rem 0 .5rem}
+p{margin-bottom:.8rem;font-size:.95rem}
+.key-concept{background:#F0F9FF;border-left:4px solid var(--accent);padding:1rem;border-radius:0 8px 8px 0;margin:1rem 0}
+.security-box{background:#F0FDF4;border-left:4px solid var(--success);padding:1rem;border-radius:0 8px 8px 0;margin:1rem 0}
+.warning-box{background:#FEF2F2;border-left:4px solid var(--danger);padding:1rem;border-radius:0 8px 8px 0;margin:1rem 0}
+.tip-box{background:#FFFBEB;border-left:4px solid var(--warn);padding:1rem;border-radius:0 8px 8px 0;margin:1rem 0}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem}
+th{background:var(--accent);color:#fff;padding:.5rem .8rem;text-align:left}
+td{padding:.5rem .8rem;border-bottom:1px solid var(--border)}
+tr:nth-child(even){background:#F1F5F9}
+code{background:#E2E8F0;padding:1px 5px;border-radius:3px;font-family:Consolas,monospace;font-size:.85rem}
+pre{background:#1E293B;color:#A5D6A7;padding:1rem;border-radius:8px;font-family:Consolas,monospace;font-size:.8rem;overflow-x:auto;margin:.8rem 0}
+.card-link{display:inline-block;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;margin:.3rem;text-decoration:none;color:var(--text);font-size:.85rem;transition:box-shadow .2s}
+.card-link:hover{box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.card-link b{color:var(--accent)}
+.resource{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;margin:.8rem 0}
+.resource h4{color:var(--accent);margin-bottom:.3rem;font-size:.95rem}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:3rem;padding:1.5rem;border-top:1px solid var(--border)}
+@media(max-width:600px){body{padding:.5rem}header{padding:1rem}table{font-size:.8rem}}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Guida Studente — Giorno 4</h1>
+<p>VPN Pratica e Sicurezza Perimetrale | 17 aprile 2026 — In presenza, Napoli</p>
+</header>
+
+<nav>
+<h2>Indice</h2>
+<ol>
+<li><a href="#s1">Overview e contesto</a></li>
+<li><a href="#s2">OpenVPN Remote Access: architettura</a></li>
+<li><a href="#s3">Configurazione OpenVPN su pfSense</a></li>
+<li><a href="#s4">Troubleshooting VPN</a></li>
+<li><a href="#s5">IPSec site-to-site</a></li>
+<li><a href="#s6">WireGuard: la VPN moderna</a></li>
+<li><a href="#s7">Confronto OpenVPN vs IPSec vs WireGuard</a></li>
+<li><a href="#s8">IDS vs IPS: concetti fondamentali</a></li>
+<li><a href="#s9">Signature vs anomaly detection</a></li>
+<li><a href="#s10">Snort e Suricata</a></li>
+<li><a href="#s11">Regole Snort: anatomia e variabili</a></li>
+<li><a href="#s12">Falsi positivi e tuning</a></li>
+<li><a href="#s13">DMZ avanzata e hardening</a></li>
+<li><a href="#s14">Defense in depth: il quadro completo</a></li>
+<li><a href="#s15">Esercizi e link</a></li>
+<li><a href="#s16">Agenda studio autonomo</a></li>
+<li><a href="#s17">Risorse propedeutiche per il G5</a></li>
+</ol>
+</nav>
+
+<!-- ====== SEZIONE 1 ====== -->
+<h2 id="s1">1. Overview e Contesto</h2>
+<p>La Lezione 4 è la più pratica del Modulo 1. Nella mattina abbiamo configurato una VPN completa su pfSense (OpenVPN Remote Access) e studiato IPSec site-to-site e WireGuard. Nel pomeriggio abbiamo completato la sicurezza perimetrale con IDS/IPS (Snort), DMZ avanzata e hardening del firewall.</p>
+<p>Dopo questa lezione, avete toccato tutti i componenti della sicurezza perimetrale: firewall, NAT, VPN, WAF, IDS/IPS, hardening. Le prossime 2 lezioni (G5 e G6) portano la sicurezza al livello successivo: microsegmentazione, SDN e hardening dei sistemi operativi.</p>
+
+<div class="key-concept">
+<b>Concetto chiave:</b> La sicurezza perimetrale protegge il "bordo" della rete. Ma il perimetro da solo non basta — serve defense in depth con più livelli di controllo. Il G5 introdurrà la microsegmentazione per controllare anche il traffico <em>dentro</em> la rete.
+</div>
+
+<!-- ====== SEZIONE 2 ====== -->
+<h2 id="s2">2. OpenVPN Remote Access: Architettura</h2>
+<p>OpenVPN è una soluzione VPN open source che usa TLS per l'autenticazione e un tunnel criptato (tipicamente AES-256-GCM) per i dati. Opera a Layer 4 (TLS su UDP o TCP), a differenza di IPSec che opera a Layer 3.</p>
+<p>L'architettura Remote Access prevede un server VPN (nel nostro caso pfSense) che accetta connessioni da client remoti (laptop, smartphone) attraverso un tunnel criptato. I componenti necessari sono:</p>
+
+<table>
+<tr><th>#</th><th>Componente</th><th>Descrizione</th></tr>
+<tr><td>1</td><td>Certificate Authority (CA)</td><td>Genera e firma tutti i certificati</td></tr>
+<tr><td>2</td><td>Certificato server</td><td>Identifica pfSense come server VPN legittimo</td></tr>
+<tr><td>3</td><td>Certificato client + utente</td><td>Identifica ogni utente/dispositivo</td></tr>
+<tr><td>4</td><td>Configurazione server OpenVPN</td><td>Porta, protocollo, tunnel network, algoritmi</td></tr>
+<tr><td>5</td><td>Regole firewall</td><td>WAN (accettare porta 1194) + OpenVPN (permettere traffico verso LAN)</td></tr>
+<tr><td>6</td><td>File .ovpn</td><td>File di configurazione per il client con tutto il necessario</td></tr>
+</table>
+
+<div class="security-box">
+<b>Collegamento con il G2:</b> La CA che creiamo è un esempio concreto della "catena di fiducia" dei certificati X.509 studiata nel G2. L'handshake TLS tra client e server OpenVPN usa gli stessi meccanismi (ECDHE, certificati, PFS) visti nella lezione su TLS 1.3.
+</div>
+
+<!-- ====== SEZIONE 3 ====== -->
+<h2 id="s3">3. Configurazione OpenVPN su pfSense</h2>
+
+<h3>Step 1-2: CA e Certificato Server</h3>
+<p>La CA si crea in <code>System → Cert. Manager → CAs → Add</code>. Parametri consigliati: method "Create an internal CA", RSA 2048 bit, SHA256, lifetime 3650 giorni. Il certificato server si crea in <code>Certificates → Add</code>, selezionando la CA appena creata e type "Server Certificate".</p>
+
+<h3>Step 3: Utente e Certificato Client</h3>
+<p>In <code>System → User Manager → Add</code>, creare un utente e spuntare "Click to create a user certificate". Questo associa automaticamente un certificato al nuovo utente — in produzione ogni dipendente ha il proprio certificato.</p>
+
+<h3>Step 4: Server OpenVPN</h3>
+<p>In <code>VPN → OpenVPN → Servers → Add</code>, i parametri chiave sono:</p>
+<table>
+<tr><th>Parametro</th><th>Valore</th><th>Perché</th></tr>
+<tr><td>Server Mode</td><td>SSL/TLS + User Auth</td><td>Doppia autenticazione: certificato + password</td></tr>
+<tr><td>Protocol</td><td>UDP on IPv4</td><td>Evita il problema "TCP over TCP"</td></tr>
+<tr><td>Device mode</td><td>tun (Layer 3)</td><td>Più efficiente di tap (Layer 2)</td></tr>
+<tr><td>Local port</td><td>1194</td><td>Porta standard OpenVPN</td></tr>
+<tr><td>Tunnel Network</td><td>10.0.8.0/24</td><td>DEVE essere diversa dalla LAN!</td></tr>
+<tr><td>Local Network</td><td>10.0.1.0/24</td><td>La LAN che i client VPN devono raggiungere</td></tr>
+</table>
+
+<div class="warning-box">
+<b>Errore comune:</b> Se la Tunnel Network è uguale alla LAN network, si crea un conflitto di routing e la VPN non funziona. Se "Local Network" è vuoto, i client VPN non possono raggiungere la LAN.
+</div>
+
+<h3>Step 5-6: Regole Firewall e Client Export</h3>
+<p>Servono due regole: una su WAN (accettare 1194/UDP da Any) e una sull'interfaccia OpenVPN (permettere traffico verso LAN net). Il pacchetto <code>openvpn-client-export</code> permette di scaricare il file <code>.ovpn</code> per ogni utente — un file che contiene tutto: IP server, certificati, chiave privata.</p>
+
+<div class="tip-box">
+<b>Sicurezza del file .ovpn:</b> Chiunque possieda questo file può autenticarsi alla VPN. Non inviarlo mai via email in chiaro. La modalità "SSL/TLS + User Auth" aggiunge la password come secondo fattore, ma in produzione si aggiunge anche MFA (TOTP, smart card).
+</div>
+
+<!-- ====== SEZIONE 4 ====== -->
+<h2 id="s4">4. Troubleshooting VPN</h2>
+<table>
+<tr><th>Sintomo</th><th>Causa</th><th>Soluzione</th></tr>
+<tr><td>TLS handshake failed</td><td>CA diversa, certificato scaduto</td><td>Verificare in Cert. Manager</td></tr>
+<tr><td>Connection timed out</td><td>Porta 1194 bloccata, IP errato</td><td>Regola WAN, controllare .ovpn</td></tr>
+<tr><td>Ping tunnel OK, LAN no</td><td>Manca Local Network o regola FW</td><td>Config server + regola OpenVPN</td></tr>
+<tr><td>AUTH_FAILED</td><td>Credenziali errate</td><td>User Manager: utente+certificato</td></tr>
+<tr><td>DNS non funziona</td><td>DNS non configurato nel tunnel</td><td>Advanced → DNS Server</td></tr>
+</table>
+<p>I log di OpenVPN sono in <code>Status → System Logs → OpenVPN</code>. Sono molto dettagliati e mostrano ogni fase dell'handshake TLS — sono lo strumento principale per il debug.</p>
+
+<!-- ====== SEZIONE 5 ====== -->
+<h2 id="s5">5. IPSec Site-to-Site</h2>
+<p>IPSec è una suite di protocolli per VPN che opera a Layer 3. È lo standard per le VPN site-to-site perché è interoperabile tra vendor diversi e supporta l'accelerazione hardware.</p>
+
+<h3>Protocolli IPSec</h3>
+<p><b>ESP</b> (Encapsulating Security Payload) fornisce crittografia + integrità ed è usato nel 99% dei casi. <b>AH</b> (Authentication Header) fornisce solo integrità e non funziona con NAT — praticamente mai usato.</p>
+
+<h3>Fasi di negoziazione</h3>
+<p><b>Fase 1 (IKE SA):</b> I due firewall si autenticano reciprocamente (PSK o certificati) e stabiliscono un canale sicuro usando Diffie-Hellman. <b>Fase 2 (IPSec SA):</b> Si negoziano i parametri del tunnel dati (ESP, AES-256-GCM) e le reti protette. IKEv2 è lo standard attuale: 4 messaggi (vs 6-9 di IKEv1), NAT traversal nativo, supporto MOBIKE per client mobili.</p>
+
+<div class="key-concept">
+<b>Configurazione speculare:</b> In una VPN S2S, la configurazione è "a specchio" — quello che è "Local" per una sede è "Remote" per l'altra. Le reti LAN delle due sedi devono essere diverse (es: 10.1.0.0/24 e 10.2.0.0/24).
+</div>
+
+<!-- ====== SEZIONE 6 ====== -->
+<h2 id="s6">6. WireGuard: la VPN Moderna</h2>
+<p>WireGuard è un protocollo VPN moderno (~4.000 righe di codice vs ~600.000 di OpenVPN) integrato nel kernel Linux dal 2020. Usa crittografia moderna (ChaCha20-Poly1305, Curve25519) senza negoziazione — tutti usano gli stessi algoritmi. È molto veloce (kernel-level) e semplice da configurare. Soluzioni enterprise come Tailscale e Cloudflare WARP sono basate su WireGuard.</p>
+
+<!-- ====== SEZIONE 7 ====== -->
+<h2 id="s7">7. Confronto OpenVPN vs IPSec vs WireGuard</h2>
+<table>
+<tr><th>Criterio</th><th>OpenVPN</th><th>IPSec</th><th>WireGuard</th></tr>
+<tr><td>Use case</td><td>Remote Access</td><td>Site-to-Site</td><td>Entrambi</td></tr>
+<tr><td>Layer</td><td>4 (TLS/UDP)</td><td>3 (kernel)</td><td>3 (kernel)</td></tr>
+<tr><td>Performance</td><td>Buona</td><td>Ottima</td><td>Eccellente</td></tr>
+<tr><td>Interoperabilità</td><td>Solo OpenVPN</td><td>Tutti i vendor</td><td>In crescita</td></tr>
+<tr><td>Maturità</td><td>Consolidata</td><td>Standard da 20 anni</td><td>Giovane</td></tr>
+<tr><td>FW restrittivi</td><td>TCP 443 ✓</td><td>Difficile</td><td>Solo UDP</td></tr>
+</table>
+
+<div class="tip-box">
+<b>Regola pratica:</b> Remote Access → OpenVPN o WireGuard. Site-to-Site → IPSec. In azienda: probabilmente entrambi.
+</div>
+
+<!-- ====== SEZIONE 8 ====== -->
+<h2 id="s8">8. IDS vs IPS: Concetti Fondamentali</h2>
+<p>Un <b>IDS</b> (Intrusion Detection System) monitora il traffico e genera alert quando rileva anomalie, ma <b>non blocca</b> il traffico. È posizionato su un mirror port (SPAN) — riceve una copia del traffico. Un <b>IPS</b> (Intrusion Prevention System) fa tutto quello che fa l'IDS, più <b>blocca automaticamente</b> il traffico sospetto. È posizionato inline — il traffico lo attraversa.</p>
+
+<div class="security-box">
+<b>Best practice:</b> Si inizia SEMPRE in modalità IDS per capire il traffico normale, poi si tuning delle regole per ridurre i falsi positivi, e solo quando le regole sono affidabili si passa a IPS.
+</div>
+
+<p><b>NIDS</b> (Network IDS) monitora il traffico sulla rete. <b>HIDS</b> (Host IDS) monitora i singoli host (file system, log, processi). Snort/Suricata sono NIDS. Wazuh/OSSEC sono HIDS.</p>
+
+<!-- ====== SEZIONE 9 ====== -->
+<h2 id="s9">9. Signature vs Anomaly Detection</h2>
+<p>La <b>signature detection</b> confronta il traffico con un database di pattern noti (come un antivirus). Precisa per attacchi noti ma non rileva 0-day. La <b>anomaly detection</b> costruisce un profilo del traffico "normale" e segnala le deviazioni. Può rilevare 0-day ma genera molti falsi positivi.</p>
+
+<table>
+<tr><th>Criterio</th><th>Signature</th><th>Anomaly</th></tr>
+<tr><td>Attacchi noti</td><td>Eccellente</td><td>Buono</td></tr>
+<tr><td>Attacchi 0-day</td><td>Non rileva</td><td>Può rilevare</td></tr>
+<tr><td>Falsi positivi</td><td>Bassi</td><td>Alti</td></tr>
+<tr><td>Usato da</td><td>Snort, Suricata</td><td>Darktrace, Vectra AI</td></tr>
+</table>
+
+<!-- ====== SEZIONE 10 ====== -->
+<h2 id="s10">10. Snort e Suricata</h2>
+<p><b>Snort</b> (1998, Cisco) è il padre degli IDS open source. Single-threaded (v2), multi-threaded (v3). Community ruleset gratuito. <b>Suricata</b> (2009, OISF) è multi-threaded nativo, più performante, compatibile con le regole Snort. Entrambi sono disponibili su pfSense. Per il lab usiamo Snort (più documentato su pfSense).</p>
+
+<!-- ====== SEZIONE 11 ====== -->
+<h2 id="s11">11. Regole Snort: Anatomia e Variabili</h2>
+<p>Una regola Snort ha un header e delle opzioni:</p>
+<pre>alert tcp $EXTERNAL_NET any -> $HOME_NET 80 (msg:"WEB path traversal"; content:"/etc/passwd"; nocase; sid:1122; rev:1;)</pre>
+<p><b>Header:</b> azione (alert/drop/pass), protocollo, IP sorgente + porta, direzione, IP destinazione + porta.</p>
+<p><b>Opzioni:</b> msg (messaggio alert), content (stringa da cercare), flow (stato connessione), sid (ID univoco).</p>
+
+<table>
+<tr><th>Variabile</th><th>Significato</th><th>Esempio</th></tr>
+<tr><td><code>$HOME_NET</code></td><td>La tua rete interna</td><td>10.0.1.0/24</td></tr>
+<tr><td><code>$EXTERNAL_NET</code></td><td>Tutto il resto (!$HOME_NET)</td><td>Qualsiasi IP esterno</td></tr>
+<tr><td><code>$HTTP_SERVERS</code></td><td>I tuoi web server</td><td>IP specifici</td></tr>
+</table>
+
+<!-- ====== SEZIONE 12 ====== -->
+<h2 id="s12">12. Falsi Positivi e Tuning</h2>
+<p>I falsi positivi (FP) sono il nemico principale: un IDS in produzione genera migliaia di alert/giorno, di cui il 95% sono FP. L'<b>alert fatigue</b> fa sì che gli analyst ignorino anche gli alert reali.</p>
+<p>Strategie di tuning: <b>suppress</b> (silenziare per IP specifico), <b>threshold</b> (alert dopo N occorrenze), <b>disattivare regole irrilevanti</b> (no regole Apache se usi solo IIS), <b>pass rules</b> (whitelist traffico noto).</p>
+
+<div class="warning-box">
+<b>Alert fatigue:</b> Se ricevi 10.000 alert/giorno con 95% FP, devi trovare ~500 veri attacchi tra 9.500 falsi allarmi. Il tuning riduce i FP dal 95% al ~20%.
+</div>
+
+<!-- ====== SEZIONE 13 ====== -->
+<h2 id="s13">13. DMZ Avanzata e Hardening</h2>
+
+<h3>DMZ con doppio firewall</h3>
+<p>Nelle infrastrutture critiche si usano due firewall di vendor diversi: uno esterno (es: Palo Alto) tra Internet e DMZ, uno interno (es: Fortinet) tra DMZ e LAN. La <b>defense diversity</b> garantisce che un singolo CVE non comprometta entrambi i livelli.</p>
+
+<h3>Hardening del firewall — Checklist</h3>
+<p>Le 10 azioni di hardening essenziali: 1) Cambiare credenziali default, 2) Disabilitare servizi non necessari, 3) Limitare accesso management, 4) Aggiornare firmware, 5) Abilitare logging → SIEM, 6) Anti-lockout rule, 7) NTP affidabile, 8) Backup configurazione, 9) HTTPS-only per WebGUI, 10) Documentare tutte le regole.</p>
+
+<!-- ====== SEZIONE 14 ====== -->
+<h2 id="s14">14. Defense in Depth: Il Quadro Completo</h2>
+<table>
+<tr><th>Livello</th><th>Nome</th><th>Componenti</th><th>Dove nel corso</th></tr>
+<tr><td>1</td><td>Perimetro</td><td>Firewall, NAT, IPS</td><td>G3 + G4</td></tr>
+<tr><td>2</td><td>DMZ</td><td>WAF, reverse proxy</td><td>G3 + G4</td></tr>
+<tr><td>3</td><td>Rete interna</td><td>Segmentazione, VLAN, IDS</td><td>G1 + G4 + G5</td></tr>
+<tr><td>4</td><td>Host</td><td>Hardening OS, EDR, HIDS</td><td>G6</td></tr>
+<tr><td>5</td><td>Applicazione</td><td>Secure coding, OWASP</td><td>Modulo 4</td></tr>
+<tr><td>6</td><td>Dati</td><td>Crittografia, backup, DLP</td><td>Modulo 3</td></tr>
+</table>
+
+<!-- ====== SEZIONE 15 ====== -->
+<h2 id="s15">15. Esercizi e Link</h2>
+<div style="display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0">
+<a class="card-link" href="https://luiroman.github.io/leonardo-esercizi-interattivi/esercizi-vpn-ids-aula-g4.html"><b>Esercizi Aula G4</b><br>12 esercizi — VPN, IDS/IPS</a>
+<a class="card-link" href="https://luiroman.github.io/leonardo-esercizi-interattivi/esercizi-compiti-blocco1-g4.html"><b>Blocco 1 — Consolida</b><br>18 esercizi — VPN, IPSec, IDS/IPS</a>
+<a class="card-link" href="https://luiroman.github.io/leonardo-esercizi-interattivi/esercizi-compiti-blocco2-g4.html"><b>Blocco 2 — Preparati</b><br>16 esercizi — Microsegm., SDN, ZT</a>
+</div>
+
+<!-- ====== SEZIONE 16 ====== -->
+<h2 id="s16">16. Agenda Studio Autonomo — 18 Aprile</h2>
+<table>
+<tr><th>Slot</th><th>Attività</th><th>Tipo</th><th>Materiale</th></tr>
+<tr><td>1h</td><td>Ripasso guida studente G4</td><td>Passivo</td><td>Questa guida</td></tr>
+<tr><td>1h</td><td>Esercizi Blocco 1 — Consolida</td><td>Attivo</td><td>HTML interattivo</td></tr>
+<tr><td>30m</td><td>Screenshot 5+ alert Snort</td><td>Pratico</td><td>pfSense</td></tr>
+<tr><td>30m</td><td>Hardening pfSense (password, servizi)</td><td>Pratico</td><td>pfSense</td></tr>
+<tr><td>1h</td><td><em>Pausa</em></td><td>—</td><td>—</td></tr>
+<tr><td>1h</td><td>Lettura propedeutica: microsegmentazione</td><td>Passivo</td><td>Sezione 17 sotto</td></tr>
+<tr><td>1h</td><td>Esercizi Blocco 2 — Preparati</td><td>Attivo</td><td>HTML interattivo</td></tr>
+<tr><td>30m</td><td>Ricerca: SDN e Zero Trust</td><td>Passivo</td><td>Sezione 17 sotto</td></tr>
+<tr><td>30m</td><td>Flessibile / approfondimento</td><td>—</td><td>—</td></tr>
+</table>
+
+<div class="warning-box">
+<b>Deliverable da portare il 22 aprile:</b><br>
+✓ Esercizi Blocco 1 e Blocco 2 completati<br>
+✓ Screenshot di almeno 5 alert Snort diversi<br>
+✓ Screenshot hardening pfSense (password cambiata, servizi disabilitati)
+</div>
+
+<!-- ====== SEZIONE 17 ====== -->
+<h2 id="s17">17. Risorse Propedeutiche per il G5</h2>
+<p>Il Giorno 5 (22 aprile, online) tratterà: microsegmentazione, Software Defined Networking (SDN) e Zero Trust Architecture. Queste risorse ti preparano agli argomenti.</p>
+
+<div class="resource">
+<h4>Microsegmentazione (~45 min)</h4>
+<p>📖 <a href="https://en.wikipedia.org/wiki/Microsegmentation_(network_security)" target="_blank">Wikipedia EN — Microsegmentation</a> — overview concettuale (~10 min)</p>
+<p>📖 <a href="https://www.paloaltonetworks.com/cyberpedia/what-is-microsegmentation" target="_blank">Palo Alto — What is Microsegmentation</a> — spiegazione chiara con diagrammi (~10 min)</p>
+<p>📺 <a href="https://www.youtube.com/results?search_query=microsegmentation+explained" target="_blank">YouTube — "Microsegmentation explained"</a> — cerca video sotto i 15 min</p>
+<p><b>Domande guida:</b> 1) Qual è la differenza tra segmentazione (VLAN) e microsegmentazione? 2) Cosa significa "traffico east-west"? 3) Perché le VLAN da sole non bastano in un datacenter moderno?</p>
+</div>
+
+<div class="resource">
+<h4>Software Defined Networking (~30 min)</h4>
+<p>📖 <a href="https://en.wikipedia.org/wiki/Software-defined_networking" target="_blank">Wikipedia EN — Software-defined networking</a> — concetti fondamentali (~10 min)</p>
+<p>📖 <a href="https://www.vmware.com/topics/software-defined-networking" target="_blank">VMware — What is SDN</a> — spiegazione enterprise (~10 min)</p>
+<p>📺 <a href="https://www.youtube.com/results?search_query=SDN+software+defined+networking+explained" target="_blank">YouTube — "SDN explained"</a> — video esplicativo (~10 min)</p>
+<p><b>Domande guida:</b> 1) Cosa sono control plane e data plane? 2) Cos'è un controller SDN? 3) Che relazione c'è tra SDN e microsegmentazione?</p>
+</div>
+
+<div class="resource">
+<h4>Zero Trust Architecture (~30 min)</h4>
+<p>📖 <a href="https://en.wikipedia.org/wiki/Zero_trust_security_model" target="_blank">Wikipedia EN — Zero trust security model</a> — overview (~10 min)</p>
+<p>📖 <a href="https://learn.microsoft.com/en-us/security/zero-trust/" target="_blank">Microsoft — Zero Trust</a> — la visione Microsoft/Azure (~10 min)</p>
+<p>📺 <a href="https://www.youtube.com/results?search_query=zero+trust+architecture+explained" target="_blank">YouTube — "Zero Trust explained"</a> — video concettuale (~10 min)</p>
+<p><b>Domande guida:</b> 1) Qual è il motto di Zero Trust? 2) In cosa differisce dalla sicurezza perimetrale tradizionale? 3) Quali sono i tre pilastri?</p>
+</div>
+
+<footer>
+Corso Cybersecurity — Leonardo SpA | Modulo 1: Reti, SO e Hardening<br>
+Guida Studente G4 — VPN Pratica e Sicurezza Perimetrale<br>
+© 2026
+</footer>
+
+</body>
+</html>
