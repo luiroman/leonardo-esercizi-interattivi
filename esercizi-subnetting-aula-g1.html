@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esercizi Subnetting — Giorno 1 Aula</title>
+<style>
+  :root {
+    --accent: #0891B2;
+    --accent2: #0077B6;
+    --title: #0F4C75;
+    --text: #1E293B;
+    --muted: #64748B;
+    --bg: #F8F9FA;
+    --card: #FFFFFF;
+    --success: #059669;
+    --success-bg: #F0FDF4;
+    --danger: #DC2626;
+    --danger-bg: #FEF2F2;
+    --warn: #D97706;
+    --warn-bg: #FFFBEB;
+    --border: #E2E8F0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 0 0 3rem 0;
+  }
+  header {
+    background: var(--title);
+    color: white;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    border-bottom: 4px solid var(--accent);
+  }
+  header h1 { font-size: 1.4rem; margin-bottom: 0.3rem; }
+  header p { font-size: 0.85rem; opacity: 0.8; }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 0 1rem; }
+
+  .stats-bar {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 1rem auto;
+    padding: 0.8rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 720px;
+    font-size: 0.9rem;
+  }
+  .stats-bar .stat { text-align: center; }
+  .stats-bar .stat-num { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+  .stats-bar .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; }
+
+  .exercise {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 1rem 0;
+    overflow: hidden;
+  }
+  .exercise-header {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .exercise-header h2 {
+    font-size: 1rem;
+    color: var(--title);
+  }
+  .difficulty {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .diff-easy { background: var(--success-bg); color: var(--success); }
+  .diff-medium { background: var(--warn-bg); color: var(--warn); }
+  .diff-hard { background: var(--danger-bg); color: var(--danger); }
+
+  .exercise-body { padding: 1rem; }
+  .exercise-body p { margin-bottom: 0.6rem; font-size: 0.9rem; }
+  .exercise-body code {
+    background: #F1F5F9;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 0.85rem;
+  }
+
+  .question {
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.8rem;
+    margin: 0.6rem 0;
+  }
+  .question label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: var(--text);
+  }
+  .question input[type="text"] {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: Consolas, 'Courier New', monospace;
+  }
+  .question input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(8,145,178,0.15);
+  }
+  .question select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background: white;
+  }
+
+  .feedback {
+    margin-top: 0.4rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    display: none;
+  }
+  .feedback.correct {
+    display: block;
+    background: var(--success-bg);
+    color: var(--success);
+    border: 1px solid #BBF7D0;
+  }
+  .feedback.wrong {
+    display: block;
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid #FECACA;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+  }
+  .btn {
+    padding: 0.5rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-secondary { background: var(--border); color: var(--text); }
+  .btn-secondary:hover { background: #CBD5E1; }
+
+  .exercise.completed-correct { border-left: 4px solid var(--success); }
+  .exercise.completed-wrong { border-left: 4px solid var(--danger); }
+
+  .hint {
+    background: var(--warn-bg);
+    border: 1px solid #FDE68A;
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    margin: 0.6rem 0 0 0;
+    font-size: 0.82rem;
+    color: var(--warn);
+    display: none;
+  }
+  .hint.visible { display: block; }
+
+  footer {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 480px) {
+    header h1 { font-size: 1.2rem; }
+    .exercise-body { padding: 0.8rem; }
+    .stats-bar { flex-wrap: wrap; gap: 0.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Esercizi di Subnetting — Aula</h1>
+  <p>Giorno 1 • 8 aprile 2026 • 10 esercizi a difficoltà crescente</p>
+</header>
+
+<div class="container">
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num" id="completed">0</div><div class="stat-label">Completati</div></div>
+  <div class="stat"><div class="stat-num" id="correct">0</div><div class="stat-label">Corretti</div></div>
+  <div class="stat"><div class="stat-num" id="total">10</div><div class="stat-label">Totali</div></div>
+  <div class="stat"><div class="stat-num" id="pct">0%</div><div class="stat-label">Precisione</div></div>
+</div>
+
+<!-- ESERCIZIO 1 -->
+<div class="exercise" id="ex1">
+  <div class="exercise-header">
+    <h2>Esercizio 1 — Calcolo Host</h2>
+    <span class="difficulty diff-easy">Facile</span>
+  </div>
+  <div class="exercise-body">
+    <p>Una rete ha subnet mask <code>/26</code>.</p>
+    <div class="question">
+      <label>Quanti host utilizzabili ci sono?</label>
+      <input type="text" id="ex1_a" placeholder="Es: 14">
+      <div class="feedback" id="ex1_a_fb"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkEx1()">Verifica</button>
+      <button class="btn btn-secondary" onclick="resetEx('ex1', ['ex1_a'])">Azzera</button>
+    </div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 2 -->
+<div class="exercise" id="ex2">
+  <div class="exercise-header">
+    <h2>Esercizio 2 — Da Maschera a CIDR</h2>
+    <span class="difficulty diff-easy">Facile</span>
+  </div>
+  <div class="exercise-body">
+    <p>Converti la subnet mask <code>255.255.255.224</code> in notazione CIDR.</p>
+    <div class="question">
+      <label>Prefisso CIDR (es: /24)</label>
+      <input type="text" id="ex2_a" placeholder="Es: /24">
+      <div class="feedback" id="ex2_a_fb"></div>
+    </div>
+    <div class="question">
+      <label>Quanti host utilizzabili con questa maschera?</label>
+      <input type="text" id="ex2_b" placeholder="Es: 254">
+      <div class="feedback" id="ex2_b_fb"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkEx2()">Verifica</button>
+      <button class="btn btn-secondary" onclick="resetEx('ex2', ['ex2_a','ex2_b'])">Azzera</button>
+    </div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 3 -->
+<div class="exercise" id="ex3">
+  <div class="exercise-header">
+    <h2>Esercizio 3 — Network e Broadcast</h2>
+    <span class="difficulty diff-easy">Facile</span>
+  </div>
+  <div class="exercise-body">
+    <p>Dato l'host <code>192.168.1.130/25</code>, calcola:</p>
+    <div class="question">
+      <label>Network address</label>
+      <input type="text" id="ex3_a" placeholder="Es: 192.168.1.0">
+      <div class="feedback" id="ex3_a_fb"></div>
+    </div>
+    <div class="question">
+      <label>Broadcast address</label>
+      <input type="text" id="ex3_b" placeholder="Es: 192.168.1.255">
+      <div class="feedback" id="ex3_b_fb"></div>
+    </div>
+    <div class="question">
+      <label>Range host validi (primo – ultimo)</label>
+      <input type="text" id="ex3_c" placeholder="Es: 192.168.1.1 – 192.168.1.254">
+      <div class="feedback" id="ex3_c_fb"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkEx3()">Verifica</button>
+      <button class="btn btn-secondary" onclick="resetEx('ex3', ['ex3_a','ex3_b','ex3_c'])">Azzera</button>
+    </div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 4 -->
+<div class="exercise" id="ex4">
+  <div class="exercise-header">
+    <h2>Esercizio 4 — Suddivisione in Sottoreti Uguali</h2>
+    <span class="difficulty diff-medium">Medio</span>
+  </div>
+  <div class="exercise-body">
+    <p>Devi dividere la rete <code>10.10.10.0/24</code> in <strong>8 sottoreti uguali</strong>.</p>
+    <div class="question">
+      <label>Quale subnet mask userai? (notazione CIDR)</label>
+      <input type="text" id="ex4_a" placeholder="Es: /25">
+      <div class="feedback" id="ex4_a_fb"></div>
+    </div>
+    <div class="question">
+      <label>Quanti host utilizzabili per sottorete?</label>
+      <input type="text" id="ex4_b" placeholder="Es: 126">
+      <div class="feedback" id="ex4_b_fb"></div>
+    </div>
+    <div class="question">
+      <label>Network address della 3ª sottorete?</label>
+      <input type="text" id="ex4_c" placeholder="Es: 10.10.10.64">
+      <div class="feedback" id="ex4_c_fb"></div>
+    </div>
+    <div class="hint" id="ex4_hint">💡 Per 8 sottoreti servono 3 bit di subnet (2³=8). Il salto tra le sottoreti è 256/8 = 32.</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkEx4()">Verifica</button>
+      <button class="btn btn-secondary" onclick="toggleHint('ex4_hint')">Suggerimento</button>
+      <button class="btn btn-secondary" onclick="resetEx('ex4', ['ex4_a','ex4_b','ex4_c'])">Azzera</button>
+    </div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 5 -->
+<div class="exercise" id="ex5">
+  <div class="exercise-header">
+    <h2>Esercizio 5 — A Quale Sottorete Appartiene?</h2>
+    <span class="difficulty diff-medium">Medio</span>
+  </div>
+  <div class="exercise-body">
+    <p>La rete <code>172.16.0.0/22</code> è suddivisa in sottoreti <code>/24</code>.<br>A quale sottorete appartiene l'host <code>172.16.2.200</code>?</p>
+    <div class="question">
+      <label>Network address della sottorete</label>
+      <input type="text" id="ex5_a" placeholder="Es: 172.16.0.0">
+      <div class="feedback" id="ex5_a_fb"></div>
+    </div>
+    <div class="question">
+      <label>L'host 172.16.4.10 appartiene alla stessa /22?</label>
+      <select id="ex5_b">
+        <option value="">Seleziona...</option>
+        <option value="si">Sì</option>
+        <option value="no">No</option>
+      </select>
+      <div class="feedback" id="ex5_b_fb"></div>
+    </div>
+    <div class="hint" id="ex5_hint">💡 La /22 copre 4 blocchi /24. Da 172.16.0.0 a 172.16.3.255. Il terzo ottetto va da 0 a 3.</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkEx5()">Verifica</button>
+      <button class="btn btn-secondary" onclick="toggleHint('ex5_hint')">Suggerimento</button>
+      <button class="btn btn-secondary" onclick="resetEx('ex5', ['ex5_a','ex5_b'])">Azzera</button>
+    </div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 6 -->
+<div class="exercise" id="ex6">
+  <div class="exercise-header">
+    <h2>Esercizio 6 — VLSM: Due Reparti</h2>
+    <span class="difficulty diff-medium">Medio</span>
+  </div>
+  <div class="exercise-body">
+    <p>Rete disponibile: <code>192.168.5.0/24</code>. Crea sottoreti per:</p>
+    <ul style="margin: 0.4rem 0 0.6rem 1.2rem; font-size: 0.9rem;">
+      <li>Reparto A: <strong>100 host</strong></li>
+      <li>Reparto B: <strong>50 host</strong></li>
+    </ul>
+    <p>Parti dal reparto più grande.</p>
+    <div class="question">
+      <label>Reparto A — subnet mask (CIDR)</label>
+      <input type="text" id="ex6_a" placeholder="Es: /24">
+      <div class="feedback" id="ex6_a_fb"></div>
+    </div>
+    <div class="question">
+      <label>Reparto A — network address</label>
+      <input type="text" id="ex6_b" placeholder="Es: 192.168.5.0">
+      <div class="feedback" id="ex6_b_fb"></div>
+    </div>
+    <div class="question">
+      <label>Reparto B — subnet mask (CIDR)</label>
+      <input type="text" id="ex6_c" placeholder="Es: /25">
+      <div class="feedback" id="ex6_c_fb"></div>
+    </div>
+    <div class="question">
+      <label>Reparto B — network address</label>
+      <input type="text" id="ex6_d" placeholder="Es: 192.168.5.128">
+      <div class="feedback" id="ex6_d_fb"></div>
+    </div>
+    <div class="hint" id="ex6_hint">💡 100 host → serve 2ⁿ−2 ≥ 100 → n=7, 128−2=126 → /25. B parte dove finisce A.</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkEx6()">Verifica</button>
+      <button class="btn btn-secondary" onclick="toggleHint('ex6_hint')">Suggerimento</button>
+      <button class="btn btn-secondary" onclick="resetEx('ex6', ['ex6_a','ex6_b','ex6_c','ex6_d'])">Azzera</button>
+    </div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 7 -->
+<div class="exercise" id="ex7">
+  <div class="exercise-header">
+    <h2>Esercizio 7 — VLSM: Tre Reparti + Link</h2>
+    <span class="difficulty diff-hard">Difficile</span>
+  </div>
+  <div class="exercise-body">
+    <p>Rete: <code>10.0.0.0/24</code>. Crea sottoreti per:</p>
+    <ul style="margin: 0.4rem 0 0.6rem 1.2rem; font-size: 0.9rem;">
+      <li>Uffici: <strong>60 host</strong></li>
+      <li>Server: <strong>25 host</strong></li>
+      <li>Management: <strong>10 host</strong></li>
+      <li>1 link punto-punto: <strong>2 host</strong></li>
+    </ul>
+    <div class="question">
+      <label>Uffici — mask e network (es: /26 10.0.0.0)</label>
+      <input type="text" id="ex7_a" placeholder="/26 10.0.0.0">
+      <div class="feedback" id="ex7_a_fb"></div>
+    </div>
+    <div class="question">
+      <label>Server — mask e network</label>
+      <input type="text" id="ex7_b" placeholder="/27 10.0.0.64">
+      <div class="feedback" id="ex7_b_fb"></div>
+    </div>
+    <div class="question">
+      <label>Management — mask e network</label>
+      <input type="text" id="ex7_c" placeholder="/28 10.0.0.96">
+      <div class="feedback" id="ex7_c_fb"></div>
+    </div>
+    <div class="question">
+      <label>Link — mask e network</label>
+      <input type="text" id="ex7_d" placeholder="/30 10.0.0.112">
+      <div class="feedback" id="ex7_d_fb"></div>
+    </div>
+    <div class="hint" id="ex7_hint">💡 Ordine: Uffici(60→/26), Server(25→/27), Mgmt(10→/28), Link(2→/30). Ogni blocco parte dove finisce il precedente.</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkEx7()">Verifica</button>
+      <button class="btn btn-secondary" onclick="toggleHint('ex7_hint')">Suggerimento</button>
+      <button class="btn btn-secondary" onclick="resetEx('ex7', ['ex7_a','ex7_b','ex7_c','ex7_d'])">Azzera</button>
+    </div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 8 -->
+<div class="exercise" id="ex8">
+  <div class="exercise-header">
+    <h2>Esercizio 8 — Trova l'Errore</h2>
+    <span class="difficulty diff-hard">Difficile</span>
+  </div>
+  <div class="exercise-body">
+    <p>Un collega ha configurato questa rete. Qualcosa non va.</p>
+    <pre style="background:#F1F5F9; padding:0.8rem; border-radius:6px; font-size:0.82rem; overflow-x:auto; margin-bottom:0.6rem;">
+Rete: 192.168.10.0/24
+
+VLAN 10: 192.168.10.0/26
+  Gateway: 192.168.10.63
+
+VLAN 20: 192.168.10.64/26
+  Gateway: 192.168.10.65
+
+VLAN 30: 192.168.10.128/26
+  Gateway: 192.168.10.129</pre>
+    <div class="question">
+      <label>C'è un errore nella configurazione. Quale VLAN ha il problema?</label>
+      <select id="ex8_a">
+        <option value="">Seleziona...</option>
+        <option value="10">VLAN 10</option>
+        <option value="20">VLAN 20</option>
+        <option value="30">VLAN 30</option>
+      </select>
+      <div class="feedback" id="ex8_a_fb"></div>
+    </div>
+    <div class="question">
+      <label>Qual è il problema? (scegli)</label>
+      <select id="ex8_b">
+        <option value="">Seleziona...</option>
+        <option value="overlap">Range si sovrappone alla VLAN successiva</option>
+        <option value="broadcast">Il gateway è un indirizzo di broadcast</option>
+        <option value="network">Il gateway è un indirizzo di rete</option>
+        <option value="mask">La subnet mask è sbagliata</option>
+      </select>
+      <div class="feedback" id="ex8_b_fb"></div>
+    </div>
+    <div class="question">
+      <label>Quale dovrebbe essere il gateway corretto?</label>
+      <input type="text" id="ex8_c" placeholder="Es: 192.168.10.1">
+      <div class="feedback" id="ex8_c_fb"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkEx8()">Verifica</button>
+      <button class="btn btn-secondary" onclick="resetEx('ex8', ['ex8_a','ex8_b','ex8_c'])">Azzera</button>
+    </div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 9 -->
+<div class="exercise" id="ex9">
+  <div class="exercise-header">
+    <h2>Esercizio 9 — Supernetting</h2>
+    <span class="difficulty diff-hard">Difficile</span>
+  </div>
+  <div class="exercise-body">
+    <p>Un router ha queste 4 rotte:</p>
+    <pre style="background:#F1F5F9; padding:0.6rem; border-radius:6px; font-size:0.85rem; margin-bottom:0.6rem;">172.16.4.0/24
+172.16.5.0/24
+172.16.6.0/24
+172.16.7.0/24</pre>
+    <div class="question">
+      <label>Possono essere aggregate in una summary route? Quale? (es: 172.16.4.0/22)</label>
+      <input type="text" id="ex9_a" placeholder="Es: 172.16.4.0/22">
+      <div class="feedback" id="ex9_a_fb"></div>
+    </div>
+    <div class="hint" id="ex9_hint">💡 4 rotte contigue, 4 è un multiplo di /24. Quanti bit coprono 4 reti? 2 bit → da /24 a /22. Ma verifica: 4 è multiplo di 4 nel terzo ottetto?</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkEx9()">Verifica</button>
+      <button class="btn btn-secondary" onclick="toggleHint('ex9_hint')">Suggerimento</button>
+      <button class="btn btn-secondary" onclick="resetEx('ex9', ['ex9_a'])">Azzera</button>
+    </div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 10 -->
+<div class="exercise" id="ex10">
+  <div class="exercise-header">
+    <h2>Esercizio 10 — Scenario: Sicurezza e Segmentazione</h2>
+    <span class="difficulty diff-hard">Difficile</span>
+  </div>
+  <div class="exercise-body">
+    <p>Un'azienda ha una rete piatta <code>192.168.0.0/24</code> con 80 PC, 5 server e WiFi ospiti sullo stesso segmento. Un PC viene compromesso.</p>
+    <div class="question">
+      <label>In una rete piatta, l'attaccante può raggiungere i server?</label>
+      <select id="ex10_a">
+        <option value="">Seleziona...</option>
+        <option value="si">Sì, sono tutti nello stesso segmento</option>
+        <option value="no">No, il firewall li protegge</option>
+      </select>
+      <div class="feedback" id="ex10_a_fb"></div>
+    </div>
+    <div class="question">
+      <label>Quale tecnologia separa i dispositivi a layer 2?</label>
+      <select id="ex10_b">
+        <option value="">Seleziona...</option>
+        <option value="acl">ACL</option>
+        <option value="vlan">VLAN</option>
+        <option value="nat">NAT</option>
+        <option value="vpn">VPN</option>
+      </select>
+      <div class="feedback" id="ex10_b_fb"></div>
+    </div>
+    <div class="question">
+      <label>Le VLAN da sole garantiscono la sicurezza tra segmenti?</label>
+      <select id="ex10_c">
+        <option value="">Seleziona...</option>
+        <option value="si">Sì, i segmenti sono isolati</option>
+        <option value="no">No, serve anche un firewall con regole</option>
+      </select>
+      <div class="feedback" id="ex10_c_fb"></div>
+    </div>
+    <div class="question">
+      <label>Come si chiama il movimento di un attaccante tra host interni?</label>
+      <input type="text" id="ex10_d" placeholder="lateral ...">
+      <div class="feedback" id="ex10_d_fb"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkEx10()">Verifica</button>
+      <button class="btn btn-secondary" onclick="resetEx('ex10', ['ex10_a','ex10_b','ex10_c','ex10_d'])">Azzera</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<footer>
+  Corso Cybersecurity — Leonardo SpA | Modulo 1: Reti, SO e Hardening<br>
+  Giorno 1 — 8 aprile 2026
+</footer>
+
+<script>
+// ─── STATS ───
+let stats = { completed: new Set(), correct: new Set() };
+
+function updateStats() {
+  document.getElementById('completed').textContent = stats.completed.size;
+  document.getElementById('correct').textContent = stats.correct.size;
+  const pct = stats.completed.size ? Math.round(stats.correct.size / stats.completed.size * 100) : 0;
+  document.getElementById('pct').textContent = pct + '%';
+}
+
+function markEx(id, isCorrect) {
+  const el = document.getElementById(id);
+  el.classList.remove('completed-correct', 'completed-wrong');
+  stats.completed.add(id);
+  if (isCorrect) {
+    stats.correct.add(id);
+    el.classList.add('completed-correct');
+  } else {
+    stats.correct.delete(id);
+    el.classList.add('completed-wrong');
+  }
+  updateStats();
+}
+
+// ─── HELPERS ───
+function norm(s) { return s.trim().replace(/\s+/g, ' ').toLowerCase(); }
+function setFB(id, correct, msg) {
+  const el = document.getElementById(id);
+  el.className = 'feedback ' + (correct ? 'correct' : 'wrong');
+  el.textContent = (correct ? '✓ ' : '✗ ') + msg;
+  el.style.display = 'block';
+}
+function val(id) { 
+  const el = document.getElementById(id);
+  return el.tagName === 'SELECT' ? el.value : el.value.trim();
+}
+function toggleHint(id) {
+  document.getElementById(id).classList.toggle('visible');
+}
+function resetEx(exId, fields) {
+  fields.forEach(f => {
+    const el = document.getElementById(f);
+    if (el.tagName === 'SELECT') el.selectedIndex = 0;
+    else el.value = '';
+    const fb = document.getElementById(f + '_fb');
+    if (fb) { fb.style.display = 'none'; fb.className = 'feedback'; }
+  });
+  const ex = document.getElementById(exId);
+  ex.classList.remove('completed-correct', 'completed-wrong');
+  stats.completed.delete(exId);
+  stats.correct.delete(exId);
+  updateStats();
+}
+
+function checkAnswer(fieldId, acceptable, correctDisplay) {
+  const v = norm(val(fieldId));
+  const ok = acceptable.some(a => norm(a) === v);
+  setFB(fieldId + '_fb', ok, ok ? 'Corretto!' : 'Risposta corretta: ' + correctDisplay);
+  return ok;
+}
+
+// ─── EXERCISE CHECKS ───
+function checkEx1() {
+  const ok = checkAnswer('ex1_a', ['62'], '62 (2⁶−2 = 62)');
+  markEx('ex1', ok);
+}
+
+function checkEx2() {
+  const a = checkAnswer('ex2_a', ['/27', '27'], '/27');
+  const b = checkAnswer('ex2_b', ['30'], '30 (2⁵−2 = 30)');
+  markEx('ex2', a && b);
+}
+
+function checkEx3() {
+  const a = checkAnswer('ex3_a', ['192.168.1.128'], '192.168.1.128');
+  const b = checkAnswer('ex3_b', ['192.168.1.255'], '192.168.1.255');
+  const c = checkAnswer('ex3_c', 
+    ['192.168.1.129 – 192.168.1.254', '192.168.1.129 - 192.168.1.254',
+     '192.168.1.129-192.168.1.254', '192.168.1.129–192.168.1.254',
+     '.129 – .254', '.129 - .254', '.129–.254', '.129-.254',
+     '192.168.1.129 – .254', '192.168.1.129 - .254', '192.168.1.129–.254'],
+    '192.168.1.129 – 192.168.1.254');
+  markEx('ex3', a && b && c);
+}
+
+function checkEx4() {
+  const a = checkAnswer('ex4_a', ['/27', '27'], '/27');
+  const b = checkAnswer('ex4_b', ['30'], '30 (2⁵−2 = 30)');
+  const c = checkAnswer('ex4_c', ['10.10.10.64'], '10.10.10.64 (3ª sottorete: .0, .32, .64)');
+  markEx('ex4', a && b && c);
+}
+
+function checkEx5() {
+  const a = checkAnswer('ex5_a', ['172.16.2.0'], '172.16.2.0');
+  const vb = val('ex5_b');
+  const bOk = vb === 'no';
+  setFB('ex5_b_fb', bOk, bOk ? 'Corretto! 172.16.4.x è fuori dal range .0.0–.3.255' : 'No: la /22 copre solo 172.16.0.0–172.16.3.255. Il .4.x è fuori.');
+  markEx('ex5', a && bOk);
+}
+
+function checkEx6() {
+  const a = checkAnswer('ex6_a', ['/25', '25'], '/25 (128−2=126 ≥ 100)');
+  const b = checkAnswer('ex6_b', ['192.168.5.0'], '192.168.5.0');
+  const c = checkAnswer('ex6_c', ['/26', '26'], '/26 (64−2=62 ≥ 50)');
+  const d = checkAnswer('ex6_d', ['192.168.5.128'], '192.168.5.128 (parte dove finisce A)');
+  markEx('ex6', a && b && c && d);
+}
+
+function checkEx7() {
+  const a = checkAnswer('ex7_a', ['/26 10.0.0.0'], '/26 10.0.0.0 (64−2=62 ≥ 60)');
+  const b = checkAnswer('ex7_b', ['/27 10.0.0.64'], '/27 10.0.0.64 (32−2=30 ≥ 25)');
+  const c = checkAnswer('ex7_c', ['/28 10.0.0.96'], '/28 10.0.0.96 (16−2=14 ≥ 10)');
+  const d = checkAnswer('ex7_d', ['/30 10.0.0.112'], '/30 10.0.0.112 (4−2=2)');
+  markEx('ex7', a && b && c && d);
+}
+
+function checkEx8() {
+  const va = val('ex8_a');
+  const aOk = va === '10';
+  setFB('ex8_a_fb', aOk, aOk ? 'Corretto! VLAN 10 ha il problema.' : 'È la VLAN 10: il gateway .63 è il broadcast della /26.');
+  
+  const vb = val('ex8_b');
+  const bOk = vb === 'broadcast';
+  setFB('ex8_b_fb', bOk, bOk ? 'Corretto! .63 è il broadcast di 192.168.10.0/26.' : 'Il gateway .63 è l\'indirizzo di broadcast della subnet .0/26 (ultimo indirizzo del blocco 0–63).');
+  
+  const c = checkAnswer('ex8_c', ['192.168.10.1'], '192.168.10.1 (primo host valido)');
+  markEx('ex8', aOk && bOk && c);
+}
+
+function checkEx9() {
+  const a = checkAnswer('ex9_a', ['172.16.4.0/22'], '172.16.4.0/22 (4 rotte contigue, 4 è multiplo di 4 nel 3° ottetto)');
+  markEx('ex9', a);
+}
+
+function checkEx10() {
+  const va = val('ex10_a');
+  const aOk = va === 'si';
+  setFB('ex10_a_fb', aOk, aOk ? 'Corretto! Nella rete piatta tutto è raggiungibile.' : 'In una rete piatta non c\'è firewall tra i segmenti — tutto è raggiungibile.');
+
+  const vb = val('ex10_b');
+  const bOk = vb === 'vlan';
+  setFB('ex10_b_fb', bOk, bOk ? 'Corretto! Le VLAN separano i domini di broadcast.' : 'La risposta è VLAN (IEEE 802.1Q) — separa i dispositivi a layer 2.');
+
+  const vc = val('ex10_c');
+  const cOk = vc === 'no';
+  setFB('ex10_c_fb', cOk, cOk ? 'Corretto! VLAN + Firewall = segmentazione vera.' : 'No: le VLAN separano layer 2, ma il routing inter-VLAN riconnette tutto. Serve un firewall.');
+
+  const vd = norm(val('ex10_d'));
+  const dOk = vd.includes('lateral') && vd.includes('movement');
+  setFB('ex10_d_fb', dOk, dOk ? 'Corretto!' : 'Risposta: lateral movement');
+
+  markEx('ex10', aOk && bOk && cOk && dOk);
+}
+</script>
+</body>
+</html>
