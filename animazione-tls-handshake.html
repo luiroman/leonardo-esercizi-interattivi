@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TLS 1.3 Handshake — Animazione Interattiva</title>
+<title>TLS 1.3 Handshake — Animazione</title>
 <style>
 :root {
   --accent: #0891B2;
@@ -16,105 +16,55 @@
   --border: #E2E8F0;
   --success: #059669;
   --danger: #DC2626;
-  --warn: #D97706;
   --client: #7C3AED;
   --server: #0891B2;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+body {
+  font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+  background: var(--bg); color: var(--text);
+  display: flex; flex-direction: column; align-items: center;
+  min-height: 100vh; overflow-x: hidden;
+}
 
 /* Header */
-.header { background: var(--title); color: white; padding: 16px 24px; text-align: center; }
+.header {
+  background: var(--title); color: white; width: 100%;
+  padding: 14px 24px; text-align: center;
+}
 .header h1 { font-size: 1.3em; font-weight: bold; }
-.header p { color: #94A3B8; font-size: 0.85em; margin-top: 4px; }
 
-/* Main stage */
-.stage { position: relative; width: 100%; max-width: 860px; margin: 0 auto; height: 520px; background: white; border: 1px solid var(--border); border-radius: 0 0 12px 12px; overflow: hidden; }
+/* Stage */
+.stage {
+  position: relative; width: 100%; max-width: 900px;
+  height: 540px; background: white;
+  border: 1px solid var(--border); border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
 
 /* Columns */
 .col-client, .col-server {
-  position: absolute; top: 0; width: 140px; height: 100%;
-  display: flex; flex-direction: column; align-items: center; padding-top: 16px;
+  position: absolute; top: 0; width: 150px; height: 100%;
+  display: flex; flex-direction: column; align-items: center; padding-top: 20px;
 }
-.col-client { left: 20px; }
-.col-server { right: 20px; }
+.col-client { left: 16px; }
+.col-server { right: 16px; }
 
 .entity-icon {
-  width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center;
-  font-size: 28px; color: white; font-weight: bold;
+  width: 60px; height: 60px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; color: white;
 }
 .entity-icon.client { background: var(--client); }
 .entity-icon.server { background: var(--server); }
 .entity-label { font-weight: bold; font-size: 0.85em; margin-top: 6px; }
-.entity-sub { font-size: 0.7em; color: var(--muted); margin-top: 2px; text-align: center; }
-
-/* Timeline lane */
-.lane { position: absolute; left: 180px; right: 180px; top: 0; height: 100%; }
-.lane-line-client, .lane-line-server {
-  position: absolute; top: 50px; width: 3px; height: calc(100% - 70px);
-  background: var(--border);
-}
-.lane-line-client { left: 0; }
-.lane-line-server { right: 0; }
-
-/* Message arrows */
-.msg {
-  position: absolute; left: 0; right: 0; height: 60px;
-  opacity: 0; transform: translateY(10px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-.msg.visible { opacity: 1; transform: translateY(0); }
-
-.msg-arrow {
-  position: absolute; top: 18px; height: 3px;
-  background: var(--muted);
-}
-.msg-arrow.right { left: 8px; right: 8px; }
-.msg-arrow.left { left: 8px; right: 8px; }
-
-.msg-arrow::after {
-  content: ''; position: absolute; top: -5px; width: 0; height: 0;
-  border-top: 7px solid transparent; border-bottom: 7px solid transparent;
-}
-.msg-arrow.right::after { right: -2px; border-left: 12px solid var(--muted); }
-.msg-arrow.left::after { left: -2px; border-right: 12px solid var(--muted); }
-
-.msg-label {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  font-size: 0.75em; font-weight: bold; padding: 2px 10px; border-radius: 10px;
-  white-space: nowrap;
-}
-.msg-content {
-  position: absolute; top: 26px; left: 50%; transform: translateX(-50%);
-  font-size: 0.68em; color: var(--muted); text-align: center; white-space: nowrap;
-}
-
-/* Packet animation */
-.packet {
-  position: absolute; top: 14px; width: 14px; height: 14px; border-radius: 50%;
-  opacity: 0;
-}
-.packet.sending {
-  animation: fly 0.8s ease-in-out forwards;
-}
-.packet.sending-back {
-  animation: flyback 0.8s ease-in-out forwards;
-}
-
-@keyframes fly {
-  0% { left: 4px; opacity: 1; }
-  100% { left: calc(100% - 18px); opacity: 1; }
-}
-@keyframes flyback {
-  0% { left: calc(100% - 18px); opacity: 1; }
-  100% { left: 4px; opacity: 1; }
-}
+.entity-sub { font-size: 0.7em; color: var(--muted); margin-top: 2px; }
 
 /* Key boxes */
 .key-box {
-  position: absolute; width: 120px; padding: 6px 8px; border-radius: 8px;
+  position: absolute; width: 120px; padding: 5px 8px; border-radius: 8px;
   font-size: 0.65em; text-align: center; border: 2px solid;
-  opacity: 0; transform: scale(0.8);
+  opacity: 0; transform: scale(0.85);
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 .key-box.visible { opacity: 1; transform: scale(1); }
@@ -122,124 +72,154 @@ body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; background: var(--bg
 .key-box.server-key { border-color: var(--server); background: #F0FDFA; color: var(--server); }
 .key-box.shared { border-color: var(--success); background: #F0FDF4; color: var(--success); }
 
+/* Lane */
+.lane {
+  position: absolute; left: 185px; right: 185px; top: 0; height: 100%;
+}
+.lane-line-client, .lane-line-server {
+  position: absolute; top: 50px; width: 3px; height: calc(100% - 110px);
+  background: var(--border);
+  transition: background 0.6s, width 0.3s;
+}
+.lane-line-client { left: 0; }
+.lane-line-server { right: 0; }
+
+/* Messages */
+.msg {
+  position: absolute; left: 0; right: 0; height: 60px;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.msg.visible { opacity: 1; transform: translateY(0); }
+
+.msg-arrow {
+  position: absolute; top: 20px; height: 3px;
+  left: 8px; right: 8px; background: var(--muted);
+}
+.msg-arrow::after {
+  content: ''; position: absolute; top: -5px;
+  width: 0; height: 0;
+  border-top: 7px solid transparent; border-bottom: 7px solid transparent;
+}
+.msg-arrow.right::after { right: -2px; border-left: 12px solid var(--muted); }
+.msg-arrow.left::after { left: -2px; border-right: 12px solid var(--muted); }
+
+.msg-label {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  font-size: 0.72em; font-weight: bold; padding: 2px 10px;
+  border-radius: 10px; white-space: nowrap; color: white;
+}
+.msg-detail {
+  position: absolute; top: 28px; left: 50%; transform: translateX(-50%);
+  font-size: 0.62em; color: var(--muted); text-align: center; white-space: nowrap;
+}
+
+/* Packets */
+.packet {
+  position: absolute; top: 16px; width: 14px; height: 14px;
+  border-radius: 50%; opacity: 0;
+}
+.packet.fly-right { animation: flyR 0.7s ease-in-out forwards; }
+.packet.fly-left  { animation: flyL 0.7s ease-in-out forwards; }
+
+@keyframes flyR {
+  0%   { left: 4px; opacity: 1; }
+  100% { left: calc(100% - 18px); opacity: 1; }
+}
+@keyframes flyL {
+  0%   { left: calc(100% - 18px); opacity: 1; }
+  100% { left: 4px; opacity: 1; }
+}
+
 /* Lock overlay */
 .lock-overlay {
-  position: absolute; left: 180px; right: 180px; top: 0; height: 100%;
+  position: absolute; left: 185px; right: 185px; top: 0; height: 100%;
   background: rgba(5, 150, 105, 0.06);
   border-left: 3px solid var(--success);
   border-right: 3px solid var(--success);
-  opacity: 0;
-  transition: opacity 0.8s ease;
+  opacity: 0; transition: opacity 0.8s ease;
   pointer-events: none;
 }
 .lock-overlay.visible { opacity: 1; }
 
 .lock-icon {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  font-size: 48px; opacity: 0;
+  position: absolute; left: 50%; top: 46%;
+  transform: translate(-50%, -50%);
+  font-size: 44px; opacity: 0;
   transition: opacity 0.6s ease 0.3s;
 }
 .lock-icon.visible { opacity: 1; }
 
 /* Status bar */
 .status-bar {
-  position: absolute; bottom: 0; left: 0; right: 0; height: 54px;
-  background: var(--title); display: flex; align-items: center; justify-content: center;
-  gap: 8px; padding: 0 20px;
+  position: absolute; bottom: 0; left: 0; right: 0; height: 52px;
+  background: var(--title);
+  display: flex; align-items: center; justify-content: center; gap: 12px;
 }
 .status-text {
-  color: white; font-size: 0.85em; font-weight: 500;
-  flex: 1; text-align: center;
+  color: white; font-size: 0.85em; font-weight: 500; text-align: center;
 }
-.step-dots { display: flex; gap: 6px; }
+.step-dots { display: flex; gap: 6px; position: absolute; left: 20px; }
 .step-dot {
-  width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.25);
-  transition: background 0.3s;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: rgba(255,255,255,0.2); transition: background 0.3s;
 }
 .step-dot.active { background: var(--accent); }
 .step-dot.done { background: var(--success); }
 
-/* Controls */
-.controls {
-  max-width: 860px; margin: 16px auto; display: flex; gap: 10px; justify-content: center;
-  flex-wrap: wrap; padding: 0 16px;
+/* Phase label */
+.phase-label {
+  position: absolute; right: 20px; bottom: 60px;
+  font-size: 0.7em; color: var(--muted); font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  opacity: 0; transition: opacity 0.4s;
 }
-.btn {
-  padding: 10px 24px; border: none; border-radius: 8px; font-size: 0.9em;
-  cursor: pointer; font-weight: 600; transition: all 0.2s;
-}
-.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-.btn.primary { background: var(--accent); color: white; }
-.btn.secondary { background: var(--border); color: var(--text); }
-.btn.success { background: var(--success); color: white; }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+.phase-label.visible { opacity: 1; }
 
-/* Info cards below */
-.info-area {
-  max-width: 860px; margin: 16px auto; padding: 0 16px;
+footer {
+  text-align: center; color: var(--muted); font-size: 0.7em;
+  padding: 10px; width: 100%;
 }
-.info-card {
-  background: white; border: 1px solid var(--border); border-radius: 8px;
-  padding: 14px 18px; margin-bottom: 10px;
-  opacity: 0; max-height: 0; overflow: hidden;
-  transition: opacity 0.4s ease, max-height 0.5s ease, padding 0.3s ease, margin 0.3s ease;
-}
-.info-card.visible {
-  opacity: 1; max-height: 200px; padding: 14px 18px; margin-bottom: 10px;
-}
-.info-card h4 { font-size: 0.85em; margin-bottom: 4px; }
-.info-card p { font-size: 0.8em; color: var(--muted); line-height: 1.5; }
-.info-card .tag {
-  display: inline-block; font-size: 0.65em; padding: 2px 8px; border-radius: 8px;
-  font-weight: bold; color: white; margin-right: 4px;
-}
-.tag.client-tag { background: var(--client); }
-.tag.server-tag { background: var(--server); }
-.tag.secure-tag { background: var(--success); }
-
-footer { text-align: center; color: var(--muted); font-size: 0.75em; padding: 16px; }
 
 @media (max-width: 700px) {
   .stage { height: 480px; }
-  .col-client, .col-server { width: 80px; }
-  .col-client { left: 5px; } .col-server { right: 5px; }
-  .lane { left: 100px; right: 100px; }
-  .lock-overlay { left: 100px; right: 100px; }
-  .entity-icon { width: 48px; height: 48px; font-size: 20px; border-radius: 12px; }
-  .key-box { width: 90px; font-size: 0.55em; }
+  .col-client, .col-server { width: 90px; }
+  .col-client { left: 4px; } .col-server { right: 4px; }
+  .lane { left: 108px; right: 108px; }
+  .lock-overlay { left: 108px; right: 108px; }
+  .entity-icon { width: 46px; height: 46px; font-size: 20px; }
+  .key-box { width: 88px; font-size: 0.55em; }
 }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>🔐 TLS 1.3 Handshake — Animazione</h1>
-  <p>Come client e server stabiliscono una connessione sicura in 1 round-trip</p>
+  <h1>🔐 TLS 1.3 Handshake</h1>
 </div>
 
 <div class="stage" id="stage">
-  <!-- Client column -->
+
+  <!-- Client -->
   <div class="col-client">
     <div class="entity-icon client">💻</div>
     <div class="entity-label" style="color:var(--client)">Client</div>
     <div class="entity-sub">Browser</div>
-    <!-- Client keys -->
-    <div class="key-box client-key" id="ck1" style="top:150px; left:10px;">🔑 Chiave DH<br>effimera (privata)</div>
-    <div class="key-box client-key" id="ck2" style="top:220px; left:10px;">📤 Chiave DH<br>effimera (pubblica)</div>
-    <div class="key-box server-key" id="ck-cert" style="top:290px; left:10px;">📜 Certificato<br>ricevuto</div>
-    <div class="key-box shared" id="ck-cert-ok" style="top:290px; left:10px;">✅ Certificato<br>verificato!</div>
-    <div class="key-box shared" id="ck3" style="top:365px; left:10px;">🔓 Session Key<br>condiviso</div>
+    <div class="key-box client-key" id="ck1" style="top:145px; left:8px;">🔑 Chiave DH<br>effimera (privata)</div>
+    <div class="key-box client-key" id="ck2" style="top:215px; left:8px;">📤 Chiave DH<br>pubblica</div>
+    <div class="key-box server-key" id="ck-cert" style="top:285px; left:8px;">📜 Certificato<br>ricevuto</div>
+    <div class="key-box shared"     id="ck-cert-ok" style="top:285px; left:8px;">✅ Certificato<br>verificato!</div>
+    <div class="key-box shared"     id="ck3" style="top:355px; left:8px;">🔒 Session Key</div>
   </div>
 
-  <!-- Server column -->
+  <!-- Server -->
   <div class="col-server">
     <div class="entity-icon server">🖥</div>
     <div class="entity-label" style="color:var(--server)">Server</div>
     <div class="entity-sub">www.sito.com</div>
-    <!-- Server keys -->
-    <div class="key-box server-key" id="sk1" style="top:200px; right:10px;">🔑 Chiave DH<br>effimera (privata)</div>
-    <div class="key-box server-key" id="sk2" style="top:280px; right:10px;">📜 Certificato<br>X.509</div>
-    <div class="key-box shared" id="sk3" style="top:360px; right:10px;">🔓 Session Key<br>condiviso</div>
+    <div class="key-box server-key" id="sk1" style="top:175px; right:8px;">🔑 Chiave DH<br>effimera (privata)</div>
+    <div class="key-box server-key" id="sk2" style="top:245px; right:8px;">📜 Certificato<br>X.509</div>
+    <div class="key-box shared"     id="sk3" style="top:355px; right:8px;">🔒 Session Key</div>
   </div>
 
   <!-- Lane -->
@@ -247,38 +227,38 @@ footer { text-align: center; color: var(--muted); font-size: 0.75em; padding: 16
     <div class="lane-line-client"></div>
     <div class="lane-line-server"></div>
 
-    <!-- Message 1: Client Hello -->
-    <div class="msg" id="msg1" style="top: 80px;">
-      <div class="msg-label" style="background:var(--client); color:white;">Client Hello</div>
+    <!-- Msg 1: Client Hello -->
+    <div class="msg" id="msg1" style="top:80px;">
+      <div class="msg-label" style="background:var(--client);">① Client Hello</div>
       <div class="msg-arrow right"></div>
       <div class="packet" id="pkt1" style="background:var(--client);"></div>
-      <div class="msg-content">TLS 1.3 · Cipher suites · Chiave DH pubblica · SNI</div>
+      <div class="msg-detail">TLS 1.3 · Cipher suites · Chiave DH pubblica · SNI</div>
     </div>
 
-    <!-- Message 2: Server Hello + Certificate -->
-    <div class="msg" id="msg2" style="top: 175px;">
-      <div class="msg-label" style="background:var(--server); color:white;">Server Hello + Certificate</div>
+    <!-- Msg 2: Server Hello -->
+    <div class="msg" id="msg2" style="top:175px;">
+      <div class="msg-label" style="background:var(--server);">② Server Hello + Certificato</div>
       <div class="msg-arrow left"></div>
       <div class="packet" id="pkt2" style="background:var(--server);"></div>
-      <div class="msg-content">Cipher scelta · Chiave DH pubblica · Certificato · Finished</div>
+      <div class="msg-detail">Cipher scelta · Chiave DH pubblica · Certificato X.509 · Finished</div>
     </div>
 
-    <!-- Message 3: Client Finished -->
-    <div class="msg" id="msg3" style="top: 270px;">
-      <div class="msg-label" style="background:var(--success); color:white;">Client Finished (cifrato)</div>
+    <!-- Msg 3: Client Finished -->
+    <div class="msg" id="msg3" style="top:270px;">
+      <div class="msg-label" style="background:var(--success);">③ Client Finished (cifrato)</div>
       <div class="msg-arrow right"></div>
       <div class="packet" id="pkt3" style="background:var(--success);"></div>
-      <div class="msg-content">Verifica certificato ✓ · Calcola session key · Conferma</div>
+      <div class="msg-detail">Verifica certificato ✓ · Calcola session key · Conferma cifrata</div>
     </div>
 
-    <!-- Message 4: Application Data (bidirectional) -->
-    <div class="msg" id="msg4" style="top: 355px; height: 80px;">
-      <div class="msg-label" style="background:var(--success); color:white;">🔒 Dati Applicativi Cifrati</div>
-      <div class="msg-arrow right" style="top: 22px;"></div>
-      <div class="packet" id="pkt4a" style="background:var(--success); top: 18px;"></div>
-      <div class="msg-content" style="top: 30px;">GET /index.html · POST /login · risposte · tutto cifrato</div>
-      <div class="msg-arrow left" style="top: 48px;"></div>
-      <div class="packet" id="pkt4b" style="background:var(--success); top: 44px;"></div>
+    <!-- Msg 4: Data (bidirectional) -->
+    <div class="msg" id="msg4" style="top:360px; height:75px;">
+      <div class="msg-label" style="background:var(--success);">🔒 Dati cifrati</div>
+      <div class="msg-arrow right" style="top:22px;"></div>
+      <div class="packet" id="pkt4a" style="background:var(--success); top:18px;"></div>
+      <div class="msg-arrow left" style="top:46px;"></div>
+      <div class="packet" id="pkt4b" style="background:var(--success); top:42px;"></div>
+      <div class="msg-detail" style="top:52px;">Request e response cifrati con AES-256-GCM</div>
     </div>
   </div>
 
@@ -286,189 +266,126 @@ footer { text-align: center; color: var(--muted); font-size: 0.75em; padding: 16
   <div class="lock-overlay" id="lockOverlay"></div>
   <div class="lock-icon" id="lockIcon">🔒</div>
 
+  <!-- Phase label -->
+  <div class="phase-label" id="phaseLabel"></div>
+
   <!-- Status bar -->
   <div class="status-bar">
-    <div class="step-dots" id="dots">
-      <div class="step-dot" data-step="0"></div>
-      <div class="step-dot" data-step="1"></div>
-      <div class="step-dot" data-step="2"></div>
-      <div class="step-dot" data-step="3"></div>
-      <div class="step-dot" data-step="4"></div>
-      <div class="step-dot" data-step="5"></div>
+    <div class="step-dots">
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
     </div>
-    <div class="status-text" id="statusText">Premi ▶ Avanti per iniziare</div>
+    <div class="status-text" id="statusText"></div>
   </div>
 </div>
 
-<!-- Controls -->
-<div class="controls">
-  <button class="btn secondary" id="btnReset" onclick="reset()">↩ Ricomincia</button>
-  <button class="btn primary" id="btnNext" onclick="nextStep()">▶ Avanti</button>
-  <button class="btn secondary" id="btnAuto" onclick="autoPlay()">⏩ Auto</button>
-</div>
-
-<!-- Info cards -->
-<div class="info-area">
-  <div class="info-card" id="info0">
-    <h4><span class="tag" style="background:var(--title)">INIZIO</span> Situazione iniziale</h4>
-    <p>Client e server non si conoscono. Il canale è in chiaro — chiunque può leggere il traffico. Obiettivo: stabilire un canale cifrato in un solo round-trip.</p>
-  </div>
-  <div class="info-card" id="info1">
-    <h4><span class="tag client-tag">1</span> Client Hello → Server</h4>
-    <p>Il client genera una coppia di chiavi Diffie-Hellman effimere (usa e getta) e invia la <strong>chiave pubblica</strong> al server insieme a: versioni TLS supportate, cipher suites proposte, e il nome del sito (SNI). Inviare la chiave DH già nel primo messaggio è la novità di TLS 1.3 — permette di completare in 1-RTT.</p>
-  </div>
-  <div class="info-card" id="info2">
-    <h4><span class="tag server-tag">2</span> Server Hello + Certificate ← Server</h4>
-    <p>Il server sceglie la cipher suite, genera la propria chiave DH effimera, e la invia insieme al <strong>certificato X.509</strong> (che prova la sua identità). Il messaggio Finished è già cifrato — il server ha calcolato il session key usando la chiave DH del client + la propria.</p>
-  </div>
-  <div class="info-card" id="info3">
-    <h4><span class="tag secure-tag">3</span> Client Finished → Server (cifrato!)</h4>
-    <p>Il client verifica il certificato risalendo la catena di fiducia fino alla Root CA. Poi calcola lo <strong>stesso session key</strong> (DH pubblica server + DH privata client = stessa chiave!) e invia il Finished cifrato. Da questo momento, tutto è cifrato.</p>
-  </div>
-  <div class="info-card" id="info4">
-    <h4><span class="tag secure-tag">🔒</span> Connessione sicura stabilita!</h4>
-    <p>Client e server condividono lo stesso session key senza averlo mai trasmesso. Anche se qualcuno ha intercettato tutto, non può ricostruire la chiave. Le chiavi DH sono <strong>effimere</strong> — verranno distrutte a fine sessione (<em>Perfect Forward Secrecy</em>).</p>
-  </div>
-</div>
-
-<footer>
-  Corso Cybersecurity — Leonardo SpA · Modulo 1 · Giorno 2<br>
-  Animazione TLS 1.3 Handshake
-</footer>
+<footer>Corso Cybersecurity — Leonardo SpA · Modulo 1</footer>
 
 <script>
-let currentStep = -1;
-const totalSteps = 5;
-let autoTimer = null;
-
-const steps = [
-  // Step 0: Initial state
-  () => {
-    show('info0');
-    setStatus('Il canale è in chiaro — serve un handshake TLS');
-    dotState(0, 'active');
-  },
-  // Step 1: Client Hello
-  () => {
-    show('ck1'); show('ck2');
-    setTimeout(() => {
-      show('msg1');
-      sendPacket('pkt1');
-    }, 400);
-    show('info1');
-    setStatus('① Client Hello — chiave DH pubblica + cipher suites');
-    dotState(0, 'done'); dotState(1, 'active');
-  },
-  // Step 2: Server Hello
-  () => {
-    show('sk1'); show('sk2');
-    setTimeout(() => {
-      show('msg2');
-      sendPacketBack('pkt2');
-      // Certificate arrives at client after packet animation
-      setTimeout(() => { show('ck-cert'); }, 900);
-    }, 400);
-    show('info2');
-    setStatus('② Server Hello — chiave DH pubblica + certificato X.509 → client');
-    dotState(1, 'done'); dotState(2, 'active');
-  },
-  // Step 3: Client Finished
-  () => {
-    // Verify certificate: swap "received" with "verified"
-    hide('ck-cert');
-    setTimeout(() => { show('ck-cert-ok'); }, 300);
-    // Then show session keys and send finished
-    setTimeout(() => { show('ck3'); show('sk3'); }, 600);
-    setTimeout(() => {
-      show('msg3');
-      sendPacket('pkt3');
-    }, 900);
-    show('info3');
-    setStatus('③ Verifica certificato ✓ → calcola session key → Client Finished');
-    dotState(2, 'done'); dotState(3, 'active');
-  },
-  // Step 4: Secure — bidirectional data
-  () => {
-    document.getElementById('lockOverlay').classList.add('visible');
-    document.getElementById('lockIcon').classList.add('visible');
-    setTimeout(() => {
-      show('msg4');
-      sendPacket('pkt4a');           // client → server
-      setTimeout(() => {
-        sendPacketBack('pkt4b');     // server → client
-      }, 600);
-    }, 600);
-    show('info4');
-    setStatus('🔒 Connessione sicura — dati cifrati in entrambe le direzioni');
-    dotState(3, 'done'); dotState(4, 'active');
-    // Change lane lines to green
-    document.querySelectorAll('.lane-line-client, .lane-line-server').forEach(l => {
-      l.style.background = 'var(--success)';
-      l.style.width = '4px';
-    });
-    setTimeout(() => dotState(4, 'done'), 1800);
-    document.getElementById('btnNext').disabled = true;
-    document.getElementById('btnNext').textContent = '✓ Completato';
-  },
-];
-
-function nextStep() {
-  if (currentStep >= totalSteps - 1) return;
-  currentStep++;
-  // Hide previous info
-  if (currentStep > 0) hide('info' + (currentStep - 1));
-  steps[currentStep]();
-}
-
-function autoPlay() {
-  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; document.getElementById('btnAuto').textContent = '⏩ Auto'; return; }
-  document.getElementById('btnAuto').textContent = '⏸ Pausa';
-  autoTimer = setInterval(() => {
-    if (currentStep >= totalSteps - 1) { clearInterval(autoTimer); autoTimer = null; document.getElementById('btnAuto').textContent = '⏩ Auto'; return; }
-    nextStep();
-  }, 2800);
-}
-
-function reset() {
-  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
-  currentStep = -1;
-  // Hide all
-  document.querySelectorAll('.msg, .key-box, .info-card').forEach(e => { e.classList.remove('visible'); });
-  document.querySelectorAll('.packet').forEach(e => { e.classList.remove('sending', 'sending-back'); e.style.opacity = 0; });
-  document.getElementById('lockOverlay').classList.remove('visible');
-  document.getElementById('lockIcon').classList.remove('visible');
-  document.querySelectorAll('.lane-line-client, .lane-line-server').forEach(l => { l.style.background = 'var(--border)'; l.style.width = '3px'; });
-  document.querySelectorAll('.step-dot').forEach(d => { d.className = 'step-dot'; });
-  setStatus('Premi ▶ Avanti per iniziare');
-  document.getElementById('btnNext').disabled = false;
-  document.getElementById('btnNext').textContent = '▶ Avanti';
-  document.getElementById('btnAuto').textContent = '⏩ Auto';
-}
+const STEP = 2800;
+const END  = 4500;
+const GAP  = 1500;
 
 function show(id) { document.getElementById(id).classList.add('visible'); }
 function hide(id) { document.getElementById(id).classList.remove('visible'); }
-function setStatus(text) { document.getElementById('statusText').textContent = text; }
-
-function dotState(i, state) {
-  const d = document.querySelectorAll('.step-dot')[i];
-  d.className = 'step-dot ' + state;
+function setStatus(t) { document.getElementById('statusText').textContent = t; }
+function setPhase(t) {
+  const el = document.getElementById('phaseLabel');
+  el.textContent = t; el.classList.add('visible');
 }
+function hidePhase() { document.getElementById('phaseLabel').classList.remove('visible'); }
 
-function sendPacket(id) {
-  const p = document.getElementById(id);
-  p.classList.remove('sending', 'sending-back');
-  p.style.opacity = 0;
-  void p.offsetWidth; // reflow
-  p.classList.add('sending');
-}
+function dotActive(i) { document.querySelectorAll('.step-dot')[i].className = 'step-dot active'; }
+function dotDone(i)   { document.querySelectorAll('.step-dot')[i].className = 'step-dot done'; }
+function dotsReset()  { document.querySelectorAll('.step-dot').forEach(d => d.className = 'step-dot'); }
 
-function sendPacketBack(id) {
+function fire(id, dir) {
   const p = document.getElementById(id);
-  p.classList.remove('sending', 'sending-back');
-  p.style.opacity = 0;
+  p.classList.remove('fly-right','fly-left'); p.style.opacity = 0;
   void p.offsetWidth;
-  p.classList.add('sending-back');
+  p.classList.add(dir === 'r' ? 'fly-right' : 'fly-left');
 }
+
+function resetAll() {
+  document.querySelectorAll('.msg, .key-box').forEach(e => e.classList.remove('visible'));
+  document.querySelectorAll('.packet').forEach(e => {
+    e.classList.remove('fly-right','fly-left'); e.style.opacity = 0;
+  });
+  hide('lockOverlay'); hide('lockIcon'); hidePhase();
+  document.querySelectorAll('.lane-line-client, .lane-line-server').forEach(l => {
+    l.style.background = 'var(--border)'; l.style.width = '3px';
+  });
+  dotsReset(); setStatus('');
+}
+
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function animate() {
+  resetAll();
+
+  // Step 0 — in chiaro
+  dotActive(0);
+  setStatus('Canale in chiaro — serve un handshake');
+  setPhase('in chiaro');
+  await wait(STEP);
+
+  // Step 1 — Client Hello
+  dotDone(0); dotActive(1);
+  setStatus('① Client Hello → chiave DH pubblica + cipher suites');
+  show('ck1'); show('ck2');
+  await wait(350);
+  show('msg1'); fire('pkt1','r');
+  await wait(STEP);
+
+  // Step 2 — Server Hello + Certificate
+  dotDone(1); dotActive(2);
+  setStatus('② Server Hello ← certificato X.509 + chiave DH pubblica');
+  show('sk1'); show('sk2');
+  await wait(350);
+  show('msg2'); fire('pkt2','l');
+  await wait(800);
+  show('ck-cert');
+  await wait(STEP - 800);
+
+  // Step 3 — Client Finished
+  dotDone(2); dotActive(3);
+  setStatus('③ Verifica certificato ✓ → session key → Finished cifrato');
+  hide('ck-cert');
+  await wait(300);
+  show('ck-cert-ok');
+  await wait(500);
+  show('ck3'); show('sk3');
+  await wait(400);
+  show('msg3'); fire('pkt3','r');
+  setPhase('cifrato');
+  await wait(STEP);
+
+  // Step 4 — Connessione sicura
+  dotDone(3); dotActive(4);
+  setStatus('🔒 Connessione sicura — dati cifrati bidirezionali');
+  show('lockOverlay'); show('lockIcon');
+  document.querySelectorAll('.lane-line-client, .lane-line-server').forEach(l => {
+    l.style.background = 'var(--success)'; l.style.width = '4px';
+  });
+  await wait(500);
+  show('msg4'); fire('pkt4a','r');
+  await wait(500);
+  fire('pkt4b','l');
+  await wait(800);
+  dotDone(4);
+  setPhase('perfect forward secrecy');
+  await wait(END);
+
+  // Reset & loop
+  resetAll();
+  await wait(GAP);
+  animate();
+}
+
+window.addEventListener('load', () => setTimeout(animate, 600));
 </script>
 </body>
 </html>
