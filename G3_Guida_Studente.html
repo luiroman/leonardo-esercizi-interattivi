@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guida Studente — Giorno 3: Firewall, NAT e WAF</title>
+<style>
+:root{--accent:#0891B2;--accent2:#0077B6;--title:#0F4C75;--text:#1E293B;--muted:#64748B;--bg:#F8F9FA;--card:#FFFFFF;--border:#E2E8F0;--success:#059669;--danger:#DC2626;--warn:#D97706}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Calibri,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;max-width:960px;margin:0 auto;padding:16px}
+header{background:var(--title);color:#fff;padding:28px 24px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:1.5em;margin-bottom:4px}
+header p{color:#94A3B8;font-size:.9em}
+
+/* TOC */
+nav{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:24px}
+nav h2{font-size:1.1em;color:var(--title);margin-bottom:10px}
+nav ol{padding-left:20px}
+nav li{margin-bottom:4px;font-size:.9em}
+nav a{color:var(--accent);text-decoration:none}
+nav a:hover{text-decoration:underline}
+
+/* Sections */
+h2{color:var(--title);font-size:1.25em;margin:32px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--accent)}
+h3{color:var(--accent);font-size:1.05em;margin:20px 0 8px}
+p{margin-bottom:10px;font-size:.95em}
+
+/* Boxes */
+.key-concept{background:#F0F9FF;border-left:4px solid var(--accent);padding:14px 18px;border-radius:0 8px 8px 0;margin:14px 0}
+.security-box{background:#F0FDF4;border-left:4px solid var(--success);padding:14px 18px;border-radius:0 8px 8px 0;margin:14px 0}
+.warning-box{background:#FEF2F2;border-left:4px solid var(--danger);padding:14px 18px;border-radius:0 8px 8px 0;margin:14px 0}
+.tip-box{background:#FFFBEB;border-left:4px solid var(--warn);padding:14px 18px;border-radius:0 8px 8px 0;margin:14px 0}
+.box-title{font-weight:700;font-size:.9em;margin-bottom:4px}
+.key-concept .box-title{color:var(--accent)}
+.security-box .box-title{color:var(--success)}
+.warning-box .box-title{color:var(--danger)}
+.tip-box .box-title{color:var(--warn)}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:.88em;margin:12px 0}
+th{background:var(--accent);color:#fff;padding:8px 12px;text-align:left;font-weight:600}
+td{padding:8px 12px;border-bottom:1px solid var(--border)}
+tr:nth-child(even){background:#F1F5F9}
+code{background:#F1F5F9;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:.88em}
+pre{background:#1E293B;color:#E2E8F0;padding:14px 18px;border-radius:8px;overflow-x:auto;font-size:.85em;margin:10px 0;font-family:Consolas,monospace}
+
+/* Exercise links */
+.ex-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:16px 0}
+.ex-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:8px;padding:14px 18px;text-decoration:none;color:var(--text);transition:box-shadow .2s}
+.ex-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.ex-card h4{color:var(--accent2);font-size:.95em;margin-bottom:4px}
+.ex-card p{font-size:.85em;color:var(--muted);margin:0}
+
+/* Resources */
+.resource{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:10px 0}
+.resource a{color:var(--accent);font-weight:600;text-decoration:none}
+.resource a:hover{text-decoration:underline}
+.resource .meta{font-size:.8em;color:var(--muted);margin-top:2px}
+
+/* Agenda */
+.agenda{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:16px 0}
+.agenda-header{background:var(--accent);color:#fff;padding:10px 18px;font-weight:700;font-size:.95em}
+.agenda-row{display:flex;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border);align-items:center;font-size:.9em}
+.agenda-row:last-child{border-bottom:none}
+.tag{font-size:.7em;padding:2px 8px;border-radius:10px;font-weight:600;white-space:nowrap}
+.tag-passivo{background:#F0F9FF;color:var(--accent)}
+.tag-attivo{background:#FFFBEB;color:var(--warn)}
+.tag-pratico{background:#F0FDF4;color:var(--success)}
+
+footer{text-align:center;padding:24px;color:var(--muted);font-size:.8em;margin-top:40px;border-top:1px solid var(--border)}
+@media(max-width:600px){body{padding:10px}.ex-links{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+<h1>📘 Guida Studente — Giorno 3</h1>
+<p>Firewall, NAT e WAF | 15 aprile 2026 | Modulo 1 — Reti, SO e Hardening</p>
+</header>
+
+<!-- ═══ INDICE ═══ -->
+<nav>
+<h2>Indice</h2>
+<ol>
+<li><a href="#s1">Overview — I tre strati di difesa perimetrale</a></li>
+<li><a href="#s2">Firewall: concetti fondamentali</a></li>
+<li><a href="#s3">Stateful vs Stateless</a></li>
+<li><a href="#s4">Regole firewall e ordine di valutazione</a></li>
+<li><a href="#s5">Zone di rete e trust level</a></li>
+<li><a href="#s6">Evoluzione: dal packet filter al NGFW</a></li>
+<li><a href="#s7">NAT — Network Address Translation</a></li>
+<li><a href="#s8">Tipi di NAT: SNAT, PAT, DNAT</a></li>
+<li><a href="#s9">Port Forwarding e best practice</a></li>
+<li><a href="#s10">WAF — Web Application Firewall</a></li>
+<li><a href="#s11">OWASP Top 10: le vulnerabilità web</a></li>
+<li><a href="#s12">Lab pfSense — Riferimento rapido</a></li>
+<li><a href="#s13">Tabelle di riferimento</a></li>
+<li><a href="#s14">Esercizi interattivi</a></li>
+<li><a href="#s15">Agenda studio autonomo — 16 aprile</a></li>
+<li><a href="#s16">Risorse propedeutiche per il Giorno 4</a></li>
+</ol>
+</nav>
+
+<!-- ═══ 1. OVERVIEW ═══ -->
+<h2 id="s1">1. Overview — I tre strati di difesa perimetrale</h2>
+<p>Il Giorno 3 completa il quadro della protezione perimetrale iniziato nei giorni precedenti. Dopo aver studiato i protocolli di rete (G1) e i meccanismi di routing, DNS, TLS e VPN (G2), oggi impariamo a <strong>proteggere</strong> attivamente la rete con tre strumenti complementari:</p>
+
+<div class="key-concept">
+<div class="box-title">I tre strati di difesa</div>
+<p><strong>Firewall (Layer 3-4)</strong> — Controlla <em>chi</em> può comunicare con <em>chi</em>, basandosi su IP, porte e protocollo. È il "buttafuori" della rete.</p>
+<p><strong>NAT (Layer 3-4)</strong> — Traduce gli indirizzi IP privati in pubblici. Non è una misura di sicurezza in sé, ma è una funzionalità essenziale per connettere le reti interne a Internet.</p>
+<p><strong>WAF (Layer 7)</strong> — Controlla <em>cosa</em> contengono le richieste web (HTTP/HTTPS). Blocca attacchi come SQL injection e XSS che il firewall tradizionale non può vedere.</p>
+</div>
+<p>Nessuno di questi strumenti è sufficiente da solo. La sicurezza efficace richiede tutti e tre, più ulteriori livelli (IDS/IPS, endpoint protection, SIEM) che vedremo nei prossimi moduli. Questo principio si chiama <em>defense in depth</em> — difesa in profondità.</p>
+
+<!-- ═══ 2. FIREWALL CONCETTI ═══ -->
+<h2 id="s2">2. Firewall: concetti fondamentali</h2>
+<p>Un firewall è un sistema che monitora e controlla il traffico di rete basandosi su regole predefinite. Opera come un <strong>choke point</strong> — un punto di passaggio obbligato tra zone con livelli di fiducia diversi. Ogni pacchetto che attraversa il firewall viene confrontato con una lista di regole, e il firewall decide se lasciarlo passare (ALLOW), bloccarlo silenziosamente (DENY) o bloccarlo rispondendo al mittente (REJECT).</p>
+
+<p>Il firewall ispeziona gli stessi campi che abbiamo studiato nel Giorno 1: l'header IP (IP sorgente e destinazione), l'header TCP/UDP (porta sorgente e destinazione) e il protocollo (TCP, UDP, ICMP). Non è una "scatola magica" — è un software che legge header di pacchetti e li confronta con una tabella di regole.</p>
+
+<div class="security-box">
+<div class="box-title">DENY vs REJECT — quando usare cosa</div>
+<p><strong>DENY</strong> (drop): scarta il pacchetto senza rispondere. Il mittente non riceve nessuna notifica e resta in attesa fino al timeout. È più sicuro verso Internet perché non rivela informazioni sull'esistenza del firewall.</p>
+<p><strong>REJECT</strong>: scarta il pacchetto ma invia un messaggio ICMP "destination unreachable". Il mittente sa immediatamente che la connessione è bloccata. È più "educato" e utile nelle reti interne per evitare timeout inutili.</p>
+<p><strong>Best practice</strong>: DENY verso la WAN (non dare informazioni agli attaccanti), REJECT sulla LAN (feedback rapido agli utenti interni).</p>
+</div>
+
+<!-- ═══ 3. STATEFUL VS STATELESS ═══ -->
+<h2 id="s3">3. Stateful vs Stateless</h2>
+<p>La distinzione più importante tra tipi di firewall è se il dispositivo <em>ricorda</em> le connessioni in corso oppure valuta ogni pacchetto indipendentemente.</p>
+
+<table>
+<tr><th>Caratteristica</th><th>Stateless (packet filter)</th><th>Stateful</th></tr>
+<tr><td>Memoria connessioni</td><td>No — ogni pacchetto è indipendente</td><td>Sì — state table con tutte le connessioni attive</td></tr>
+<tr><td>Regole necessarie</td><td>Servono regole per ENTRAMBE le direzioni (andata + ritorno)</td><td>Basta una regola per l'andata, il ritorno è automatico</td></tr>
+<tr><td>Comprensione TCP</td><td>Non distingue un SYN da un ACK</td><td>Traccia il three-way handshake (SYN → SYN-ACK → ACK)</td></tr>
+<tr><td>Sicurezza</td><td>Vulnerabile a pacchetti ACK "orfani"</td><td>Blocca pacchetti che non appartengono a connessioni valide</td></tr>
+<tr><td>Performance</td><td>Più veloce (nessuna tabella da gestire)</td><td>Leggermente più lento (lookup nella state table)</td></tr>
+<tr><td>Dove si trova</td><td>ACL su router Cisco, AWS Network ACL</td><td>pfSense, iptables, Palo Alto, Fortinet, Check Point</td></tr>
+</table>
+
+<div class="tip-box">
+<div class="box-title">Collegamento con il G1</div>
+<p>Il firewall stateful "capisce" il TCP three-way handshake studiato nel Giorno 1. Quando vede un SYN, crea un'entry nella state table. Quando vede il SYN-ACK di ritorno, sa che fa parte di quella connessione. Quando vede il FIN, sa che la connessione sta terminando. Questo rende impossibile per un attaccante inviare pacchetti ACK "orfani" per bypassare il firewall.</p>
+</div>
+
+<p>Tutti i firewall moderni sono stateful. pfSense, che usiamo nel lab, è stateful. Gli stateless (packet filter puri) sopravvivono come ACL sui router e come primo livello di filtraggio in cloud (es: AWS Network ACL).</p>
+
+<!-- ═══ 4. REGOLE FIREWALL ═══ -->
+<h2 id="s4">4. Regole firewall e ordine di valutazione</h2>
+<p>Ogni regola firewall ha questa struttura: un <strong>numero</strong> (priorità), un'<strong>azione</strong> (ALLOW/DENY/REJECT), un <strong>protocollo</strong> (TCP/UDP/ICMP/Any), un <strong>IP sorgente</strong>, un <strong>IP destinazione</strong>, una <strong>porta destinazione</strong> e una <strong>descrizione</strong>.</p>
+
+<div class="key-concept">
+<div class="box-title">First match wins — il principio fondamentale</div>
+<p>Il firewall valuta le regole dall'alto verso il basso e applica la <strong>prima</strong> che corrisponde al pacchetto. Poi si ferma — non guarda le regole successive. L'ordine è cruciale:</p>
+<p>• Regole specifiche in cima (es: blocco di un IP specifico)</p>
+<p>• Regole generali al centro (es: LAN → Internet su HTTP/HTTPS)</p>
+<p>• Default deny in fondo (blocca tutto ciò che non è esplicitamente permesso)</p>
+</div>
+
+<div class="warning-box">
+<div class="box-title">Errore classico</div>
+<p>Mettere la regola <code>DENY Any Any</code> prima delle regole ALLOW: tutto il traffico viene bloccato, anche quello legittimo! Il firewall trova la DENY per primo e non arriva mai alle regole ALLOW sottostanti.</p>
+</div>
+
+<h3>Default Deny vs Default Allow</h3>
+<p><strong>Default Deny</strong> (whitelist): blocca tutto e permetti solo il necessario. È la best practice universale. Richiede più lavoro iniziale (devi elencare tutto ciò che vuoi permettere) ma è molto più sicuro.</p>
+<p><strong>Default Allow</strong> (blacklist): permetti tutto e blocca solo il pericoloso. È impossibile elencare tutto ciò che è pericoloso — ci sarà sempre qualcosa che sfugge. Non usare mai in produzione.</p>
+
+<!-- ═══ 5. ZONE ═══ -->
+<h2 id="s5">5. Zone di rete e trust level</h2>
+<p>Il firewall organizza la rete in <strong>zone</strong>, ciascuna con un livello di fiducia (trust level). Il traffico tra zone passa sempre attraverso il firewall, che applica le policy. Il traffico all'interno della stessa zona è gestito dagli switch.</p>
+
+<table>
+<tr><th>Zona</th><th>Trust level</th><th>Contenuto</th><th>Policy tipica</th></tr>
+<tr><td><strong>WAN</strong></td><td>Zero</td><td>Internet</td><td>Tutto bloccato in ingresso tranne le risposte a connessioni iniziate dall'interno</td></tr>
+<tr><td><strong>DMZ</strong></td><td>Basso</td><td>Server esposti (web, mail, DNS)</td><td>Accessibile da WAN su porte specifiche; NON può accedere alla LAN</td></tr>
+<tr><td><strong>LAN</strong></td><td>Medio-alto</td><td>Workstation, stampanti, file server</td><td>Può accedere a DMZ e WAN; non riceve connessioni dalla WAN</td></tr>
+<tr><td><strong>MGMT</strong></td><td>Massimo</td><td>Interfacce di gestione (switch, router, FW)</td><td>Accesso solo da IP autorizzati, con MFA</td></tr>
+</table>
+
+<p>Il flusso del traffico segue una regola semplice: da trust alto verso trust basso è generalmente permesso (la LAN può navigare su Internet), da trust basso verso trust alto è generalmente bloccato (Internet non può accedere alla LAN). Le eccezioni vanno configurate esplicitamente.</p>
+
+<p>In pfSense, le interfacce corrispondono alle zone: WAN, LAN, OPT1 (DMZ), OPT2 (MGMT). Ogni interfaccia ha la propria tab di regole.</p>
+
+<!-- ═══ 6. NGFW ═══ -->
+<h2 id="s6">6. Evoluzione: dal packet filter al NGFW</h2>
+<p>I firewall si sono evoluti in quattro generazioni, rispondendo all'evoluzione delle minacce:</p>
+
+<table>
+<tr><th>Gen.</th><th>Tipo</th><th>Cosa ispeziona</th><th>Limite</th></tr>
+<tr><td>1ª</td><td>Packet Filter (stateless)</td><td>Header IP/TCP (L3-L4)</td><td>Nessuna memoria delle connessioni</td></tr>
+<tr><td>2ª</td><td>Stateful</td><td>Header + stato connessione (L3-L4)</td><td>Non vede il contenuto (payload)</td></tr>
+<tr><td>3ª</td><td>Application FW (proxy)</td><td>Header + payload (L3-L7)</td><td>Lento, un proxy per protocollo</td></tr>
+<tr><td>4ª</td><td>NGFW</td><td>Tutto + identità utente (L3-L7)</td><td>Costoso, complesso</td></tr>
+</table>
+
+<p>Il NGFW (Next-Generation Firewall) è lo standard enterprise attuale. Le sue funzionalità chiave sono: <strong>application awareness</strong> (distingue YouTube da Netflix sulla stessa porta 443), <strong>user identity</strong> (regole per utente tramite Active Directory / Entra ID), <strong>IPS integrato</strong> (rileva exploit in tempo reale) e <strong>TLS inspection</strong> (decripta HTTPS per ispezionare il traffico — controverso per la privacy).</p>
+
+<p>pfSense è un firewall stateful di 2ª generazione — ottimo per imparare i fondamentali, ma non è un NGFW. In ambiente Leonardo, i firewall saranno probabilmente Palo Alto o Fortinet.</p>
+
+<!-- ═══ 7. NAT ═══ -->
+<h2 id="s7">7. NAT — Network Address Translation</h2>
+<p>Il NAT nasce per risolvere un problema pratico: gli indirizzi IPv4 sono limitati (~4.3 miliardi) e le reti interne usano IP privati (RFC 1918) che non sono instradabili su Internet. Il NAT traduce gli IP privati in IP pubblici nel momento in cui il pacchetto esce dalla rete.</p>
+
+<p>Il processo è trasparente: il PC con IP 10.0.1.50 invia un pacchetto a google.com. Il firewall sostituisce l'IP sorgente con il proprio IP pubblico (es: 203.0.113.1) e annota la traduzione nella NAT table. Quando Google risponde, il firewall consulta la tabella e traduce l'IP destinazione da pubblico a privato, consegnando il pacchetto al PC originale.</p>
+
+<div class="warning-box">
+<div class="box-title">NAT ≠ Sicurezza</div>
+<p>Un mito pericoloso: "il NAT ci protegge perché nasconde gli IP interni". <strong>Falso.</strong> Il NAT traduce indirizzi — è una funzionalità, non una protezione. Un malware sul PC interno che apre una connessione verso un server di comando e controllo passa tranquillamente attraverso il NAT (è una connessione in uscita come qualsiasi altra). Un port forward senza regole firewall è una porta aperta. Il NAT senza firewall è come una porta girevole: tutti entrano.</p>
+<p>Con IPv6 (che ha 340 undecilioni di indirizzi), il NAT non servirà più — ma il firewall sarà ancora più importante.</p>
+</div>
+
+<!-- ═══ 8. TIPI DI NAT ═══ -->
+<h2 id="s8">8. Tipi di NAT: SNAT, PAT, DNAT</h2>
+
+<table>
+<tr><th>Tipo</th><th>Cosa traduce</th><th>Direzione</th><th>Caso d'uso</th><th>In pfSense</th></tr>
+<tr><td><strong>SNAT</strong> (Source NAT)</td><td>IP sorgente (privato → pubblico)</td><td>LAN → WAN</td><td>Navigazione Internet</td><td>Outbound NAT</td></tr>
+<tr><td><strong>PAT</strong> (Port Address Translation)</td><td>IP src + porta src (molti:1)</td><td>LAN → WAN</td><td>Molti host, 1 IP pubblico</td><td>Outbound NAT (default)</td></tr>
+<tr><td><strong>DNAT</strong> (Destination NAT)</td><td>IP destinazione (pubblico → privato)</td><td>WAN → DMZ</td><td>Esporre un server</td><td>Port Forward</td></tr>
+<tr><td><strong>1:1 NAT</strong></td><td>Mappatura fissa bidirezionale</td><td>Bidirezionale</td><td>Server con IP pubblico dedicato</td><td>Firewall → NAT → 1:1</td></tr>
+</table>
+
+<div class="tip-box">
+<div class="box-title">In pratica</div>
+<p>Il 90% del NAT che vedrete è <strong>PAT</strong> (outbound, per far navigare i PC interni) + <strong>Port Forward</strong> (inbound, per esporre servizi). PAT è quello che fa il vostro router di casa. In pfSense, il PAT è abilitato di default in modalità Automatic — non serve configurare nulla.</p>
+</div>
+
+<!-- ═══ 9. PORT FORWARDING ═══ -->
+<h2 id="s9">9. Port Forwarding e best practice</h2>
+<p>Il port forwarding (DNAT) mappa una porta dell'IP pubblico su un IP:porta interno. Esempio: "tutto il traffico TCP sulla porta 443 dell'IP pubblico 203.0.113.1, mandalo a 10.0.2.10:443".</p>
+
+<h3>Best practice</h3>
+<p>• Esporre <strong>solo le porte necessarie</strong> — mai "all ports".</p>
+<p>• Il server esposto deve stare in <strong>DMZ</strong>, mai in LAN. Se viene compromesso, l'attaccante non accede alla rete interna.</p>
+<p>• <strong>Verificare la regola firewall</strong> creata automaticamente da pfSense: di default ha source=any, va ristretta se possibile.</p>
+<p>• <strong>Attivare il logging</strong> su tutte le connessioni inbound per monitorare gli accessi.</p>
+<p>• Considerare di <strong>cambiare la porta esterna</strong> (es: 8443→443) per ridurre il rumore degli scanner automatici.</p>
+
+<div class="warning-box">
+<div class="box-title">Mai esporre direttamente su Internet</div>
+<p><strong>SSH (22)</strong> e <strong>RDP (3389)</strong>: ricevono centinaia di tentativi di brute force al giorno. L'alternativa corretta: connettersi prima via VPN, poi usare SSH/RDP dalla rete interna. Questo collega i concetti di VPN (G2) con firewall e NAT (G3).</p>
+</div>
+
+<!-- ═══ 10. WAF ═══ -->
+<h2 id="s10">10. WAF — Web Application Firewall</h2>
+<p>Il WAF opera a Layer 7 e ispeziona il contenuto delle richieste HTTP/HTTPS. Mentre il firewall tradizionale vede solo "TCP, porta 443, ALLOW" e lascia passare tutto, il WAF analizza URL, parametri, cookie, header e body delle richieste per bloccare attacchi web come SQL injection e Cross-Site Scripting (XSS).</p>
+
+<h3>Come funziona</h3>
+<p>Il WAF confronta ogni richiesta HTTP con un database di <strong>signature</strong> (pattern di attacco noti) e con regole di <strong>anomaly detection</strong> (comportamenti insoliti). Se una richiesta contiene il pattern <code>' OR 1=1 --</code> in un parametro, il WAF la riconosce come SQL injection e risponde con HTTP 403 Forbidden.</p>
+
+<h3>Modalità di deployment</h3>
+<table>
+<tr><th>Modalità</th><th>Dove si trova</th><th>Pro</th><th>Contro</th></tr>
+<tr><td><strong>Reverse Proxy</strong></td><td>Davanti al web server (on-premise)</td><td>Controllo totale, terminazione TLS</td><td>Punto di failure, latenza</td></tr>
+<tr><td><strong>Cloud WAF</strong></td><td>Provider cloud (SaaS)</td><td>Facile, scalabile, anti-DDoS</td><td>Dati passano dal provider</td></tr>
+<tr><td><strong>Host-based</strong></td><td>Modulo sul web server</td><td>Nessun hardware aggiuntivo</td><td>Usa risorse del server</td></tr>
+</table>
+
+<p>In ambiente Leonardo (partnership Microsoft), <strong>Azure WAF</strong> integrato in Azure Application Gateway o Azure Front Door è la scelta naturale per le applicazioni cloud.</p>
+
+<!-- ═══ 11. OWASP TOP 10 ═══ -->
+<h2 id="s11">11. OWASP Top 10: le vulnerabilità web</h2>
+<p>La OWASP Top 10 è la lista delle 10 categorie di vulnerabilità web più critiche, aggiornata dalla OWASP Foundation. È il riferimento standard in audit, compliance e contratti di sicurezza.</p>
+
+<table>
+<tr><th>#</th><th>Categoria</th><th>Descrizione</th><th>WAF aiuta?</th></tr>
+<tr><td>A01</td><td>Broken Access Control</td><td>L'utente accede a dati/funzioni non autorizzate</td><td>Parzialmente</td></tr>
+<tr><td>A02</td><td>Cryptographic Failures</td><td>Dati sensibili in chiaro</td><td>No</td></tr>
+<tr><td>A03</td><td>Injection (SQLi, XSS)</td><td>Codice malevolo iniettato nelle query/pagine</td><td><strong>Sì — caso d'uso principale</strong></td></tr>
+<tr><td>A04</td><td>Insecure Design</td><td>Architettura con falle strutturali</td><td>No</td></tr>
+<tr><td>A05</td><td>Security Misconfiguration</td><td>Configurazioni di default, errori di setup</td><td>Parzialmente</td></tr>
+<tr><td>A06</td><td>Vulnerable Components</td><td>Librerie con vulnerabilità note</td><td>Parzialmente (virtual patching)</td></tr>
+<tr><td>A07</td><td>Auth. & Session Failures</td><td>Login debole, sessioni non protette</td><td>Parzialmente</td></tr>
+<tr><td>A08</td><td>Data Integrity Failures</td><td>Deserializzazione insicura, CI/CD compromessa</td><td>Parzialmente</td></tr>
+<tr><td>A09</td><td>Logging & Monitoring</td><td>Attacchi non rilevati</td><td><strong>Sì — il WAF genera log</strong></td></tr>
+<tr><td>A10</td><td>SSRF</td><td>Il server fa richieste verso risorse interne</td><td><strong>Sì</strong></td></tr>
+</table>
+
+<h3>SQL Injection — esempio concreto</h3>
+<p>Una richiesta normale: <code>GET /search?q=cybersecurity</code> genera la query <code>SELECT * FROM products WHERE name='cybersecurity'</code>.</p>
+<p>Una richiesta malevola: <code>GET /search?q=' OR 1=1 --</code> genera <code>SELECT * FROM products WHERE name='' OR 1=1 --'</code>, che restituisce <strong>tutti</strong> i record del database. Il WAF riconosce il pattern <code>' OR 1=1</code> e blocca la richiesta.</p>
+
+<div class="key-concept">
+<div class="box-title">Il WAF è una rete di sicurezza, non la soluzione</div>
+<p>Il WAF è l'<em>ultimo strato di difesa</em> prima dell'applicazione: blocca attacchi noti e anomali, ma non corregge i bug nel codice. La vera soluzione è il <strong>secure coding</strong> (prepared statements per SQL injection, encoding per XSS) — lo vedremo nel Modulo 4 (DevSecOps). La OWASP Top 10 tornerà in quel modulo.</p>
+</div>
+
+<!-- ═══ 12. LAB PFSENSE ═══ -->
+<h2 id="s12">12. Lab pfSense — Riferimento rapido</h2>
+<p>pfSense è un firewall/router open source basato su FreeBSD. L'interfaccia web è intuitiva e mappa direttamente i concetti teorici: interfacce = zone, regole = ACL, NAT = outbound/port forward.</p>
+
+<h3>Topologia del lab</h3>
+<pre>[Internet] ←NAT VBox→ [pfSense WAN: DHCP] ←Host-Only→ [pfSense LAN: 192.168.1.1] ←→ [PC host]</pre>
+<p>In VirtualBox: Adapter 1 = NAT (WAN), Adapter 2 = Host-Only (LAN). Dashboard accessibile su <code>https://192.168.1.1</code> (admin/pfsense — cambiate la password!).</p>
+
+<h3>Menu principali</h3>
+<table>
+<tr><th>Operazione</th><th>Menu pfSense</th><th>Note</th></tr>
+<tr><td>Regole firewall</td><td>Firewall → Rules → [interfaccia]</td><td>Una tab per interfaccia; first match wins</td></tr>
+<tr><td>Creare una regola</td><td>Firewall → Rules → Add (↑ o ↓)</td><td>↑ aggiunge sopra la selezionata</td></tr>
+<tr><td>Creare un alias</td><td>Firewall → Aliases → Add</td><td>Tipi: Host, Network, Port</td></tr>
+<tr><td>NAT outbound (PAT)</td><td>Firewall → NAT → Outbound</td><td>Default: Automatic</td></tr>
+<tr><td>Port Forward (DNAT)</td><td>Firewall → NAT → Port Forward</td><td>Crea automaticamente la regola FW</td></tr>
+<tr><td>State table</td><td>Diagnostics → States</td><td>Connessioni attive + NAT</td></tr>
+<tr><td>Log firewall</td><td>Status → System Logs → Firewall</td><td>Filtrare per interfaccia/IP</td></tr>
+<tr><td>OpenVPN wizard</td><td>VPN → OpenVPN → Wizards</td><td>Per il G4</td></tr>
+</table>
+
+<h3>Regole LAN consigliate (dal lab)</h3>
+<pre>1. ALLOW | TCP | LAN net → Any | Porta dst: 80,443 | "LAN navigazione web"
+2. ALLOW | UDP | LAN net → Any | Porta dst: 53      | "LAN DNS"
+3. ALLOW | TCP | LAN net → Any | Porta dst: 53      | "LAN DNS over TCP"
+4. ALLOW | ICMP| LAN net → Any |                     | "LAN ping"
+5. BLOCK | Any | Any → Any     | LOG ✓               | "Default deny + log"</pre>
+
+<div class="tip-box">
+<div class="box-title">Se la navigazione smette di funzionare</div>
+<p>Avete dimenticato il DNS! Senza la regola UDP/53, i nomi non si risolvono e la navigazione fallisce anche se la porta 443 è aperta. Aggiungete la regola DNS e riprovate.</p>
+</div>
+
+<!-- ═══ 13. TABELLE RIFERIMENTO ═══ -->
+<h2 id="s13">13. Tabelle di riferimento</h2>
+
+<h3>Porte critiche (aggiornamento dal G1)</h3>
+<table>
+<tr><th>Porta</th><th>Protocollo</th><th>Servizio</th><th>Nota sicurezza</th></tr>
+<tr><td>22</td><td>TCP</td><td>SSH</td><td>Mai esporre su Internet — usare VPN</td></tr>
+<tr><td>25</td><td>TCP</td><td>SMTP</td><td>Solo per mail server; autenticazione obbligatoria</td></tr>
+<tr><td>53</td><td>UDP/TCP</td><td>DNS</td><td>Fondamentale — senza DNS nulla funziona</td></tr>
+<tr><td>80</td><td>TCP</td><td>HTTP</td><td>Non cifrato — reindirizzare a HTTPS</td></tr>
+<tr><td>443</td><td>TCP</td><td>HTTPS</td><td>Il WAF ispeziona questo traffico</td></tr>
+<tr><td>445</td><td>TCP</td><td>SMB</td><td>Mai esporre — vettore di ransomware</td></tr>
+<tr><td>1194</td><td>UDP</td><td>OpenVPN</td><td>Porta di default per VPN OpenVPN</td></tr>
+<tr><td>3389</td><td>TCP</td><td>RDP</td><td>Mai esporre — brute force costante</td></tr>
+</table>
+
+<h3>Terminologia NAT — confronto tra vendor</h3>
+<table>
+<tr><th>Concetto</th><th>Linux (iptables)</th><th>Cisco</th><th>pfSense</th></tr>
+<tr><td>Traduzione sorgente (outbound)</td><td>SNAT / MASQUERADE</td><td>PAT / NAT overload</td><td>Outbound NAT</td></tr>
+<tr><td>Traduzione destinazione (inbound)</td><td>DNAT</td><td>Static NAT</td><td>Port Forward / 1:1 NAT</td></tr>
+</table>
+
+<!-- ═══ 14. ESERCIZI ═══ -->
+<h2 id="s14">14. Esercizi interattivi</h2>
+<div class="ex-links">
+<a class="ex-card" href="https://luiroman.github.io/leonardo-esercizi-interattivi/esercizi-firewall-nat-aula-g3.html">
+<h4>📱 Esercizi Aula — G3</h4>
+<p>12 esercizi — firewall, NAT, WAF (~40 min)</p>
+</a>
+<a class="ex-card" href="https://luiroman.github.io/leonardo-esercizi-interattivi/esercizi-compiti-blocco1-g3.html">
+<h4>✍ Blocco 1 — Consolida G3</h4>
+<p>18 esercizi — firewall regole/scenari, NAT, WAF/OWASP (~1h)</p>
+</a>
+<a class="ex-card" href="https://luiroman.github.io/leonardo-esercizi-interattivi/esercizi-compiti-blocco2-g3.html">
+<h4>✍ Blocco 2 — Preparati G4</h4>
+<p>16 esercizi — VPN pratica, sicurezza perimetrale (~1h)</p>
+</a>
+</div>
+
+<!-- ═══ 15. AGENDA STUDIO ═══ -->
+<h2 id="s15">15. Agenda studio autonomo — 16 aprile</h2>
+
+<div class="agenda">
+<div class="agenda-header">MATTINA — Consolida il Giorno 3</div>
+<div class="agenda-row"><span class="tag tag-passivo">Passivo</span> 📖 Ripasso guida studente G3 — sezioni 2-11 (~1h)</div>
+<div class="agenda-row"><span class="tag tag-attivo">Attivo</span> ✍ Esercizi Blocco 1 — Consolida G3: 18 esercizi (~1h)</div>
+<div class="agenda-row"><span class="tag tag-pratico">Pratico</span> 🔧 Sperimenta con pfSense: cambia regole, crea alias, esplora i log (~1h)</div>
+<div class="agenda-row"><span style="color:var(--muted)">☕ Pausa pranzo</span></div>
+</div>
+
+<div class="agenda">
+<div class="agenda-header">POMERIGGIO — Preparati per il Giorno 4</div>
+<div class="agenda-row"><span class="tag tag-passivo">Passivo</span> 📖 Lettura propedeutica G4: risorse nella sezione 16 (~1h)</div>
+<div class="agenda-row"><span class="tag tag-attivo">Attivo</span> ✍ Esercizi Blocco 2 — Preparati G4: 16 esercizi (~1h)</div>
+<div class="agenda-row"><span class="tag tag-pratico">Pratico</span> 🔧 pfSense: wizard OpenVPN — seguire le istruzioni sotto (~1h)</div>
+<div class="agenda-row"><span class="tag tag-pratico">Pratico</span> 🔧 Flessibile: approfondimento o lab aggiuntivi (~1h)</div>
+</div>
+
+<div class="warning-box">
+<div class="box-title">📋 Deliverable per il 17 aprile (in presenza a Napoli!)</div>
+<p>☐ Esercizi Blocco 1 + Blocco 2 completati</p>
+<p>☐ Screenshot delle regole firewall configurate in pfSense + screenshot dei log</p>
+<p>☐ pfSense con wizard OpenVPN completato (screenshot della configurazione)</p>
+</div>
+
+<!-- ═══ 16. RISORSE PROPEDEUTICHE G4 ═══ -->
+<h2 id="s16">16. Risorse propedeutiche per il Giorno 4</h2>
+<p>Il Giorno 4 (17 aprile, in presenza) tratterà <strong>VPN pratica su pfSense</strong> e <strong>sicurezza perimetrale avanzata</strong> (IDS/IPS, DMZ avanzata). Usa queste risorse per arrivare preparato.</p>
+
+<h3>OpenVPN su pfSense (tempo stimato: ~45 min)</h3>
+
+<div class="resource">
+<a href="https://docs.netgate.com/pfsense/en/latest/vpn/openvpn/index.html" target="_blank">📖 Documentazione pfSense — OpenVPN</a>
+<div class="meta">Documentazione ufficiale Netgate | ~20 min di lettura</div>
+<p>La guida ufficiale di pfSense per OpenVPN: come funziona, architettura, modalità (remote access e site-to-site). Leggi almeno la sezione "OpenVPN Remote Access Server" per capire il flusso.</p>
+</div>
+
+<div class="resource">
+<a href="https://docs.netgate.com/pfsense/en/latest/recipes/openvpn-ra.html" target="_blank">🔧 pfSense — OpenVPN Remote Access (wizard step-by-step)</a>
+<div class="meta">Documentazione ufficiale Netgate | ~15 min lettura + pratica</div>
+<p>Guida passo-passo per configurare OpenVPN remote access con il wizard di pfSense. È esattamente quello che farete come compito pratico e poi nel lab del G4.</p>
+</div>
+
+<div class="resource">
+<a href="https://www.youtube.com/watch?v=PgielyUFGeQ" target="_blank">📺 Lawrence Systems — pfSense OpenVPN Setup</a>
+<div class="meta">YouTube — Lawrence Systems | ~20 min</div>
+<p>Video tutorial che mostra la configurazione di OpenVPN su pfSense con il wizard. Lawrence Systems è un canale affidabile, specializzato in networking e sicurezza open source.</p>
+</div>
+
+<p><strong>Domande guida per la lettura:</strong></p>
+<p>1. Qual è la differenza tra OpenVPN in modalità "Remote Access (SSL/TLS)" e "Remote Access (User Auth)"?</p>
+<p>2. Perché il wizard crea una CA (Certificate Authority) interna? A cosa servono i certificati nella VPN?</p>
+<p>3. Quali regole firewall vengono create automaticamente dal wizard e su quale interfaccia?</p>
+
+<h3>IDS/IPS — Intrusion Detection e Prevention (tempo stimato: ~30 min)</h3>
+
+<div class="resource">
+<a href="https://it.wikipedia.org/wiki/Intrusion_detection_system" target="_blank">📖 Wikipedia — Intrusion Detection System</a>
+<div class="meta">Wikipedia IT | ~10 min di lettura</div>
+<p>Una panoramica chiara su IDS e IPS: cosa sono, come funzionano (signature-based vs anomaly-based), differenza tra IDS (rileva) e IPS (blocca). Buon punto di partenza.</p>
+</div>
+
+<div class="resource">
+<a href="https://docs.netgate.com/pfsense/en/latest/packages/snort/index.html" target="_blank">📖 Documentazione pfSense — Snort Package</a>
+<div class="meta">Documentazione ufficiale Netgate | ~10 min di lettura</div>
+<p>Come installare e configurare Snort (IDS/IPS) su pfSense. Non serve configurarlo ora — leggi per capire come si integra con il firewall.</p>
+</div>
+
+<div class="resource">
+<a href="https://www.youtube.com/watch?v=S0-vsjhPDN0" target="_blank">📺 NetworkChuck — What is an IDS?</a>
+<div class="meta">YouTube — NetworkChuck | ~12 min</div>
+<p>Spiegazione semplice e visuale di IDS e IPS: come funzionano, dove si posizionano, differenza tra i due. NetworkChuck è ottimo per spiegazioni introduttive.</p>
+</div>
+
+<p><strong>Domande guida per la lettura:</strong></p>
+<p>1. Qual è la differenza tra un IDS e un IPS? Dove si posizionano nella rete?</p>
+<p>2. Cos'è un "falso positivo" e perché è un problema per un IPS?</p>
+<p>3. Come si integra Snort con pfSense — può bloccare il traffico in tempo reale?</p>
+
+<h3>Sicurezza perimetrale e DMZ avanzata (tempo stimato: ~20 min)</h3>
+
+<div class="resource">
+<a href="https://it.wikipedia.org/wiki/Demilitarized_zone_(informatica)" target="_blank">📖 Wikipedia — DMZ (informatica)</a>
+<div class="meta">Wikipedia IT | ~10 min di lettura</div>
+<p>Approfondimento sulla DMZ: architettura a singolo e doppio firewall, servizi tipici, esempi. Buon ripasso dei concetti visti nel G1 e G3.</p>
+</div>
+
+<div class="resource">
+<a href="https://www.digitalocean.com/community/tutorials/what-is-a-firewall-and-how-does-it-work" target="_blank">📖 DigitalOcean — How Does a Firewall Work</a>
+<div class="meta">DigitalOcean Community | ~15 min di lettura (in inglese)</div>
+<p>Tutorial chiaro e ben scritto su come funzionano i firewall, con esempi pratici. DigitalOcean è tra le fonti più affidabili per tutorial tecnici.</p>
+</div>
+
+<p><strong>Domande guida per la lettura:</strong></p>
+<p>1. Qual è la differenza tra una DMZ con singolo firewall e una con doppio firewall?</p>
+<p>2. In che modo un IDS/IPS complementa il firewall nella protezione perimetrale?</p>
+
+<div class="tip-box">
+<div class="box-title">💡 Collegamento con gli esercizi Blocco 2</div>
+<p>Le risorse qui sopra ti preparano a rispondere agli esercizi del Blocco 2. Se una domanda del Blocco 2 ti sembra difficile, torna a leggere la risorsa corrispondente. In particolare: gli esercizi 1-6 coprono VPN, gli esercizi 7-11 coprono IDS/IPS e sicurezza perimetrale.</p>
+</div>
+
+<footer>
+Corso Cybersecurity — Leonardo SpA | Modulo 1: Reti, SO e Hardening | Giorno 3<br>
+Versione 1.0 — 15 aprile 2026<br>
+<a href="https://luiroman.github.io/leonardo-esercizi-interattivi/">Tutti i materiali del corso</a>
+</footer>
+
+</body>
+</html>
