@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TCP Three-Way Handshake</title>
+<style>
+:root{--accent:#0891B2;--title:#0F4C75;--text:#1E293B;--muted:#64748B;--bg:#F8F9FA;--card:#FFF;--border:#E2E8F0;--success:#059669;--warn:#D97706}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Calibri,Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;min-height:100vh}
+header{background:var(--title);color:#fff;width:100%;padding:1rem;text-align:center;border-bottom:4px solid var(--accent)}
+header h1{font-size:1.25rem}
+header p{font-size:.78rem;opacity:.7;margin-top:.2rem}
+.container{max-width:750px;width:100%;padding:.8rem}
+
+.scene{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;position:relative;overflow:hidden}
+
+/* Hosts */
+.hosts{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:2}
+.host{text-align:center;width:110px}
+.host-icon{width:64px;height:64px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto .3rem;border:2px solid var(--border);background:var(--card);transition:border-color .4s,box-shadow .4s}
+.host.active .host-icon{border-color:var(--accent);box-shadow:0 0 12px rgba(8,145,178,.25)}
+.host-name{font-weight:700;font-size:.85rem;color:var(--title)}
+.host-ip{font-size:.6rem;color:var(--muted);font-family:Consolas,monospace}
+.host-state{font-size:.72rem;font-weight:600;margin-top:.3rem;font-family:Consolas,monospace;min-height:1.2em;transition:all .3s}
+
+/* Timeline area */
+.timeline{position:relative;height:280px;margin:0 55px}
+.timeline-line-l,.timeline-line-r{position:absolute;top:0;bottom:0;width:2px;background:var(--border)}
+.timeline-line-l{left:0}
+.timeline-line-r{right:0}
+
+/* Step labels on the sides */
+.step-label{position:absolute;font-size:.6rem;color:var(--muted);font-weight:600;width:50px;transition:opacity .4s;opacity:0}
+.step-label.show{opacity:1}
+.step-label.left{left:-54px;text-align:right}
+.step-label.right{right:-54px;text-align:left}
+
+/* Packets */
+.fly-packet{position:absolute;height:auto;padding:6px 12px;border-radius:8px;color:#fff;font-weight:700;text-align:center;opacity:0;z-index:5;filter:drop-shadow(0 2px 6px rgba(0,0,0,.15));pointer-events:none;white-space:nowrap}
+.fly-packet .pkt-flag{font-size:.9rem;letter-spacing:.5px}
+.fly-packet .pkt-detail{font-size:.55rem;font-family:Consolas,monospace;opacity:.9;margin-top:1px}
+.fly-packet.syn{background:var(--accent)}
+.fly-packet.synack{background:var(--warn)}
+.fly-packet.ack{background:var(--success)}
+
+/* Arrow heads */
+.arrow-head{position:absolute;width:0;height:0;opacity:0;transition:opacity .2s;z-index:4}
+.arrow-head.right{border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:10px solid var(--accent)}
+.arrow-head.left{border-top:6px solid transparent;border-bottom:6px solid transparent;border-right:10px solid var(--warn)}
+.arrow-head.right2{border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:10px solid var(--success)}
+.arrow-head.show{opacity:1}
+
+/* Established badge */
+.established{position:absolute;left:50%;transform:translateX(-50%);padding:6px 18px;border-radius:20px;background:var(--success);color:#fff;font-size:.8rem;font-weight:700;letter-spacing:.5px;opacity:0;transition:opacity .5s;z-index:6}
+.established.show{opacity:1}
+
+/* After handshake info */
+.after-info{position:absolute;left:50%;transform:translateX(-50%);font-size:.65rem;color:var(--muted);text-align:center;opacity:0;transition:opacity .5s;white-space:nowrap}
+.after-info.show{opacity:1}
+
+.controls{display:flex;gap:.5rem;justify-content:center;margin:.6rem 0}
+.btn{padding:.45rem 1rem;border:none;border-radius:6px;font-size:.82rem;font-weight:600;cursor:pointer}
+.btn-pause{background:var(--accent);color:#fff}
+.btn-reset{background:var(--border);color:var(--text)}
+
+footer{text-align:center;padding:.8rem;color:var(--muted);font-size:.65rem;margin-top:auto}
+
+@media(max-width:500px){
+  .host-icon{width:50px;height:50px;font-size:22px}
+  .timeline{margin:0 40px;height:240px}
+  .fly-packet .pkt-flag{font-size:.75rem}
+  .fly-packet .pkt-detail{font-size:.48rem}
+  .step-label{display:none}
+}
+</style>
+</head>
+<body>
+<header>
+<h1>TCP Three-Way Handshake</h1>
+<p>Come si stabilisce una connessione TCP</p>
+</header>
+<div class="container">
+<div class="scene" id="scene">
+
+  <div class="hosts">
+    <div class="host" id="client">
+      <div class="host-icon">💻</div>
+      <div class="host-name">Client</div>
+      <div class="host-ip">192.168.1.50:49152</div>
+      <div class="host-state" id="clientState">CLOSED</div>
+    </div>
+    <div class="host" id="server">
+      <div class="host-icon">🖥️</div>
+      <div class="host-name">Server</div>
+      <div class="host-ip">93.184.216.34:443</div>
+      <div class="host-state" id="serverState">LISTEN</div>
+    </div>
+  </div>
+
+  <div class="timeline" id="timeline">
+    <div class="timeline-line-l"></div>
+    <div class="timeline-line-r"></div>
+
+    <!-- Step numbers on the sides -->
+    <div class="step-label left" id="lbl1" style="top:50px">PASSO 1</div>
+    <div class="step-label left" id="lbl3" style="top:190px">PASSO 3</div>
+    <div class="step-label right" id="lbl2" style="top:120px">PASSO 2</div>
+
+    <!-- Packets (positioned by JS) -->
+    <div class="fly-packet syn" id="pkt1">
+      <div class="pkt-flag">SYN</div>
+      <div class="pkt-detail">Seq=1000</div>
+    </div>
+    <div class="arrow-head right" id="arr1"></div>
+
+    <div class="fly-packet synack" id="pkt2">
+      <div class="pkt-flag">SYN-ACK</div>
+      <div class="pkt-detail">Seq=5000  Ack=1001</div>
+    </div>
+    <div class="arrow-head left" id="arr2"></div>
+
+    <div class="fly-packet ack" id="pkt3">
+      <div class="pkt-flag">ACK</div>
+      <div class="pkt-detail">Seq=1001  Ack=5001</div>
+    </div>
+    <div class="arrow-head right2" id="arr3"></div>
+
+    <div class="established" id="estBadge" style="bottom:10px">✓ ESTABLISHED</div>
+    <div class="after-info" id="afterInfo" style="bottom:-8px">Prossimo → TLS Client Hello (se HTTPS)</div>
+  </div>
+
+</div>
+
+<div class="controls">
+  <button class="btn btn-pause" id="btnPause" onclick="togglePause()">⏸ Pausa</button>
+  <button class="btn btn-reset" onclick="restart()">↺ Ricomincia</button>
+</div>
+</div>
+<footer>Corso Cybersecurity — Leonardo SpA | Modulo 1 | Lezione 1</footer>
+
+<script>
+const timeline = document.getElementById('timeline');
+let phase = -1, paused = false, timer = null;
+
+function tlWidth() { return timeline.offsetWidth; }
+
+function animatePacket(pktId, arrId, fromLeft, y, duration) {
+  return new Promise(resolve => {
+    const pkt = document.getElementById(pktId);
+    const arr = document.getElementById(arrId);
+    const w = tlWidth();
+
+    const startX = fromLeft ? 4 : w - 4;
+    const endX = fromLeft ? w - 4 : 4;
+
+    pkt.style.transition = 'none';
+    pkt.style.top = y + 'px';
+    pkt.style.opacity = '1';
+
+    const pktW = pkt.offsetWidth;
+    pkt.style.left = (startX - (fromLeft ? 0 : pktW)) + 'px';
+
+    // Force reflow so browser registers start position before transition
+    void pkt.offsetWidth;
+
+    pkt.style.transition = `left ${duration}ms ease-in-out`;
+    pkt.style.left = (endX - (fromLeft ? pktW : 0)) + 'px';
+
+    // Arrow at destination
+    setTimeout(() => {
+      arr.style.top = (y + 8) + 'px';
+      if (fromLeft) {
+        arr.style.right = '0px';
+        arr.style.left = 'auto';
+      } else {
+        arr.style.left = '0px';
+        arr.style.right = 'auto';
+      }
+      arr.classList.add('show');
+    }, duration - 100);
+
+    setTimeout(resolve, duration + 100);
+  });
+}
+
+function setState(id, text, color) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.style.color = color || 'var(--muted)';
+}
+
+function setActive(id, on) {
+  document.getElementById(id).classList.toggle('active', on);
+}
+
+function showLabel(id) {
+  document.getElementById(id).classList.add('show');
+}
+
+const steps = [
+  // Init
+  {
+    ms: 1500,
+    run() {
+      setActive('server', true);
+      setState('serverState', 'LISTEN', 'var(--accent)');
+    }
+  },
+  // SYN
+  {
+    ms: 2000,
+    async run() {
+      setActive('client', true);
+      setState('clientState', 'SYN_SENT', 'var(--accent)');
+      showLabel('lbl1');
+      await animatePacket('pkt1', 'arr1', true, 50, 1200);
+    }
+  },
+  // SYN-ACK
+  {
+    ms: 2000,
+    async run() {
+      setState('serverState', 'SYN_RCVD', 'var(--warn)');
+      showLabel('lbl2');
+      await animatePacket('pkt2', 'arr2', false, 120, 1200);
+    }
+  },
+  // ACK
+  {
+    ms: 2000,
+    async run() {
+      showLabel('lbl3');
+      await animatePacket('pkt3', 'arr3', true, 190, 1200);
+    }
+  },
+  // Established
+  {
+    ms: 4500,
+    run() {
+      setState('clientState', 'ESTABLISHED', 'var(--success)');
+      setState('serverState', 'ESTABLISHED', 'var(--success)');
+      document.getElementById('estBadge').classList.add('show');
+      setTimeout(() => {
+        document.getElementById('afterInfo').classList.add('show');
+      }, 1000);
+    }
+  }
+];
+
+async function runNext() {
+  if (paused) return;
+  phase++;
+  if (phase >= steps.length) {
+    setTimeout(() => { if (!paused) restart(); }, 5000);
+    return;
+  }
+  const s = steps[phase];
+  await s.run();
+  timer = setTimeout(runNext, s.ms);
+}
+
+function togglePause() {
+  paused = !paused;
+  document.getElementById('btnPause').textContent = paused ? '▶ Riprendi' : '⏸ Pausa';
+  if (!paused) runNext();
+  else if (timer) clearTimeout(timer);
+}
+
+function restart() {
+  if (timer) clearTimeout(timer);
+  paused = false; phase = -1;
+  document.getElementById('btnPause').textContent = '⏸ Pausa';
+
+  // Reset hosts
+  setActive('client', false); setActive('server', false);
+  setState('clientState', 'CLOSED', 'var(--muted)');
+  setState('serverState', 'LISTEN', 'var(--muted)');
+
+  // Reset packets
+  ['pkt1','pkt2','pkt3'].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.transition = 'none';
+    el.style.opacity = '0';
+  });
+  ['arr1','arr2','arr3'].forEach(id => {
+    document.getElementById(id).classList.remove('show');
+  });
+  ['lbl1','lbl2','lbl3'].forEach(id => {
+    document.getElementById(id).classList.remove('show');
+  });
+  document.getElementById('estBadge').classList.remove('show');
+  document.getElementById('afterInfo').classList.remove('show');
+
+  timer = setTimeout(runNext, 1000);
+}
+
+restart();
+</script>
+</body>
+</html>
