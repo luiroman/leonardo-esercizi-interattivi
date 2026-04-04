@@ -168,6 +168,8 @@ footer{text-align:center;padding:24px;color:var(--muted);font-size:.8em;margin-t
 <p><strong>Default Deny</strong> (whitelist): blocca tutto e permetti solo il necessario. È la best practice universale. Richiede più lavoro iniziale (devi elencare tutto ciò che vuoi permettere) ma è molto più sicuro.</p>
 <p><strong>Default Allow</strong> (blacklist): permetti tutto e blocca solo il pericoloso. È impossibile elencare tutto ciò che è pericoloso — ci sarà sempre qualcosa che sfugge. Non usare mai in produzione.</p>
 
+<p style="font-size:0.85em; color:var(--muted);">🔗 Animazione interattiva: <a href="https://luiroman.github.io/leonardo-esercizi-interattivi/animazione-first-match-wins.html" style="color:var(--accent);">First Match Wins — 4 scenari con pacchetti diversi</a></p>
+
 <!-- ═══ 5. ZONE ═══ -->
 <h2 id="s5">5. Zone di rete e trust level</h2>
 <p>Il firewall organizza la rete in <strong>zone</strong>, ciascuna con un livello di fiducia (trust level). Il traffico tra zone passa sempre attraverso il firewall, che applica le policy. Il traffico all'interno della stessa zona è gestito dagli switch.</p>
@@ -211,6 +213,8 @@ footer{text-align:center;padding:24px;color:var(--muted);font-size:.8em;margin-t
 <p>Un mito pericoloso: "il NAT ci protegge perché nasconde gli IP interni". <strong>Falso.</strong> Il NAT traduce indirizzi — è una funzionalità, non una protezione. Un malware sul PC interno che apre una connessione verso un server di comando e controllo passa tranquillamente attraverso il NAT (è una connessione in uscita come qualsiasi altra). Un port forward senza regole firewall è una porta aperta. Il NAT senza firewall è come una porta girevole: tutti entrano.</p>
 <p>Con IPv6 (che ha 340 undecilioni di indirizzi), il NAT non servirà più — ma il firewall sarà ancora più importante.</p>
 </div>
+
+<p style="font-size:0.85em; color:var(--muted);">🔗 Animazione interattiva: <a href="https://luiroman.github.io/leonardo-esercizi-interattivi/animazione-nat-pat-viaggio.html" style="color:var(--accent);">Il viaggio del pacchetto — NAT/PAT andata e ritorno</a></p>
 
 <!-- ═══ 8. TIPI DI NAT ═══ -->
 <h2 id="s8">8. Tipi di NAT: SNAT, PAT, DNAT</h2>

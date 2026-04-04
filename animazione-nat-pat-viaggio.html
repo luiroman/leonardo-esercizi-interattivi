@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il viaggio del pacchetto — NAT/PAT — Animazione</title>
+<style>
+:root {
+  --title: #0F4C75;
+  --text: #1E293B;
+  --muted: #64748B;
+  --bg: #F8F9FA;
+  --border: #E2E8F0;
+  --accent: #0891B2;
+  --success: #059669;
+  --danger: #DC2626;
+  --warn: #D97706;
+  --client: #7C3AED;
+  --server: #0891B2;
+  --fw: #D97706;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; background: var(--bg); color: var(--text); }
+
+.header {
+  background: var(--title); color: #fff; padding: 16px 24px;
+  text-align: center; border-radius: 12px 12px 0 0;
+  max-width: 820px; margin: 16px auto 0;
+}
+.header h1 { font-size: 1.2em; font-weight: 700; }
+
+.stage {
+  position: relative; background: #fff; border: 1px solid var(--border);
+  border-top: none; border-radius: 0 0 12px 12px;
+  max-width: 820px; margin: 0 auto; padding: 0 0 52px;
+  height: 500px; overflow: hidden;
+}
+
+/* ── Entities ── */
+.entity {
+  position: absolute; text-align: center; z-index: 5;
+  transition: box-shadow .4s;
+}
+.entity-icon {
+  width: 64px; height: 64px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8em; margin: 0 auto 4px;
+  border: 2px solid transparent; transition: border-color .3s, box-shadow .3s;
+}
+.entity-name { font-size: .78em; font-weight: 700; }
+.entity-sub { font-size: .68em; color: var(--muted); font-family: Consolas, monospace; }
+
+.entity.glow .entity-icon { box-shadow: 0 0 16px rgba(0,0,0,.2); }
+
+#ent-pc { left: 40px; top: 40px; }
+#ent-pc .entity-icon { background: #EDE9FE; border-color: var(--client); }
+.entity-name.pc-name { color: var(--client); }
+
+#ent-fw { left: 50%; top: 40px; transform: translateX(-50%); }
+#ent-fw .entity-icon { background: #FEF3C7; border-color: var(--fw); }
+.entity-name.fw-name { color: var(--fw); }
+
+#ent-google { right: 40px; top: 40px; }
+#ent-google .entity-icon { background: #CCFBF1; border-color: var(--server); }
+.entity-name.google-name { color: var(--server); }
+
+/* ── Lines (SVG) ── */
+.lines-svg {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 1;
+}
+.path-line {
+  stroke: var(--border); stroke-width: 2;
+  transition: stroke .4s, stroke-width .3s;
+}
+.path-line.active-out { stroke: var(--client); stroke-width: 3; }
+.path-line.active-in { stroke: var(--server); stroke-width: 3; }
+
+/* ── Packet bubbles ── */
+.pkt-bubble {
+  position: absolute; border-radius: 8px; padding: 6px 12px;
+  font-size: .72em; font-family: Consolas, monospace; white-space: nowrap;
+  opacity: 0; z-index: 10; transition: opacity .4s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+.pkt-bubble .field-label { font-family: 'Segoe UI', sans-serif; font-size: .88em; color: rgba(255,255,255,.7); }
+.pkt-bubble .field-val { font-weight: 700; }
+.pkt-out { background: var(--client); color: #fff; }
+.pkt-in { background: var(--server); color: #fff; }
+.pkt-bubble.show { opacity: 1; }
+
+/* Field highlight on change */
+.field-changed {
+  background: rgba(255,255,255,.3); border-radius: 3px; padding: 0 3px;
+  animation: flashField .6s ease;
+}
+@keyframes flashField {
+  0%,100% { background: rgba(255,255,255,.3); }
+  50% { background: rgba(255,255,255,.6); }
+}
+
+/* ── Traveling dot ── */
+.travel-dot {
+  position: absolute; width: 14px; height: 14px; border-radius: 50%;
+  z-index: 8; opacity: 0; transition: opacity .3s;
+}
+.travel-dot.show { opacity: 1; }
+#dot-out { background: var(--client); }
+#dot-in { background: var(--server); }
+
+/* ── NAT Table ── */
+.nat-table-wrap {
+  position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
+  background: #fff; border: 2px solid var(--border); border-radius: 10px;
+  padding: 0; width: 440px; overflow: hidden; z-index: 6;
+  opacity: 0; transition: opacity .4s, border-color .4s;
+}
+.nat-table-wrap.show { opacity: 1; }
+.nat-table-wrap.highlight { border-color: var(--fw); }
+.nat-table-title {
+  background: var(--fw); color: #fff; padding: 5px 12px;
+  font-size: .75em; font-weight: 700; text-align: center;
+}
+.nat-table {
+  width: 100%; border-collapse: collapse; font-size: .7em;
+}
+.nat-table th {
+  background: #FEF3C7; color: var(--fw); padding: 4px 8px;
+  text-align: left; font-weight: 600;
+}
+.nat-table td {
+  padding: 4px 8px; border-top: 1px solid var(--border);
+  font-family: Consolas, monospace; transition: background .3s;
+}
+.nat-table tr.nat-active td { background: #FEF9C3; }
+.nat-table tr.nat-empty td { color: var(--muted); font-family: 'Segoe UI', sans-serif; }
+
+/* ── Phase label ── */
+.phase {
+  position: absolute; top: 118px; right: 20px;
+  font-size: .68em; text-transform: uppercase; letter-spacing: 1.5px;
+  font-weight: 700; color: var(--muted); opacity: 0; transition: opacity .4s;
+}
+.phase.show { opacity: 1; }
+
+/* ── Status bar ── */
+.status-bar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: var(--title); color: #fff; padding: 10px 20px;
+  display: flex; align-items: center; gap: 14px;
+  border-radius: 0 0 12px 12px; font-size: .82em;
+}
+.status-text { flex: 1; }
+.dots { display: flex; gap: 6px; }
+.dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: rgba(255,255,255,.25); transition: background .3s;
+}
+.dot.active { background: var(--accent); }
+.dot.done { background: var(--success); }
+
+footer {
+  text-align: center; padding: 12px; color: var(--muted);
+  font-size: .75em; max-width: 820px; margin: 0 auto;
+}
+
+@media (max-width: 750px) {
+  .header, .stage { max-width: 100%; margin-left: 8px; margin-right: 8px; }
+  .stage { height: 460px; }
+  .entity-icon { width: 50px; height: 50px; font-size: 1.4em; }
+  .entity-name { font-size: .7em; }
+  .entity-sub { font-size: .6em; }
+  #ent-pc { left: 10px; }
+  #ent-google { right: 10px; }
+  .pkt-bubble { font-size: .64em; padding: 4px 8px; }
+  .nat-table-wrap { width: 320px; bottom: 56px; }
+  .nat-table { font-size: .62em; }
+  .phase { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="header"><h1>🔄 Il viaggio del pacchetto — NAT/PAT</h1></div>
+
+<div class="stage" id="stage">
+
+  <!-- SVG lines -->
+  <svg class="lines-svg" id="linesSvg">
+    <line id="line1" class="path-line" x1="0" y1="0" x2="0" y2="0"/>
+    <line id="line2" class="path-line" x1="0" y1="0" x2="0" y2="0"/>
+  </svg>
+
+  <!-- Entities -->
+  <div class="entity" id="ent-pc">
+    <div class="entity-icon">💻</div>
+    <div class="entity-name pc-name">PC Interno</div>
+    <div class="entity-sub">10.0.1.50</div>
+  </div>
+
+  <div class="entity" id="ent-fw">
+    <div class="entity-icon">🛡️</div>
+    <div class="entity-name fw-name">Firewall / NAT</div>
+    <div class="entity-sub">WAN: 203.0.113.1</div>
+  </div>
+
+  <div class="entity" id="ent-google">
+    <div class="entity-icon">🌐</div>
+    <div class="entity-name google-name">google.com</div>
+    <div class="entity-sub">142.250.180.14</div>
+  </div>
+
+  <!-- Packet bubbles -->
+  <div class="pkt-bubble pkt-out" id="pkt1" style="left:30px; top:140px;">
+    <span class="field-label">src:</span> <span class="field-val" id="p1src">10.0.1.50:49152</span><br>
+    <span class="field-label">dst:</span> <span class="field-val" id="p1dst">142.250.180.14:443</span>
+  </div>
+
+  <div class="pkt-bubble pkt-out" id="pkt2" style="left:50%; top:140px; transform:translateX(-50%);">
+    <span class="field-label">src:</span> <span class="field-val" id="p2src"></span><br>
+    <span class="field-label">dst:</span> <span class="field-val" id="p2dst"></span>
+  </div>
+
+  <div class="pkt-bubble pkt-in" id="pkt3" style="right:30px; top:140px;">
+    <span class="field-label">src:</span> <span class="field-val" id="p3src"></span><br>
+    <span class="field-label">dst:</span> <span class="field-val" id="p3dst"></span>
+  </div>
+
+  <div class="pkt-bubble pkt-in" id="pkt4" style="left:50%; top:185px; transform:translateX(-50%);">
+    <span class="field-label">src:</span> <span class="field-val" id="p4src"></span><br>
+    <span class="field-label">dst:</span> <span class="field-val" id="p4dst"></span>
+  </div>
+
+  <div class="pkt-bubble pkt-in" id="pkt5" style="left:30px; top:185px;">
+    <span class="field-label">src:</span> <span class="field-val" id="p5src"></span><br>
+    <span class="field-label">dst:</span> <span class="field-val" id="p5dst"></span>
+  </div>
+
+  <!-- Travel dots -->
+  <div class="travel-dot" id="dot-out"></div>
+  <div class="travel-dot" id="dot-in"></div>
+
+  <!-- NAT Table -->
+  <div class="nat-table-wrap" id="natWrap">
+    <div class="nat-table-title">📋 NAT Table — Firewall</div>
+    <table class="nat-table">
+      <tr><th>IP Interno</th><th>Porta Int.</th><th>IP Pubblico</th><th>Porta Pub.</th><th>Destinaz.</th></tr>
+      <tr id="natRow" class="nat-empty"><td colspan="5" style="text-align:center">(vuota)</td></tr>
+    </table>
+  </div>
+
+  <!-- Phase label -->
+  <div class="phase" id="phase"></div>
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span class="status-text" id="statusText">Pronto</span>
+    <div class="dots" id="dots"></div>
+  </div>
+</div>
+
+<footer>Corso Cybersecurity — Leonardo SpA · Modulo 1</footer>
+
+<script>
+const STEP = 3400;
+const STEP_FINAL = 5800;
+const PAUSE = 2000;
+
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+const $ = id => document.getElementById(id);
+const statusText = $('statusText');
+const dotsC = $('dots');
+const phase = $('phase');
+
+function setStatus(t) { statusText.textContent = t; }
+function setPhase(t) { phase.textContent = t; phase.classList.toggle('show', !!t); }
+
+let totalSteps = 8;
+function initDots() {
+  dotsC.innerHTML = '';
+  for (let i = 0; i < totalSteps; i++) {
+    const d = document.createElement('span');
+    d.className = 'dot';
+    dotsC.appendChild(d);
+  }
+}
+function dotActive(i) {
+  const dots = dotsC.children;
+  for (let j = 0; j < dots.length; j++) {
+    if (j < i) dots[j].className = 'dot done';
+    else if (j === i) dots[j].className = 'dot active';
+    else dots[j].className = 'dot';
+  }
+}
+
+function show(id) { $(id).classList.add('show'); }
+function hide(id) { $(id).classList.remove('show'); }
+
+// Calculate line positions
+function updateLines() {
+  const stage = $('stage').getBoundingClientRect();
+  const pc = $('ent-pc').getBoundingClientRect();
+  const fw = $('ent-fw').getBoundingClientRect();
+  const go = $('ent-google').getBoundingClientRect();
+
+  const pcCx = pc.left + pc.width/2 - stage.left;
+  const pcCy = pc.top + 40 - stage.top;
+  const fwCx = fw.left + fw.width/2 - stage.left;
+  const fwCy = fw.top + 40 - stage.top;
+  const goCx = go.left + go.width/2 - stage.left;
+  const goCy = go.top + 40 - stage.top;
+
+  const l1 = $('line1'); const l2 = $('line2');
+  l1.setAttribute('x1', pcCx+30); l1.setAttribute('y1', pcCy);
+  l1.setAttribute('x2', fwCx-30); l1.setAttribute('y2', fwCy);
+  l2.setAttribute('x1', fwCx+30); l2.setAttribute('y1', fwCy);
+  l2.setAttribute('x2', goCx-30); l2.setAttribute('y2', goCy);
+}
+
+// Animate dot travel
+function animateDot(dotId, x1, y1, x2, y2, dur) {
+  return new Promise(resolve => {
+    const dot = $(dotId);
+    dot.style.left = x1 + 'px'; dot.style.top = y1 + 'px';
+    dot.classList.add('show');
+    const start = performance.now();
+    function frame(now) {
+      const t = Math.min((now - start) / dur, 1);
+      dot.style.left = (x1 + (x2-x1)*t) + 'px';
+      dot.style.top = (y1 + (y2-y1)*t) + 'px';
+      if (t < 1) requestAnimationFrame(frame);
+      else { dot.classList.remove('show'); resolve(); }
+    }
+    requestAnimationFrame(frame);
+  });
+}
+
+function getCenter(id) {
+  const stage = $('stage').getBoundingClientRect();
+  const el = $(id).getBoundingClientRect();
+  return { x: el.left + el.width/2 - stage.left, y: el.top + 40 - stage.top };
+}
+
+function fillNatRow(show) {
+  const row = $('natRow');
+  if (show) {
+    row.className = 'nat-active';
+    row.innerHTML = '<td>10.0.1.50</td><td>49152</td><td>203.0.113.1</td><td>30001</td><td>142.250.180.14:443</td>';
+  } else {
+    row.className = 'nat-empty';
+    row.innerHTML = '<td colspan="5" style="text-align:center">(vuota)</td>';
+  }
+}
+
+function resetAll() {
+  ['pkt1','pkt2','pkt3','pkt4','pkt5'].forEach(id => $(id).classList.remove('show'));
+  ['dot-out','dot-in'].forEach(id => $(id).classList.remove('show'));
+  $('line1').className.baseVal = 'path-line';
+  $('line2').className.baseVal = 'path-line';
+  $('natWrap').classList.remove('show','highlight');
+  $('ent-pc').classList.remove('glow');
+  $('ent-fw').classList.remove('glow');
+  $('ent-google').classList.remove('glow');
+  fillNatRow(false);
+  setPhase('');
+}
+
+async function animate() {
+  resetAll();
+  updateLines();
+  initDots();
+
+  // ── Step 0: PC creates packet ──
+  dotActive(0);
+  setPhase('ANDATA');
+  setStatus('Il PC 10.0.1.50 vuole raggiungere google.com:443');
+  $('ent-pc').classList.add('glow');
+  $('p1src').textContent = '10.0.1.50:49152';
+  $('p1dst').textContent = '142.250.180.14:443';
+  show('pkt1');
+  await wait(STEP);
+
+  // ── Step 1: Packet travels to firewall ──
+  dotActive(1);
+  setStatus('Il pacchetto arriva al firewall con IP privato...');
+  $('line1').className.baseVal = 'path-line active-out';
+  hide('pkt1');
+  const pc = getCenter('ent-pc');
+  const fw = getCenter('ent-fw');
+  const go = getCenter('ent-google');
+  await animateDot('dot-out', pc.x+20, pc.y-7, fw.x-20, fw.y-7, 1200);
+  $('ent-pc').classList.remove('glow');
+  $('ent-fw').classList.add('glow');
+  await wait(800);
+
+  // ── Step 2: NAT translation ──
+  dotActive(2);
+  setStatus('Il firewall traduce l\'IP privato → IP pubblico (PAT)');
+  $('natWrap').classList.add('show','highlight');
+  await wait(1000);
+  fillNatRow(true);
+  // Show packet with translated source
+  $('p2src').innerHTML = '<span class="field-changed">203.0.113.1:30001</span>';
+  $('p2dst').textContent = '142.250.180.14:443';
+  show('pkt2');
+  await wait(STEP);
+
+  // ── Step 3: Packet travels to Google ──
+  dotActive(3);
+  setStatus('Il pacchetto esce con IP pubblico 203.0.113.1 verso Google');
+  $('line2').className.baseVal = 'path-line active-out';
+  hide('pkt2');
+  $('ent-fw').classList.remove('glow');
+  $('natWrap').classList.remove('highlight');
+  await animateDot('dot-out', fw.x+20, fw.y-7, go.x-20, go.y-7, 1200);
+  $('ent-google').classList.add('glow');
+  await wait(1000);
+
+  // ── Step 4: Google responds ──
+  dotActive(4);
+  setPhase('RITORNO');
+  setStatus('Google risponde all\'IP pubblico 203.0.113.1:30001');
+  $('p3src').textContent = '142.250.180.14:443';
+  $('p3dst').textContent = '203.0.113.1:30001';
+  show('pkt3');
+  $('line2').className.baseVal = 'path-line active-in';
+  await wait(STEP);
+
+  // ── Step 5: Response travels to firewall ──
+  dotActive(5);
+  setStatus('La risposta arriva al firewall...');
+  hide('pkt3');
+  $('ent-google').classList.remove('glow');
+  await animateDot('dot-in', go.x-20, go.y-7, fw.x+20, fw.y-7, 1200);
+  $('ent-fw').classList.add('glow');
+  $('natWrap').classList.add('highlight');
+  await wait(800);
+
+  // ── Step 6: Reverse NAT ──
+  dotActive(6);
+  setStatus('Il firewall consulta la NAT table → traduce indietro verso 10.0.1.50');
+  $('line1').className.baseVal = 'path-line active-in';
+  $('p4src').textContent = '142.250.180.14:443';
+  $('p4dst').innerHTML = '<span class="field-changed">10.0.1.50:49152</span>';
+  show('pkt4');
+  await wait(STEP);
+
+  // ── Step 7: Delivered to PC ──
+  dotActive(7);
+  setStatus('Il pacchetto arriva al PC — il PC non sa nemmeno che il NAT è avvenuto!');
+  hide('pkt4');
+  $('ent-fw').classList.remove('glow');
+  $('natWrap').classList.remove('highlight');
+  await animateDot('dot-in', fw.x-20, fw.y-7, pc.x+20, pc.y-7, 1200);
+  $('ent-pc').classList.add('glow');
+
+  $('p5src').textContent = '142.250.180.14:443';
+  $('p5dst').textContent = '10.0.1.50:49152';
+  show('pkt5');
+  setPhase('COMPLETATO ✓');
+  await wait(STEP_FINAL);
+
+  // ── Reset & loop ──
+  resetAll();
+  await wait(PAUSE);
+  animate();
+}
+
+window.addEventListener('load', () => setTimeout(animate, 800));
+window.addEventListener('resize', updateLines);
+</script>
+
+</body>
+</html>

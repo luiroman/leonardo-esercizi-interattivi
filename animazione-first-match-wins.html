@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>First Match Wins — Animazione</title>
+<style>
+:root {
+  --title: #0F4C75;
+  --text: #1E293B;
+  --muted: #64748B;
+  --bg: #F8F9FA;
+  --border: #E2E8F0;
+  --accent: #0891B2;
+  --success: #059669;
+  --danger: #DC2626;
+  --warn: #D97706;
+  --client: #7C3AED;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; background: var(--bg); color: var(--text); }
+
+/* Header */
+.header {
+  background: var(--title); color: #fff; padding: 16px 24px;
+  text-align: center; border-radius: 12px 12px 0 0;
+  max-width: 820px; margin: 16px auto 0;
+}
+.header h1 { font-size: 1.2em; font-weight: 700; }
+
+/* Stage */
+.stage {
+  position: relative; background: #fff; border: 1px solid var(--border);
+  border-top: none; border-radius: 0 0 12px 12px;
+  max-width: 820px; margin: 0 auto; padding: 20px 24px 60px;
+  min-height: 480px; overflow: hidden;
+}
+
+/* Packet box */
+.packet {
+  position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+  background: var(--client); color: #fff; border-radius: 10px;
+  padding: 8px 16px; font-size: .78em; white-space: nowrap;
+  opacity: 0; transition: opacity .4s, top .5s ease-in-out;
+  z-index: 10; text-align: center; box-shadow: 0 3px 12px rgba(124,58,237,.3);
+}
+.packet .pkt-label { font-weight: 700; font-size: .85em; margin-bottom: 3px; color: #E0D4FC; }
+.packet .pkt-fields { display: flex; gap: 8px; font-family: Consolas, monospace; font-size: .92em; }
+.packet .pkt-field { padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,.15); }
+
+/* Scenario label */
+.scenario-label {
+  position: absolute; top: 10px; right: 20px;
+  font-size: .75em; color: var(--muted); text-transform: uppercase;
+  letter-spacing: 1px; font-weight: 600; opacity: 0; transition: opacity .4s;
+}
+
+/* Rules table */
+.rules-table {
+  width: 100%; border-collapse: collapse; margin-top: 55px; font-size: .82em;
+}
+.rules-table th {
+  background: var(--accent); color: #fff; padding: 7px 10px;
+  text-align: left; font-weight: 600; font-size: .9em;
+}
+.rules-table td {
+  padding: 8px 10px; border-bottom: 1px solid var(--border);
+  transition: background .3s, color .2s; position: relative;
+}
+.rules-table tr { transition: background .3s; }
+.rules-table tr:nth-child(even) { background: #F8FAFC; }
+
+/* Rule row states */
+.rule-row.checking { background: #FEF9C3 !important; }
+.rule-row.matched-allow { background: #D1FAE5 !important; }
+.rule-row.matched-deny { background: #FEE2E2 !important; }
+.rule-row.skipped { opacity: .35; }
+
+/* Cell match indicators */
+.cell-match { background: #D1FAE5 !important; color: var(--success); font-weight: 600; }
+.cell-nomatch { background: #FEE2E2 !important; color: var(--danger); }
+
+/* Action badges */
+.action-allow { color: var(--success); font-weight: 700; }
+.action-deny { color: var(--danger); font-weight: 700; }
+
+/* Result overlay */
+.result {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(.8);
+  padding: 16px 32px; border-radius: 14px; font-size: 1.3em; font-weight: 700;
+  opacity: 0; transition: opacity .4s, transform .4s; z-index: 20;
+  text-align: center; letter-spacing: 1px;
+}
+.result.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.result-allow { background: #D1FAE5; color: var(--success); border: 2px solid var(--success); }
+.result-deny { background: #FEE2E2; color: var(--danger); border: 2px solid var(--danger); }
+.result .result-sub { font-size: .5em; font-weight: 400; margin-top: 4px; letter-spacing: 0; }
+
+/* Arrow indicator */
+.arrow {
+  position: absolute; left: 6px; font-size: 1.1em; color: var(--warn);
+  opacity: 0; transition: opacity .3s, top .4s ease-in-out;
+}
+
+/* Status bar */
+.status-bar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: var(--title); color: #fff; padding: 10px 20px;
+  display: flex; align-items: center; gap: 14px;
+  border-radius: 0 0 12px 12px; font-size: .82em;
+}
+.status-text { flex: 1; }
+.dots { display: flex; gap: 6px; }
+.dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: rgba(255,255,255,.25); transition: background .3s;
+}
+.dot.active { background: var(--accent); }
+.dot.done { background: var(--success); }
+
+/* Footer */
+footer {
+  text-align: center; padding: 12px; color: var(--muted);
+  font-size: .75em; max-width: 820px; margin: 0 auto;
+}
+
+@media (max-width: 750px) {
+  .header, .stage { max-width: 100%; margin-left: 8px; margin-right: 8px; }
+  .stage { padding: 16px 12px 56px; min-height: 420px; }
+  .rules-table { font-size: .72em; }
+  .rules-table th, .rules-table td { padding: 5px 6px; }
+  .packet { font-size: .7em; padding: 6px 10px; }
+  .packet .pkt-fields { gap: 4px; }
+  .result { font-size: 1em; padding: 12px 24px; }
+  .col-desc { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="header"><h1>🛡️ First Match Wins — Regole Firewall</h1></div>
+
+<div class="stage" id="stage">
+
+  <div class="scenario-label" id="scenarioLabel"></div>
+
+  <div class="packet" id="packet">
+    <div class="pkt-label" id="pktLabel">📦 Pacchetto</div>
+    <div class="pkt-fields">
+      <span class="pkt-field" id="pF1"></span>
+      <span class="pkt-field" id="pF2"></span>
+      <span class="pkt-field" id="pF3"></span>
+      <span class="pkt-field" id="pF4"></span>
+    </div>
+  </div>
+
+  <div class="arrow" id="arrow">▶</div>
+
+  <table class="rules-table">
+    <thead><tr>
+      <th style="width:30px">#</th>
+      <th style="width:70px">Azione</th>
+      <th>Proto</th>
+      <th>IP Sorgente</th>
+      <th>IP Destinaz.</th>
+      <th>Porta Dst</th>
+      <th class="col-desc">Descrizione</th>
+    </tr></thead>
+    <tbody id="rulesBody">
+      <tr class="rule-row" id="r1">
+        <td>1</td>
+        <td class="action-allow">ALLOW</td>
+        <td>TCP</td>
+        <td>WAN (any)</td>
+        <td>10.0.2.10</td>
+        <td>443</td>
+        <td class="col-desc">Internet → Web HTTPS</td>
+      </tr>
+      <tr class="rule-row" id="r2">
+        <td>2</td>
+        <td class="action-allow">ALLOW</td>
+        <td>TCP</td>
+        <td>10.0.1.0/24</td>
+        <td>Any</td>
+        <td>80, 443</td>
+        <td class="col-desc">LAN → navigazione</td>
+      </tr>
+      <tr class="rule-row" id="r3">
+        <td>3</td>
+        <td class="action-allow">ALLOW</td>
+        <td>UDP</td>
+        <td>10.0.1.0/24</td>
+        <td>Any</td>
+        <td>53</td>
+        <td class="col-desc">LAN → DNS</td>
+      </tr>
+      <tr class="rule-row" id="r4">
+        <td>4</td>
+        <td class="action-deny">DENY</td>
+        <td>Any</td>
+        <td>Any</td>
+        <td>Any</td>
+        <td>Any</td>
+        <td class="col-desc">🚫 Default deny</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="result" id="result">
+    <div id="resultText"></div>
+    <div class="result-sub" id="resultSub"></div>
+  </div>
+
+  <div class="status-bar">
+    <span class="status-text" id="statusText">Pronto</span>
+    <div class="dots" id="dots"></div>
+  </div>
+</div>
+
+<footer>Corso Cybersecurity — Leonardo SpA · Modulo 1</footer>
+
+<script>
+const STEP = 3400;
+const STEP_CHECK = 2200;
+const STEP_FINAL = 5800;
+const PAUSE = 2000;
+
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Scenarios: each packet + which rule it matches + which cells match per rule
+const scenarios = [
+  {
+    label: 'Scenario 1/4 — Navigazione web dalla LAN',
+    pktLabel: '📦 PC interno → Internet',
+    fields: ['TCP', '10.0.1.50', '93.184.216.x', '443'],
+    // For each rule: array of booleans for [proto, src, dst, port] match
+    checks: [
+      [true, false, false, true],   // R1: proto✓ src✗ dst✗ port✓ → no match
+      [true, true, true, true],     // R2: proto✓ src✓ dst✓ port✓ → MATCH
+    ],
+    matchRule: 2,
+    action: 'allow',
+    resultText: '✓ ALLOW',
+    resultSub: 'Regola 2: LAN → navigazione (porta 443)',
+  },
+  {
+    label: 'Scenario 2/4 — Query DNS dalla LAN',
+    pktLabel: '📦 PC interno → DNS',
+    fields: ['UDP', '10.0.1.50', '8.8.8.8', '53'],
+    checks: [
+      [false, false, false, false], // R1: proto✗ → skip fast
+      [false, true, true, false],   // R2: proto✗ (UDP vs TCP) → no match
+      [true, true, true, true],     // R3: tutto✓ → MATCH
+    ],
+    matchRule: 3,
+    action: 'allow',
+    resultText: '✓ ALLOW',
+    resultSub: 'Regola 3: LAN → DNS (porta 53/UDP)',
+  },
+  {
+    label: 'Scenario 3/4 — SSH dalla LAN (non permesso)',
+    pktLabel: '📦 PC interno → Server SSH',
+    fields: ['TCP', '10.0.1.50', '10.0.2.30', '22'],
+    checks: [
+      [true, false, false, false],  // R1: solo proto match
+      [true, true, true, false],    // R2: porta 22 ≠ 80,443
+      [false, true, true, false],   // R3: proto TCP ≠ UDP
+      [true, true, true, true],     // R4: Any matcha tutto → DENY
+    ],
+    matchRule: 4,
+    action: 'deny',
+    resultText: '✗ DENY',
+    resultSub: 'Regola 4: default deny — SSH non è permesso!',
+  },
+  {
+    label: 'Scenario 4/4 — Internet → Web server in DMZ',
+    pktLabel: '📦 Internet → Web server',
+    fields: ['TCP', '85.120.40.5', '10.0.2.10', '443'],
+    checks: [
+      [true, true, true, true],     // R1: tutto✓ → MATCH immediato
+    ],
+    matchRule: 1,
+    action: 'allow',
+    resultText: '✓ ALLOW',
+    resultSub: 'Regola 1: Internet → Web HTTPS (prima regola!)',
+  },
+];
+
+const ruleRows = [
+  document.getElementById('r1'),
+  document.getElementById('r2'),
+  document.getElementById('r3'),
+  document.getElementById('r4'),
+];
+
+const packet = document.getElementById('packet');
+const arrow = document.getElementById('arrow');
+const result = document.getElementById('result');
+const statusText = document.getElementById('statusText');
+const scenarioLabel = document.getElementById('scenarioLabel');
+const dotsContainer = document.getElementById('dots');
+
+// Row positions (calculated after render)
+let rowTops = [];
+function calcPositions() {
+  const stageRect = document.getElementById('stage').getBoundingClientRect();
+  rowTops = ruleRows.map(r => {
+    const rect = r.getBoundingClientRect();
+    return rect.top - stageRect.top - 4;
+  });
+}
+
+// Dot management
+let totalSteps = 0;
+function initDots(n) {
+  totalSteps = n;
+  dotsContainer.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('span');
+    d.className = 'dot';
+    dotsContainer.appendChild(d);
+  }
+}
+function dotActive(i) {
+  const dots = dotsContainer.children;
+  for (let j = 0; j < dots.length; j++) {
+    if (j < i) dots[j].className = 'dot done';
+    else if (j === i) dots[j].className = 'dot active';
+    else dots[j].className = 'dot';
+  }
+}
+
+function setStatus(txt) { statusText.textContent = txt; }
+
+function resetAll() {
+  packet.style.opacity = '0';
+  packet.style.top = '8px';
+  arrow.style.opacity = '0';
+  result.className = 'result';
+  result.classList.remove('show');
+  scenarioLabel.style.opacity = '0';
+  ruleRows.forEach(r => {
+    r.className = 'rule-row';
+    const cells = r.querySelectorAll('td');
+    cells.forEach(c => { c.className = c.className.replace(/cell-match|cell-nomatch/g, '').trim(); });
+  });
+  // Restore col-desc
+  document.querySelectorAll('.col-desc').forEach(c => {
+    c.className = c.className.replace(/cell-match|cell-nomatch/g, '').trim();
+    if (!c.classList.contains('col-desc')) c.classList.add('col-desc');
+  });
+}
+
+function highlightCells(ruleIndex, matches) {
+  const row = ruleRows[ruleIndex];
+  const cells = row.querySelectorAll('td');
+  // cells: 0=#, 1=action, 2=proto, 3=src, 4=dst, 5=port, 6=desc
+  const fieldCells = [cells[2], cells[3], cells[4], cells[5]];
+  matches.forEach((m, i) => {
+    fieldCells[i].classList.add(m ? 'cell-match' : 'cell-nomatch');
+  });
+}
+
+async function animateScenario(sc) {
+  resetAll();
+  calcPositions();
+
+  const numSteps = sc.checks.length + 2; // intro + checks + result
+  initDots(numSteps);
+
+  // Step 0: Show packet and scenario
+  dotActive(0);
+  setStatus(sc.label);
+  scenarioLabel.textContent = sc.label.split('—')[0].trim();
+  scenarioLabel.style.opacity = '1';
+
+  document.getElementById('pktLabel').textContent = sc.pktLabel;
+  document.getElementById('pF1').textContent = sc.fields[0];
+  document.getElementById('pF2').textContent = sc.fields[1];
+  document.getElementById('pF3').textContent = sc.fields[2];
+  document.getElementById('pF4').textContent = ':' + sc.fields[3];
+
+  packet.style.opacity = '1';
+  packet.style.top = '8px';
+  await wait(STEP);
+
+  // Steps 1..N: check each rule
+  for (let i = 0; i < sc.checks.length; i++) {
+    const stepIdx = i + 1;
+    dotActive(stepIdx);
+
+    const isMatch = i === sc.checks.length - 1 && sc.matchRule === (i + 1);
+    const allMatch = sc.checks[i].every(Boolean);
+
+    // Move packet to this row
+    packet.style.top = (rowTops[i] - 36) + 'px';
+    arrow.style.top = (rowTops[i] + 8) + 'px';
+    arrow.style.opacity = '1';
+
+    ruleRows[i].classList.add('checking');
+    setStatus(`Regola ${i+1}: confronto campi del pacchetto...`);
+    await wait(1200);
+
+    // Highlight cells
+    highlightCells(i, sc.checks[i]);
+
+    if (allMatch) {
+      // Match found!
+      ruleRows[i].classList.remove('checking');
+      ruleRows[i].classList.add(sc.action === 'allow' ? 'matched-allow' : 'matched-deny');
+      setStatus(`Regola ${i+1}: MATCH! → ${sc.action === 'allow' ? 'ALLOW ✓' : 'DENY ✗'}`);
+
+      // Mark remaining rules as skipped
+      for (let j = i + 1; j < ruleRows.length; j++) {
+        ruleRows[j].classList.add('skipped');
+      }
+      await wait(STEP_CHECK);
+    } else {
+      // No match
+      ruleRows[i].classList.remove('checking');
+      setStatus(`Regola ${i+1}: non corrisponde → passo alla successiva`);
+      await wait(STEP_CHECK);
+    }
+  }
+
+  // Final step: show result
+  dotActive(numSteps - 1);
+  arrow.style.opacity = '0';
+
+  document.getElementById('resultText').textContent = sc.resultText;
+  document.getElementById('resultSub').textContent = sc.resultSub;
+  result.className = 'result ' + (sc.action === 'allow' ? 'result-allow' : 'result-deny');
+  result.classList.add('show');
+
+  setStatus(sc.action === 'allow'
+    ? 'Il pacchetto è stato PERMESSO dalla prima regola corrispondente'
+    : 'Il pacchetto è stato BLOCCATO dalla prima regola corrispondente');
+
+  await wait(STEP_FINAL);
+}
+
+async function animate() {
+  for (let i = 0; i < scenarios.length; i++) {
+    await animateScenario(scenarios[i]);
+    resetAll();
+    await wait(PAUSE);
+  }
+  animate(); // loop infinito
+}
+
+window.addEventListener('load', () => {
+  setTimeout(animate, 800);
+});
+</script>
+
+</body>
+</html>
