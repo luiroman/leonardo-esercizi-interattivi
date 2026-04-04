@@ -376,14 +376,65 @@ Se il browser non raggiunge 192.168.1.1: verifica che l'host-only network di Vir
 <tr><td>NAT traversal</td><td>Richiede NAT-T</td><td>Nativo</td></tr>
 </table>
 
-<h3>Domande guida per la lettura propedeutica (Giorno 3)</h3>
-<ol>
-<li>Qual è la differenza tra un firewall stateful e uno stateless?</li>
-<li>Come funziona il PAT (Port Address Translation)?</li>
-<li>Cosa fa un WAF che un firewall tradizionale non può fare?</li>
-<li>Cos'è la DMZ e perché i server pubblici vanno lì?</li>
-<li>Qual è la "default policy" raccomandata per un firewall enterprise?</li>
-</ol>
+<h3>Risorse propedeutiche per il Giorno 3 — Firewall, NAT e WAF</h3>
+
+<p>Per arrivare preparato al Giorno 3, studia questi materiali. Le domande guida ti dicono cosa cercare durante la lettura — gli esercizi del Blocco 2 verificano proprio questi concetti.</p>
+
+<h4>Firewall (tempo stimato: ~50 min)</h4>
+<p>
+📖 <a href="https://en.wikipedia.org/wiki/Firewall_(computing)" style="color:var(--accent)">Firewall (computing) — Wikipedia</a> — panoramica completa: tipi, funzionamento, storia (~15 min lettura). Concentrati sulle sezioni "Packet filter" e "Stateful inspection".<br>
+📖 <a href="https://en.wikipedia.org/wiki/Stateful_firewall" style="color:var(--accent)">Stateful firewall — Wikipedia</a> — come funziona il connection tracking (~10 min).<br>
+📺 <a href="https://www.youtube.com/watch?v=kDEX1HXybrU" style="color:var(--accent)">Firewalls Explained — NetworkChuck</a> — video introduttivo chiaro, con esempi pratici (~15 min).<br>
+📖 <a href="https://en.wikipedia.org/wiki/DMZ_(computing)" style="color:var(--accent)">DMZ (computing) — Wikipedia</a> — cos'è la zona demilitarizzata e perché serve (~10 min).
+</p>
+
+<div class="tip-box">
+<strong>Domande guida — Firewall</strong><br>
+1. Qual è la differenza tra un firewall <em>stateless</em> (packet filter) e uno <em>stateful</em>?<br>
+2. Cosa significa "default deny" e perché è la best practice?<br>
+3. In che ordine vengono valutate le regole firewall?<br>
+4. Cos'è la DMZ e perché i web server pubblici vanno lì invece che in LAN?
+</div>
+
+<h4>NAT — Network Address Translation (tempo stimato: ~40 min)</h4>
+<p>
+📖 <a href="https://en.wikipedia.org/wiki/Network_address_translation" style="color:var(--accent)">Network Address Translation — Wikipedia</a> — tutti i tipi di NAT spiegati (~15 min). Concentrati su SNAT, DNAT e PAT (overload).<br>
+📖 <a href="https://en.wikipedia.org/wiki/Port_forwarding" style="color:var(--accent)">Port forwarding — Wikipedia</a> — come funziona e a cosa serve (~10 min).<br>
+📺 <a href="https://www.youtube.com/watch?v=FTUV0t6JaDA" style="color:var(--accent)">NAT Explained — NetworkChuck</a> — PAT, port forwarding con esempi visivi (~12 min).
+</p>
+
+<div class="tip-box">
+<strong>Domande guida — NAT</strong><br>
+1. Come fa il PAT a permettere a 100 host di condividere un solo IP pubblico?<br>
+2. Qual è la differenza tra SNAT (Source NAT) e DNAT (Destination NAT)?<br>
+3. Se vuoi rendere un web server interno raggiungibile da Internet, che tipo di NAT configuri?
+</div>
+
+<h4>WAF — Web Application Firewall (tempo stimato: ~30 min)</h4>
+<p>
+📖 <a href="https://en.wikipedia.org/wiki/Web_application_firewall" style="color:var(--accent)">Web Application Firewall — Wikipedia</a> — cos'è, come funziona, differenza con firewall tradizionale (~10 min).<br>
+📖 <a href="https://owasp.org/www-project-top-ten/" style="color:var(--accent)">OWASP Top 10 — Sito ufficiale</a> — la lista delle 10 vulnerabilità web più critiche. Leggi almeno i titoli e le descrizioni brevi (~15 min).<br>
+📺 <a href="https://www.youtube.com/watch?v=p8CQcF_9280" style="color:var(--accent)">What is a WAF? — Professor Messer</a> — differenza tra firewall L3/L4 e WAF L7 (~5 min).
+</p>
+
+<div class="tip-box">
+<strong>Domande guida — WAF</strong><br>
+1. A quale livello OSI opera un WAF rispetto a un firewall tradizionale?<br>
+2. Cos'è una SQL Injection e perché un firewall L3/L4 non può bloccarla?<br>
+3. Dove si posiziona un WAF nell'architettura di rete (davanti a cosa)?
+</div>
+
+<h4>pfSense — Installazione (tempo stimato: ~1h30 pratica)</h4>
+<p>
+🔧 <a href="https://www.pfsense.org/download/" style="color:var(--accent)">pfSense CE Download</a> — scarica l'ISO (AMD64, formato ISO). È gratuito.<br>
+🔧 <a href="https://docs.netgate.com/pfsense/en/latest/install/download.html" style="color:var(--accent)">pfSense Installation Guide — Documentazione ufficiale Netgate</a> — guida passo-passo all'installazione.<br>
+📺 <a href="https://www.youtube.com/watch?v=lUzSsX4T4WQ" style="color:var(--accent)">pfSense Installation on VirtualBox — David Bombal</a> — video tutorial completo con VirtualBox (~20 min).
+</p>
+
+<div class="warning-box">
+<strong>⚠ Prerequisito obbligatorio per il Giorno 3</strong><br>
+pfSense deve essere installato e funzionante PRIMA della lezione. Se hai problemi con l'installazione, scrivi al docente durante la settimana — non aspettare il giorno della lezione. Porta uno screenshot della dashboard (http://192.168.1.1, login: admin / pfsense).
+</div>
 
 <footer>
   Corso Cybersecurity — Leonardo SpA · Modulo 1: Reti, SO e Hardening<br>
