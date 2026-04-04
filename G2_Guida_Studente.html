@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guida Studente — Giorno 2 | Routing, DNS, SSL/TLS e VPN</title>
+<style>
+:root{--accent:#0891B2;--accent2:#0077B6;--title:#0F4C75;--text:#1E293B;--muted:#64748B;--bg:#F8F9FA;--card:#FFF;--border:#E2E8F0;--success:#059669;--danger:#DC2626;--warn:#D97706}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Calibri,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;max-width:900px;margin:0 auto;padding:0 16px}
+header{background:var(--title);color:#fff;padding:32px 24px;text-align:center;margin:0 -16px;border-radius:0 0 12px 12px}
+header h1{font-size:1.6em;margin-bottom:4px}header p{color:#94A3B8;font-size:.95em}
+nav{background:var(--card);border:1px solid var(--border);border-radius:8px;margin:20px 0;padding:20px}
+nav h2{color:var(--title);font-size:1.1em;margin-bottom:12px}
+nav ol{padding-left:20px}nav li{margin-bottom:6px}nav a{color:var(--accent);text-decoration:none}nav a:hover{text-decoration:underline}
+h2{color:var(--title);font-size:1.4em;margin:36px 0 16px;padding-bottom:8px;border-bottom:3px solid var(--accent)}
+h3{color:var(--accent);font-size:1.15em;margin:24px 0 10px}
+h4{color:var(--title);font-size:1em;margin:16px 0 8px}
+p{margin-bottom:12px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.9em}
+th{background:var(--accent);color:#fff;padding:10px 12px;text-align:left;font-size:.85em}
+td{padding:8px 12px;border-bottom:1px solid var(--border)}
+tr:nth-child(even) td{background:#F1F5F9}
+code{background:#F1F5F9;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:.88em}
+pre{background:#1E293B;color:#E2E8F0;padding:16px;border-radius:8px;overflow-x:auto;margin:12px 0;font-family:Consolas,monospace;font-size:.85em;line-height:1.5}
+.key-concept{border-left:4px solid var(--accent);background:#F0F9FF;padding:14px 16px;margin:16px 0;border-radius:0 8px 8px 0}
+.key-concept strong{color:var(--accent)}
+.security-box{border-left:4px solid var(--success);background:#F0FDF4;padding:14px 16px;margin:16px 0;border-radius:0 8px 8px 0}
+.security-box strong{color:var(--success)}
+.warning-box{border-left:4px solid var(--danger);background:#FEF2F2;padding:14px 16px;margin:16px 0;border-radius:0 8px 8px 0}
+.warning-box strong{color:var(--danger)}
+.tip-box{border-left:4px solid var(--warn);background:#FFFBEB;padding:14px 16px;margin:16px 0;border-radius:0 8px 8px 0}
+.tip-box strong{color:var(--warn)}
+.exercise-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:20px 0}
+.ex-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;text-decoration:none;color:var(--text);transition:box-shadow .2s}
+.ex-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.ex-card h4{color:var(--accent);margin:0 0 6px}
+.ex-card p{font-size:.85em;color:var(--muted);margin:0}
+footer{text-align:center;color:var(--muted);font-size:.8em;padding:30px 0;border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:600px){body{padding:0 10px}header{padding:20px 16px}h2{font-size:1.2em}.exercise-links{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📖 Guida Studente — Giorno 2</h1>
+  <p>Routing, DNS, SSL/TLS e VPN · 10 aprile 2026</p>
+</header>
+
+<nav>
+  <h2>Indice</h2>
+  <ol>
+    <li><a href="#overview">Contesto e obiettivi del Giorno 2</a></li>
+    <li><a href="#routing">Routing: tabella, statico e dinamico</a></li>
+    <li><a href="#ospf">OSPF — Open Shortest Path First</a></li>
+    <li><a href="#bgp">BGP — Border Gateway Protocol</a></li>
+    <li><a href="#wireshark">Workshop Wireshark</a></li>
+    <li><a href="#dns">DNS in profondità</a></li>
+    <li><a href="#tls">SSL/TLS e PKI</a></li>
+    <li><a href="#vpn">VPN — Virtual Private Network</a></li>
+    <li><a href="#esercizi">Esercizi interattivi</a></li>
+    <li><a href="#compiti">Agenda studio autonomo</a></li>
+    <li><a href="#strumenti">Strumenti da installare</a></li>
+    <li><a href="#riferimenti">Tabelle di riferimento rapido</a></li>
+  </ol>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2 id="overview">1. Contesto e Obiettivi</h2>
+
+<p>Il Giorno 2 completa la prima settimana del corso, costruendo sui fondamenti del Giorno 1 (TCP/IP, subnetting, segmentazione). L'obiettivo è comprendere come il traffico viene instradato (routing), analizzato (Wireshark), risolto (DNS), cifrato (TLS) e tunnelizzato (VPN). Alla fine di oggi avrai una visione completa dello stack di rete, dal Layer 2 al Layer 7.</p>
+
+<div class="key-concept">
+<strong>Obiettivi di apprendimento</strong><br>
+Alla fine del Giorno 2 devi saper: spiegare la differenza tra routing statico e dinamico; usare i filtri Wireshark per analizzare TCP, DNS, HTTP/HTTPS e ARP; descrivere la gerarchia DNS e i principali tipi di record; spiegare l'handshake TLS 1.3 e la catena di fiducia dei certificati; distinguere IPSec da SSL VPN e scegliere il tipo giusto per ogni scenario.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2 id="routing">2. Routing: Come i Pacchetti Trovano la Strada</h2>
+
+<h3>La tabella di routing</h3>
+<p>Ogni router mantiene una <strong>tabella di routing</strong> — una struttura dati che associa prefissi di rete (destinazioni) a next-hop (il prossimo passo per raggiungere quella rete). Quando un pacchetto arriva, il router consulta la tabella e cerca la rotta più specifica che corrisponda alla destinazione.</p>
+
+<div class="key-concept">
+<strong>Longest Prefix Match</strong><br>
+Tra tutte le rotte che corrispondono alla destinazione, il router sceglie sempre quella con il prefisso più lungo (più specifico). Un pacchetto diretto a 10.0.1.50 matcherà /24 piuttosto che /8 o /0. La <strong>default route</strong> (0.0.0.0/0) ha il prefisso più corto possibile e viene usata come ultima risorsa.
+</div>
+
+<p>Le rotte nella tabella possono avere diverse origini, identificate da una lettera: <strong>C</strong> (Connected — reti direttamente collegate alle interfacce del router), <strong>S</strong> (Static — configurate manualmente), <strong>O</strong> (OSPF — apprese via protocollo dinamico), <strong>B</strong> (BGP — apprese via protocollo esterno). Le rotte Connected appaiono automaticamente quando si configura un indirizzo IP su un'interfaccia.</p>
+
+<h3>Routing statico</h3>
+<p>Il routing statico consiste nel configurare manualmente ogni rotta nella tabella del router. L'amministratore decide esattamente quale percorso seguirà ogni pacchetto.</p>
+
+<table>
+<tr><th>Vantaggi</th><th>Svantaggi</th></tr>
+<tr><td>Controllo totale sul percorso</td><td>Non scala con reti grandi</td></tr>
+<tr><td>Nessun overhead di protocollo</td><td>Nessun failover automatico</td></tr>
+<tr><td>Più sicuro (nessun annuncio di rotte)</td><td>Errori umani frequenti</td></tr>
+<tr><td>Semplice da capire e debuggare</td><td>Manutenzione manuale ad ogni cambio</td></tr>
+</table>
+
+<p>Si usa principalmente in reti piccole (meno di 10 sottoreti), per la default route verso l'ISP, per rotte specifiche di sicurezza (es: traffico sensibile via tunnel VPN), e come <strong>floating static route</strong> — una rotta statica di backup con metrica più alta della rotta dinamica.</p>
+
+<pre># Aggiungere una rotta statica su Linux
+ip route add 10.0.2.0/24 via 10.0.1.1
+
+# Default route
+ip route add default via 203.0.113.1</pre>
+
+<h3>Routing dinamico</h3>
+<p>I protocolli di routing dinamico permettono ai router di scambiarsi automaticamente informazioni sulle reti raggiungibili. Quando un link cade, i protocolli ricalcolano le rotte senza intervento umano. Si dividono in tre famiglie: Distance Vector (RIP — obsoleto), Link State (OSPF, IS-IS), e Path Vector (BGP).</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2 id="ospf">3. OSPF — Open Shortest Path First</h2>
+
+<p>OSPF è il protocollo IGP (Interior Gateway Protocol) link-state più utilizzato nelle reti enterprise. Ogni router costruisce una mappa completa della topologia della rete e calcola indipendentemente i percorsi ottimali.</p>
+
+<h3>Come funziona in 5 passi</h3>
+<ol>
+<li><strong>Discovery:</strong> i router scoprono i vicini scambiando pacchetti Hello a intervalli regolari (default 10s su Ethernet).</li>
+<li><strong>Exchange:</strong> i router si scambiano Database Description (DBD) per sincronizzare i loro LSDB.</li>
+<li><strong>Database:</strong> ogni router costruisce il Link State Database (LSDB), una mappa completa della topologia.</li>
+<li><strong>Calcolo:</strong> l'algoritmo SPF (Dijkstra) calcola l'albero dei percorsi minimi con il router come radice.</li>
+<li><strong>Routing:</strong> i percorsi ottimali vengono inseriti nella tabella di routing.</li>
+</ol>
+
+<div class="key-concept">
+<strong>Concetti chiave OSPF</strong><br>
+<strong>Area 0</strong> è il backbone — obbligatorio, tutte le aree devono connettersi ad esso. Il <strong>costo OSPF</strong> è inversamente proporzionale alla bandwidth (reference bandwidth / interface bandwidth). Il <strong>DR/BDR</strong> (Designated Router / Backup DR) ottimizzano le adiacenze su reti broadcast. La convergenza è rapida: 1-5 secondi.
+</div>
+
+<div class="security-box">
+<strong>🔒 Sicurezza OSPF</strong><br>
+OSPF è vulnerabile a router rogue che annunciano rotte false (rogue router, LSA injection). La difesa è l'<strong>autenticazione OSPF</strong> con MD5 o SHA-256 (RFC 5709) — ogni pacchetto OSPF deve essere firmato con una chiave condivisa.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2 id="bgp">4. BGP — Border Gateway Protocol</h2>
+
+<p>BGP è l'unico protocollo EGP (Exterior Gateway Protocol) in uso su Internet. Mentre OSPF gestisce il routing dentro un'organizzazione, BGP gestisce il routing tra le grandi reti (Autonomous Systems) che compongono Internet. Ogni ISP, cloud provider e grande azienda è un AS con un proprio numero (ASN).</p>
+
+<p>Le decisioni di routing BGP non si basano sulla distanza, ma su un insieme di <strong>attributi e policy</strong> configurate dall'operatore. La tabella BGP globale contiene circa 950.000 prefissi IPv4 — il che dà un'idea della scala a cui BGP opera.</p>
+
+<table>
+<tr><th>Tipo</th><th>Dove opera</th><th>Caratteristiche</th></tr>
+<tr><td><code>eBGP</code> (external)</td><td>Tra AS diversi</td><td>TCP porta 179, TTL=1 (vicini diretti)</td></tr>
+<tr><td><code>iBGP</code> (internal)</td><td>Dentro lo stesso AS</td><td>Full mesh o Route Reflector per scalare</td></tr>
+</table>
+
+<div class="warning-box">
+<strong>⚠ BGP Hijacking</strong><br>
+Un attaccante può annunciare prefissi BGP che non gli appartengono, dirottando il traffico verso la propria rete. Casi celebri: Pakistan Telecom vs YouTube (2008), China Telecom (2018). La difesa è <strong>RPKI</strong> (Resource Public Key Infrastructure) che valida crittograficamente l'origine dei prefissi.
+</div>
+
+<h3>In pratica: strategia enterprise</h3>
+<p>In un'azienda come Leonardo, la strategia tipica è: <strong>OSPF per il routing interno</strong> (campus, data center, sedi) + <strong>BGP per la connettività esterna</strong> (verso ISP e cloud provider). Le rotte statiche restano per casi specifici: default route, tunnel VPN, rotte di management.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2 id="wireshark">5. Workshop Wireshark</h2>
+
+<p>Wireshark è l'analizzatore di protocolli più utilizzato al mondo. Permette di catturare e analizzare il traffico in tempo reale o da file .pcap. L'interfaccia ha tre aree: <strong>Packet List</strong> (elenco dei pacchetti), <strong>Packet Details</strong> (scomposizione in livelli), e <strong>Packet Bytes</strong> (contenuto grezzo).</p>
+
+<h3>Filtri display essenziali</h3>
+
+<table>
+<tr><th>Filtro</th><th>Cosa mostra</th><th>Scenario Security</th></tr>
+<tr><td><code>tcp.flags.syn==1 && tcp.flags.ack==0</code></td><td>Solo SYN iniziali</td><td>Port scanning</td></tr>
+<tr><td><code>dns</code></td><td>Traffico DNS</td><td>Risoluzione nomi, C2 detection</td></tr>
+<tr><td><code>http</code></td><td>Solo HTTP (in chiaro)</td><td>Credenziali esposte</td></tr>
+<tr><td><code>tls.handshake</code></td><td>Handshake TLS</td><td>Analisi certificati</td></tr>
+<tr><td><code>arp</code></td><td>Pacchetti ARP</td><td>ARP spoofing detection</td></tr>
+<tr><td><code>ip.addr == 10.0.1.50</code></td><td>Traffico da/verso un IP</td><td>Isolare un host</td></tr>
+<tr><td><code>tcp.analysis.retransmission</code></td><td>Ritrasmissioni TCP</td><td>Problemi di rete</td></tr>
+</table>
+
+<h3>Esercizi svolti in aula</h3>
+
+<h4>TCP Three-Way Handshake</h4>
+<p>Filtro: <code>tcp.flags.syn == 1</code>. Il handshake si compone di tre pacchetti: SYN (client → server, seq=X), SYN-ACK (server → client, seq=Y, ack=X+1), ACK (client → server, ack=Y+1). Il delta time tra SYN e ACK finale misura il RTT (Round Trip Time).</p>
+
+<h4>DNS Query e Response</h4>
+<p>Filtro: <code>dns</code>. Le query DNS viaggiano su UDP porta 53 in chiaro — il campo Queries contiene il dominio richiesto, la response contiene l'indirizzo IP con il TTL.</p>
+
+<h4>HTTP vs HTTPS</h4>
+<p>Con <code>http</code> vedi tutto in chiaro: URL, header, cookie, body. Con <code>tls</code> vedi solo Client Hello (con SNI), Server Hello, e dati cifrati. Questa è la dimostrazione più efficace del perché HTTPS è essenziale.</p>
+
+<div class="security-box">
+<strong>🔒 ARP Spoofing</strong><br>
+L'ARP spoofing permette a un attaccante di associare il proprio MAC all'IP del gateway, intercettando tutto il traffico (Man-in-the-Middle). Segnali in Wireshark: stesso IP con MAC diversi, ARP Reply non richiesti. Difesa: <strong>Dynamic ARP Inspection (DAI)</strong> sugli switch managed.
+</div>
+
+<h3>Funzioni statistiche</h3>
+<p>Quattro funzioni utili per l'analisi rapida: <strong>Protocol Hierarchy</strong> (distribuzione dei protocolli), <strong>Conversations</strong> (coppie di host comunicanti), <strong>Endpoints</strong> (inventario degli host), <strong>I/O Graph</strong> (traffico nel tempo). Tutte accessibili dal menu Statistics.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2 id="dns">6. DNS in Profondità</h2>
+
+<h3>Gerarchia e risoluzione</h3>
+<p>Il DNS è un sistema distribuito e gerarchico. Quando digiti un dominio, il resolver esegue fino a 4 query iterative risalendo la gerarchia: Root Servers (13 gruppi A-M, distribuiti globalmente via anycast) → TLD Servers (.com, .it, .org) → Authoritative Name Server (gestisce il dominio specifico) → risposta con l'IP e il TTL per il caching.</p>
+
+<h3>Tipi di record</h3>
+<table>
+<tr><th>Tipo</th><th>Funzione</th><th>Uso Security</th></tr>
+<tr><td><code>A</code></td><td>Nome → IPv4</td><td>Risoluzione standard</td></tr>
+<tr><td><code>AAAA</code></td><td>Nome → IPv6</td><td>Dual-stack</td></tr>
+<tr><td><code>CNAME</code></td><td>Alias (nome canonico)</td><td>CDN, load balancing</td></tr>
+<tr><td><code>MX</code></td><td>Mail server per il dominio</td><td>Email spoofing, SPF</td></tr>
+<tr><td><code>TXT</code></td><td>Testo arbitrario</td><td>SPF, DKIM, DMARC</td></tr>
+<tr><td><code>NS</code></td><td>Name server autorevole</td><td>Domain hijacking</td></tr>
+<tr><td><code>PTR</code></td><td>IP → nome (reverse DNS)</td><td>Verifica identità, anti-spam</td></tr>
+<tr><td><code>SRV</code></td><td>Servizio + porta</td><td>Service discovery (Active Directory)</td></tr>
+</table>
+
+<h3>Attacchi DNS</h3>
+<p>Il DNS è uno dei servizi più attaccati di Internet. I principali attacchi sono: <strong>DNS Spoofing</strong> (risposte false iniettate nella cache), <strong>DNS Tunneling</strong> (dati nascosti nelle query per exfiltration o C2), <strong>DNS Amplification</strong> (DDoS volumetrico), <strong>Domain Hijacking</strong> (modifica dei record NS) e <strong>Typosquatting</strong> (domini simili per phishing).</p>
+
+<h3>Difese DNS</h3>
+<p><strong>DNSSEC</strong> (RFC 4033-4035) aggiunge firme crittografiche ai record DNS — il resolver può verificare autenticità e integrità, ma DNSSEC non cifra le query. Per la privacy servono <strong>DNS over HTTPS</strong> (DoH, RFC 8484 — porta 443, indistinguibile dal traffico web) o <strong>DNS over TLS</strong> (DoT, RFC 7858 — porta 853).</p>
+
+<div class="tip-box">
+<strong>💡 Impatto enterprise di DoH</strong><br>
+DoH è problematico per il SOC perché rende il traffico DNS invisibile (cifrato dentro HTTPS sulla porta 443). La best practice enterprise è: DNS interno con logging completo → log al SIEM, blocco DoH/DoT verso resolver esterni.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2 id="tls">7. SSL/TLS e PKI</h2>
+
+<h3>TLS 1.3 — L'handshake moderno</h3>
+<p>TLS (Transport Layer Security) è il protocollo crittografico che protegge le comunicazioni su rete. TLS 1.3 (RFC 8446) è la versione corrente, significativamente migliorata rispetto a TLS 1.2.</p>
+
+<p>L'handshake TLS 1.3 si completa in <strong>1 round-trip</strong> (1-RTT), contro i 2-RTT di TLS 1.2:</p>
+<ol>
+<li><strong>Client Hello:</strong> il client invia versioni supportate, cipher suites, e la chiave pubblica effimera Diffie-Hellman.</li>
+<li><strong>Server Hello + Certificate:</strong> il server sceglie la cipher suite, invia la sua chiave DH effimera, il certificato X.509 e il messaggio Finished cifrato.</li>
+<li><strong>Client Finished:</strong> il client verifica il certificato, calcola il session key condiviso (ECDHE), invia Finished cifrato.</li>
+</ol>
+
+<div class="key-concept">
+<strong>Perfect Forward Secrecy (PFS)</strong><br>
+TLS 1.3 impone la PFS usando solo scambi di chiave effimeri (ECDHE). Ogni sessione ha chiavi temporanee che vengono distrutte alla fine — se qualcuno compromette la chiave privata del server, non può decifrare le sessioni passate. TLS 1.3 ha anche rimosso tutti gli algoritmi deboli: niente RSA key exchange, CBC, RC4, SHA-1.
+</div>
+
+<h3>Certificati X.509 e catena di fiducia</h3>
+<p>Un certificato X.509 è la "carta d'identità digitale" di un server. Contiene il Subject (identità), l'Issuer (CA che l'ha firmato), la validità temporale, la chiave pubblica, i Subject Alternative Names (SAN — i domini per cui è valido), e la firma della CA.</p>
+
+<p>La <strong>catena di fiducia</strong> funziona così: il certificato del server è firmato da un'Intermediate CA, che a sua volta è firmata da una Root CA. La Root CA è autofirmata e presente nel trust store del sistema operativo (~150 Root CA). Il browser verifica ogni firma risalendo la catena.</p>
+
+<div class="warning-box">
+<strong>⚠ Errori comuni con i certificati</strong><br>
+<strong>Certificato scaduto</strong> — il campo Not After è superato. Let's Encrypt offre certificati gratuiti a 90 giorni con rinnovo automatico (ACME).<br>
+<strong>Nome non corrispondente</strong> — il CN/SAN non include il dominio richiesto.<br>
+<strong>Catena incompleta</strong> — il server non invia l'Intermediate CA.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2 id="vpn">8. VPN — Virtual Private Network</h2>
+
+<p>Una VPN crea un tunnel cifrato su una rete pubblica (Internet), estendendo una rete privata in sicurezza. Fornisce tre servizi: confidenzialità (cifratura), integrità (protezione contro modifiche) e autenticazione (verifica dell'identità).</p>
+
+<h3>Site-to-site vs Remote Access</h3>
+<table>
+<tr><th></th><th>Site-to-Site</th><th>Remote Access</th></tr>
+<tr><td><strong>Cosa collega</strong></td><td>Due reti aziendali</td><td>Un singolo utente alla rete</td></tr>
+<tr><td><strong>Esempio</strong></td><td>Roma ↔ Napoli, Sede ↔ Azure</td><td>Dipendente casa → rete Leonardo</td></tr>
+<tr><td><strong>Tunnel</strong></td><td>Always-on, gateway-to-gateway</td><td>On-demand, client-to-gateway</td></tr>
+<tr><td><strong>Protocollo</strong></td><td>IPSec (IKEv2)</td><td>SSL VPN o IKEv2</td></tr>
+</table>
+
+<h3>IPSec</h3>
+<p>IPSec opera al Layer 3 ed è composto da: <strong>ESP</strong> (Encapsulating Security Payload — cifratura + autenticazione), <strong>AH</strong> (Authentication Header — solo autenticazione, poco usato), e <strong>IKE/IKEv2</strong> (negoziazione delle chiavi, UDP 500/4500). IPSec supporta due modalità: <strong>tunnel mode</strong> (cifra l'intero pacchetto, usato per site-to-site) e <strong>transport mode</strong> (cifra solo il payload, usato host-to-host).</p>
+
+<h3>SSL VPN vs IPSec VPN</h3>
+<p>La SSL VPN opera ai Layer 4-7 usando TLS su porta TCP 443 — funziona ovunque ci sia accesso HTTPS (anche in hotel o aeroporti con WiFi restrittivi). IPSec è più performante (UDP) ma richiede porte dedicate che possono essere bloccate. In pratica: <strong>IPSec per site-to-site</strong>, <strong>SSL VPN per remote access</strong>.</p>
+
+<div class="security-box">
+<strong>🔒 Best practice VPN enterprise</strong><br>
+MFA obbligatorio per remote access. Full tunnel per dipendenti (visibilità SOC). Certificati X.509 al posto delle pre-shared keys. Logging VPN integrato nel SIEM. Patching tempestivo dei VPN gateway (bersagli critici: vulnerabilità Fortinet, Ivanti, Citrix). Network segmentation post-VPN (least privilege).
+</div>
+
+<div class="tip-box">
+<strong>💡 ZTNA — Il futuro oltre la VPN</strong><br>
+Zero Trust Network Access (ZTNA) sta sostituendo la VPN tradizionale: invece di dare accesso all'intera rete, ZTNA verifica identità e stato del dispositivo prima di concedere accesso a singole applicazioni. Prodotti: Zscaler, Cloudflare Access, Azure AD Application Proxy.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2 id="esercizi">9. Esercizi Interattivi</h2>
+
+<div class="exercise-links">
+  <a class="ex-card" href="https://luiroman.github.io/leonardo-esercizi-interattivi/esercizi-routing-dns-aula-g2.html">
+    <h4>📝 Esercizi Aula — G2</h4>
+    <p>12 esercizi · Routing, DNS, TLS, Wireshark · ~40 min</p>
+  </a>
+  <a class="ex-card" href="https://luiroman.github.io/leonardo-esercizi-interattivi/esercizi-compiti-blocco1-g2.html">
+    <h4>📝 Blocco 1 — Consolida G2</h4>
+    <p>18 esercizi · Routing, DNS, TLS, VPN, Wireshark · ~1h</p>
+  </a>
+  <a class="ex-card" href="https://luiroman.github.io/leonardo-esercizi-interattivi/esercizi-compiti-blocco2-g2.html">
+    <h4>📝 Blocco 2 — Preparati G3</h4>
+    <p>16 esercizi · Firewall, NAT, WAF · ~1h</p>
+  </a>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2 id="compiti">10. Agenda Studio Autonomo (11-14 aprile)</h2>
+
+<table>
+<tr><th>Tempo</th><th>Attività</th><th>Tipo</th><th>Materiale</th></tr>
+<tr><td>1h</td><td>Ripasso con questa Guida Studente</td><td>📖 Passivo</td><td>Questa pagina</td></tr>
+<tr><td>1h</td><td>Blocco 1 esercizi (routing, DNS, TLS, VPN)</td><td>✏️ Attivo</td><td>HTML interattivo</td></tr>
+<tr><td>1h</td><td>Analizza un nuovo .pcap con Wireshark</td><td>🔧 Pratico</td><td>Cattura durante navigazione</td></tr>
+<tr><td>30m</td><td>Ispeziona 3 certificati TLS diversi</td><td>🔧 Pratico</td><td>Browser + OpenSSL</td></tr>
+<tr><td>—</td><td colspan="3"><em>Pausa</em></td></tr>
+<tr><td>1h</td><td>Lettura: firewall stateful/stateless, NAT (PAT, DNAT, SNAT)</td><td>📖 Passivo</td><td>Risorse online</td></tr>
+<tr><td>1h</td><td>Blocco 2 esercizi (firewall, NAT, WAF)</td><td>✏️ Attivo</td><td>HTML interattivo</td></tr>
+<tr><td>1h30</td><td>Installa pfSense su VirtualBox</td><td>🔧 Pratico</td><td>Vedi sezione strumenti</td></tr>
+</table>
+
+<div class="warning-box">
+<strong>📦 Deliverable per il 15 aprile</strong><br>
+Blocco 1 + Blocco 2 esercizi completati · Nuovo .pcap analizzato (3 cose interessanti trovate) · Screenshot di 3 certificati TLS ispezionati · pfSense installato (screenshot della dashboard).
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2 id="strumenti">11. Strumenti da Installare</h2>
+
+<h3>pfSense su VirtualBox</h3>
+<ol>
+<li>Scarica l'ISO di pfSense CE da <a href="https://www.pfsense.org/download/" style="color:var(--accent)">pfsense.org/download</a> (AMD64, ISO)</li>
+<li>In VirtualBox, crea una nuova VM: tipo FreeBSD (64-bit), 1GB RAM, 8GB disco</li>
+<li>Aggiungi <strong>2 interfacce di rete</strong>: Adapter 1 = NAT (WAN), Adapter 2 = Host-only (LAN)</li>
+<li>Avvia la VM dall'ISO e segui l'installazione (accetta le impostazioni predefinite)</li>
+<li>Al riavvio, pfSense assegna automaticamente le interfacce: WAN (DHCP) e LAN (192.168.1.1)</li>
+<li>Dal browser del tuo host, vai a <code>http://192.168.1.1</code> — login: admin / pfsense</li>
+</ol>
+
+<div class="tip-box">
+<strong>💡 Troubleshooting pfSense</strong><br>
+Se il browser non raggiunge 192.168.1.1: verifica che l'host-only network di VirtualBox sia attiva (File → Host Network Manager), e che il tuo host abbia un IP nella rete 192.168.1.x sull'interfaccia host-only.
+</div>
+
+<h3>Ispezione certificati con OpenSSL</h3>
+<pre>openssl s_client -connect www.leonardo.com:443 \
+  -servername www.leonardo.com &lt; /dev/null 2&gt;/dev/null | \
+  openssl x509 -text -noout</pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2 id="riferimenti">12. Tabelle di Riferimento Rapido</h2>
+
+<h3>Protocolli di routing</h3>
+<table>
+<tr><th>Protocollo</th><th>Tipo</th><th>Uso</th><th>Convergenza</th></tr>
+<tr><td>RIP</td><td>Distance Vector</td><td>Obsoleto/didattico</td><td>Minuti</td></tr>
+<tr><td>OSPF</td><td>Link State</td><td>Enterprise LAN/WAN</td><td>Secondi</td></tr>
+<tr><td>BGP</td><td>Path Vector</td><td>Internet, ISP</td><td>Minuti (policy)</td></tr>
+</table>
+
+<h3>Porte critiche</h3>
+<table>
+<tr><th>Porta</th><th>Protocollo</th><th>Servizio</th></tr>
+<tr><td>22</td><td>TCP</td><td>SSH</td></tr>
+<tr><td>53</td><td>UDP/TCP</td><td>DNS</td></tr>
+<tr><td>80</td><td>TCP</td><td>HTTP</td></tr>
+<tr><td>179</td><td>TCP</td><td>BGP</td></tr>
+<tr><td>443</td><td>TCP</td><td>HTTPS / SSL VPN</td></tr>
+<tr><td>500</td><td>UDP</td><td>IKE (IPSec)</td></tr>
+<tr><td>853</td><td>TCP</td><td>DNS over TLS (DoT)</td></tr>
+<tr><td>4500</td><td>UDP</td><td>IPSec NAT-T</td></tr>
+</table>
+
+<h3>Confronto VPN</h3>
+<table>
+<tr><th></th><th>IPSec VPN</th><th>SSL VPN</th></tr>
+<tr><td>Layer</td><td>3 (IP)</td><td>4-7 (TLS/TCP)</td></tr>
+<tr><td>Porta</td><td>UDP 500, 4500</td><td>TCP 443</td></tr>
+<tr><td>Uso tipico</td><td>Site-to-site</td><td>Remote access</td></tr>
+<tr><td>NAT traversal</td><td>Richiede NAT-T</td><td>Nativo</td></tr>
+</table>
+
+<h3>Domande guida per la lettura propedeutica (Giorno 3)</h3>
+<ol>
+<li>Qual è la differenza tra un firewall stateful e uno stateless?</li>
+<li>Come funziona il PAT (Port Address Translation)?</li>
+<li>Cosa fa un WAF che un firewall tradizionale non può fare?</li>
+<li>Cos'è la DMZ e perché i server pubblici vanno lì?</li>
+<li>Qual è la "default policy" raccomandata per un firewall enterprise?</li>
+</ol>
+
+<footer>
+  Corso Cybersecurity — Leonardo SpA · Modulo 1: Reti, SO e Hardening<br>
+  Guida Studente — Giorno 2 · <a href="https://luiroman.github.io/leonardo-esercizi-interattivi/" style="color:var(--accent)">Indice materiali</a>
+</footer>
+
+</body>
+</html>

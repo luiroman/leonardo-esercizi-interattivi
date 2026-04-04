@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esercizi Compiti Blocco 2 — Preparati per il Giorno 3</title>
+<style>
+:root{--accent:#0891B2;--accent2:#0077B6;--title:#0F4C75;--text:#1E293B;--muted:#64748B;--bg:#F8F9FA;--card:#FFF;--border:#E2E8F0;--success:#059669;--success-bg:#F0FDF4;--success-bd:#BBF7D0;--danger:#DC2626;--danger-bg:#FEF2F2;--danger-bd:#FECACA;--warn:#D97706;--warn-bg:#FFFBEB;--warn-bd:#FDE68A}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Calibri,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+header{background:var(--title);color:#fff;padding:24px 20px;text-align:center}header h1{font-size:1.4em;margin-bottom:4px}header p{color:#94A3B8;font-size:.9em}
+.stats-bar{background:#fff;border-bottom:2px solid var(--accent);padding:12px 20px;display:flex;gap:20px;flex-wrap:wrap;justify-content:center;position:sticky;top:0;z-index:10}
+.stat{text-align:center}.stat .num{font-size:1.4em;font-weight:bold;color:var(--accent)}.stat .label{font-size:.75em;color:var(--muted)}
+.section-title{background:var(--accent);color:#fff;padding:10px 20px;margin:20px 0 0;font-size:1.05em;font-weight:bold}
+.exercise{background:var(--card);border:1px solid var(--border);border-radius:8px;margin:12px 16px;padding:16px}
+.ex-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.ex-title{font-weight:bold;color:var(--title);font-size:.95em}.diff{font-size:.7em;padding:2px 8px;border-radius:10px;font-weight:bold;color:#fff}
+.diff.easy{background:var(--success)}.diff.medium{background:var(--warn)}.diff.hard{background:var(--danger)}
+.ex-body p,.ex-body li{margin-bottom:8px;font-size:.9em}.ex-body ul{padding-left:20px}
+.ex-body code{background:#F1F5F9;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:.88em}
+input[type="text"]{border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:.9em;width:100%;max-width:400px;font-family:Consolas,monospace}
+select{border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:.9em;width:100%;max-width:400px}
+.btn{display:inline-block;background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:.85em;margin:6px 4px 6px 0}
+.btn:hover{opacity:.9}.btn.reset{background:var(--muted)}
+.feedback{padding:10px 14px;border-radius:6px;margin-top:10px;font-size:.85em;display:none}
+.feedback.correct{display:block;background:var(--success-bg);color:var(--success);border:1px solid var(--success-bd)}
+.feedback.wrong{display:block;background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-bd)}
+.hint{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn);padding:10px 14px;border-radius:6px;margin-top:8px;font-size:.82em;display:none}
+.completed{border-left:4px solid var(--success)}
+footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;margin-top:20px}
+@media(max-width:600px){.exercise{margin:8px}input[type="text"],select{max-width:100%}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Blocco 2 — Preparati per il Giorno 3</h1>
+  <p>Firewall · NAT · WAF · Sicurezza Perimetrale</p>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><div class="num" id="s-done">0</div><div class="label">Completati</div></div>
+  <div class="stat"><div class="num" id="s-correct">0</div><div class="label">Corretti</div></div>
+  <div class="stat"><div class="num" id="s-total">16</div><div class="label">Totali</div></div>
+  <div class="stat"><div class="num" id="s-pct">0%</div><div class="label">Precisione</div></div>
+</div>
+
+<!-- ═══ A: FIREWALL ═══ -->
+<div class="section-title">A · Firewall (7 esercizi)</div>
+
+<div class="exercise" id="ex1"><div class="ex-header"><span class="ex-title">1 — Stateless vs Stateful</span><span class="diff easy">Facile</span></div><div class="ex-body">
+<p>Un firewall <strong>stateful</strong> si differenzia da uno stateless perché:</p>
+<select id="f1"><option value="">— Seleziona —</option><option value="correct">Tiene traccia dello stato delle connessioni (connection tracking)</option><option value="w1">Ha più interfacce di rete</option><option value="w2">Opera al Layer 7 dell'OSI</option><option value="w3">È sempre basato su hardware</option></select>
+<br><button class="btn" onclick="chkSel('f1','correct','Corretto! Il firewall stateful tiene traccia delle connessioni attive — sa che un pacchetto in arrivo è parte di una connessione già autorizzata.','No. La differenza chiave è il connection tracking — il firewall stateful sa quali connessioni sono attive.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex1',['f1'])">Reset</button><div id="fb1" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex2"><div class="ex-header"><span class="ex-title">2 — Regola Firewall Base</span><span class="diff easy">Facile</span></div><div class="ex-body">
+<p>Una regola firewall tipica contiene questi campi. Quale NON è un campo standard?</p>
+<select id="f2"><option value="">— Seleziona —</option><option value="correct">Nome del processo applicativo</option><option value="w1">IP sorgente e destinazione</option><option value="w2">Porta sorgente e destinazione</option><option value="w3">Azione (permit/deny)</option></select>
+<br><button class="btn" onclick="chkSel('f2','correct','Corretto! Un firewall tradizionale (L3/L4) lavora con IP e porte — non conosce il nome del processo. I NGFW possono farlo, ma non è un campo standard.','No. IP sorgente/destinazione, porte e azione sono tutti campi standard di una regola firewall.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex2',['f2'])">Reset</button><div id="fb2" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex3"><div class="ex-header"><span class="ex-title">3 — Default Policy</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>In un firewall enterprise, la best practice per la policy di default (ultima regola) è:</p>
+<select id="f3"><option value="">— Seleziona —</option><option value="correct">Deny All — blocca tutto ciò che non è esplicitamente autorizzato</option><option value="w1">Permit All — permetti tutto e blocca solo le minacce note</option><option value="w2">Nessuna policy di default — le regole specifiche sono sufficienti</option></select>
+<br><button class="btn" onclick="chkSel('f3','correct','Corretto! Default Deny (deny all, permit by exception) è il principio fondamentale — autorizza solo il traffico necessario.','No. La best practice è Deny All (deny by default, permit by exception) — il principio del minimo privilegio applicato alla rete.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex3',['f3'])">Reset</button><div id="fb3" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex4"><div class="ex-header"><span class="ex-title">4 — Ordine delle Regole</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>In un firewall, le regole vengono valutate:</p>
+<select id="f4"><option value="">— Seleziona —</option><option value="correct">Dall'alto verso il basso — la prima regola che matcha viene applicata</option><option value="w1">In ordine di priorità numerica decrescente</option><option value="w2">Tutte le regole vengono valutate e vince la più specifica</option></select>
+<br><button class="btn" onclick="chkSel('f4','correct','Corretto! Le regole firewall sono top-down: la prima che matcha il pacchetto viene applicata e le successive ignorate. L\'ordine è fondamentale!','No. I firewall valutano le regole dall\'alto verso il basso (top-down) — la prima che matcha vince.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex4',['f4'])">Reset</button><div id="fb4" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex5"><div class="ex-header"><span class="ex-title">5 — Regola Firewall Pratica</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>Vuoi permettere ai client della rete <code>10.0.1.0/24</code> di navigare su web (HTTP/HTTPS) ma bloccare tutto il resto. Quante regole servono (minimo)?</p>
+<input type="text" id="f5" placeholder="Numero regole" style="max-width:100px">
+<br><button class="btn" onclick="chk('f5',['3'],'Corretto! 1) Permit 10.0.1.0/24 → any porta 80 (HTTP), 2) Permit 10.0.1.0/24 → any porta 443 (HTTPS), 3) Deny all (default).')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex5',['f5'])">Reset</button><div id="fb5" class="feedback"></div>
+<button class="btn reset" onclick="toggleHint('h5')" style="background:var(--warn)">💡 Suggerimento</button>
+<div class="hint" id="h5">HTTP usa porta 80, HTTPS usa porta 443. Servono regole separate più la default deny.</div>
+</div></div>
+
+<div class="exercise" id="ex6"><div class="ex-header"><span class="ex-title">6 — NGFW</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>Un Next-Generation Firewall (NGFW) aggiunge funzionalità rispetto a un firewall tradizionale. Quale tra queste è una funzionalità NGFW?</p>
+<select id="f6"><option value="">— Seleziona —</option><option value="correct">Application awareness — identifica le applicazioni indipendentemente dalla porta</option><option value="w1">Filtraggio per indirizzo IP sorgente</option><option value="w2">Blocco basato su porta TCP/UDP</option><option value="w3">Logging dei pacchetti bloccati</option></select>
+<br><button class="btn" onclick="chkSel('f6','correct','Corretto! I NGFW possono identificare le applicazioni (es: riconoscere YouTube anche se usa porta 443) e applicare policy specifiche per applicazione.','No. Il filtraggio per IP, porta e logging sono funzionalità di un firewall tradizionale. I NGFW aggiungono consapevolezza applicativa.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex6',['f6'])">Reset</button><div id="fb6" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex7"><div class="ex-header"><span class="ex-title">7 — Zone Firewall</span><span class="diff hard">Difficile</span></div><div class="ex-body">
+<p>Un'architettura firewall classica ha 3 zone. In quale zona si mettono i web server pubblici?</p>
+<select id="f7"><option value="">— Seleziona —</option><option value="correct">DMZ (DeMilitarized Zone)</option><option value="w1">LAN (rete interna)</option><option value="w2">WAN (rete esterna/Internet)</option></select>
+<br><button class="btn" onclick="chkSel('f7','correct','Corretto! La DMZ è la zona intermedia tra Internet e la LAN — i server pubblici vanno qui, protetti dal firewall su entrambi i lati.','No. I server pubblici NON vanno né in LAN (troppo esposti) né direttamente su Internet. Vanno in una zona intermedia.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex7',['f7'])">Reset</button><div id="fb7" class="feedback"></div>
+</div></div>
+
+<!-- ═══ B: NAT ═══ -->
+<div class="section-title">B · NAT — Network Address Translation (5 esercizi)</div>
+
+<div class="exercise" id="ex8"><div class="ex-header"><span class="ex-title">8 — Perché il NAT</span><span class="diff easy">Facile</span></div><div class="ex-body">
+<p>Il motivo principale per cui il NAT è stato introdotto è:</p>
+<select id="f8"><option value="">— Seleziona —</option><option value="correct">L'esaurimento degli indirizzi IPv4 pubblici</option><option value="w1">Migliorare le performance di rete</option><option value="w2">Cifrare il traffico in transito</option></select>
+<br><button class="btn" onclick="chkSel('f8','correct','Corretto! Con soli ~4,3 miliardi di indirizzi IPv4, il NAT permette a molti dispositivi interni di condividere pochi IP pubblici.','No. Il NAT nasce per risolvere la scarsità di indirizzi IPv4 — non ha a che fare con performance o cifratura.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex8',['f8'])">Reset</button><div id="fb8" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex9"><div class="ex-header"><span class="ex-title">9 — PAT (Port Address Translation)</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>Con il PAT (o NAT overload), 100 host interni condividono un solo IP pubblico. Come vengono distinte le connessioni?</p>
+<select id="f9"><option value="">— Seleziona —</option><option value="correct">Usando porte sorgente diverse per ogni connessione</option><option value="w1">Usando indirizzi MAC diversi</option><option value="w2">Usando header HTTP diversi</option></select>
+<br><button class="btn" onclick="chkSel('f9','correct','Corretto! Il PAT traduce IP:porta sorgente in IP_pubblico:porta_casuale — ogni connessione è identificata dalla coppia IP:porta univoca.','No. Il PAT usa le porte TCP/UDP come moltiplicatore — ogni connessione ha una porta sorgente diversa sull\'IP pubblico.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex9',['f9'])">Reset</button><div id="fb9" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex10"><div class="ex-header"><span class="ex-title">10 — SNAT vs DNAT</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>Quando un web server interno deve essere raggiungibile da Internet, quale tipo di NAT si usa?</p>
+<select id="f10"><option value="">— Seleziona —</option><option value="correct">DNAT (Destination NAT) — traduce l'IP pubblico nell'IP privato del server</option><option value="w1">SNAT (Source NAT) — traduce l'IP sorgente del server</option><option value="w2">PAT — condivide la porta 80 tra più server</option></select>
+<br><button class="btn" onclick="chkSel('f10','correct','Corretto! DNAT traduce l\'IP di destinazione: il traffico in arrivo sull\'IP pubblico viene inoltrato all\'IP privato del server (port forwarding).','No. Per rendere un server interno raggiungibile, serve tradurre la destinazione (IP pubblico → IP privato del server).')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex10',['f10'])">Reset</button><div id="fb10" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex11"><div class="ex-header"><span class="ex-title">11 — NAT e Sicurezza</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>Il NAT fornisce un livello di sicurezza perché:</p>
+<select id="f11"><option value="">— Seleziona —</option><option value="correct">Nasconde gli indirizzi interni, impedendo connessioni dirette dall'esterno</option><option value="w1">Cifra il traffico in transito</option><option value="w2">Blocca il malware nei pacchetti</option></select>
+<br><button class="btn" onclick="chkSel('f11','correct','Corretto! Il NAT nasconde la struttura interna della rete — un attaccante esterno non può raggiungere direttamente un host interno (a meno di port forwarding esplicito).','No. Il NAT non cifra né ispeziona il traffico — il suo effetto di sicurezza è nascondere gli IP interni.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex11',['f11'])">Reset</button><div id="fb11" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex12"><div class="ex-header"><span class="ex-title">12 — Port Forwarding</span><span class="diff hard">Difficile</span></div><div class="ex-body">
+<p>Un firewall pfSense ha IP pubblico <code>203.0.113.10</code>. Vuoi che il traffico sulla porta 443 raggiunga il web server interno <code>10.0.1.50:443</code>. Che tipo di regola configuri?</p>
+<select id="f12"><option value="">— Seleziona —</option><option value="correct">Port forwarding (DNAT): 203.0.113.10:443 → 10.0.1.50:443</option><option value="w1">SNAT: 10.0.1.50:443 → 203.0.113.10:443</option><option value="w2">Outbound NAT per la porta 443</option></select>
+<br><button class="btn" onclick="chkSel('f12','correct','Corretto! Il port forwarding è un caso specifico di DNAT — il firewall riscrive la destinazione dei pacchetti in arrivo sull\'IP pubblico verso l\'IP del server interno.','No. Devi ridirigere il traffico in arrivo (destinazione) dall\'IP pubblico verso il server interno — questo è port forwarding (DNAT).')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex12',['f12'])">Reset</button><div id="fb12" class="feedback"></div>
+</div></div>
+
+<!-- ═══ C: WAF ═══ -->
+<div class="section-title">C · WAF — Web Application Firewall (4 esercizi)</div>
+
+<div class="exercise" id="ex13"><div class="ex-header"><span class="ex-title">13 — WAF vs Firewall</span><span class="diff easy">Facile</span></div><div class="ex-body">
+<p>A quale livello OSI opera un WAF (Web Application Firewall)?</p>
+<select id="f13"><option value="">— Seleziona —</option><option value="correct">Layer 7 (Applicazione)</option><option value="w1">Layer 3 (Rete)</option><option value="w2">Layer 4 (Trasporto)</option></select>
+<br><button class="btn" onclick="chkSel('f13','correct','Corretto! Il WAF opera al Layer 7 — ispeziona il contenuto delle richieste HTTP/HTTPS (URL, header, body) per bloccare attacchi applicativi.','No. Un WAF non lavora con IP o porte — ispeziona il contenuto applicativo HTTP.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex13',['f13'])">Reset</button><div id="fb13" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex14"><div class="ex-header"><span class="ex-title">14 — SQL Injection</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>Un attaccante invia questa richiesta HTTP:</p>
+<p><code>GET /login?user=admin' OR '1'='1&pass=x</code></p>
+<p>Che tipo di attacco è e quale strumento lo blocca?</p>
+<select id="f14"><option value="">— Seleziona —</option><option value="correct">SQL Injection — bloccato dal WAF</option><option value="w1">XSS — bloccato dal firewall L3</option><option value="w2">DDoS — bloccato dal bilanciatore</option><option value="w3">DNS Spoofing — bloccato da DNSSEC</option></select>
+<br><button class="btn" onclick="chkSel('f14','correct','Corretto! La stringa \\' OR \\'1\\'=\\'1 è una SQL Injection classica — il WAF riconosce il pattern e blocca la richiesta prima che raggiunga l\\'applicazione.','No. La stringa contiene codice SQL iniettato nel parametro — questo è un attacco applicativo (SQL Injection) che solo un WAF al Layer 7 può riconoscere.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex14',['f14'])">Reset</button><div id="fb14" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex15"><div class="ex-header"><span class="ex-title">15 — OWASP Top 10</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>L'OWASP Top 10 è:</p>
+<select id="f15"><option value="">— Seleziona —</option><option value="correct">La lista delle 10 vulnerabilità web più critiche, aggiornata periodicamente da OWASP</option><option value="w1">I 10 migliori WAF sul mercato secondo OWASP</option><option value="w2">I 10 protocolli di rete più sicuri</option></select>
+<br><button class="btn" onclick="chkSel('f15','correct','Corretto! L\\'OWASP Top 10 include: Injection, Broken Auth, Sensitive Data Exposure, XXE, Broken Access Control, Security Misconfiguration, XSS, e altri. Lo approfondiremo nel Modulo 4.','No. OWASP Top 10 è una lista di vulnerabilità — non una classifica di prodotti o protocolli.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex15',['f15'])">Reset</button><div id="fb15" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex16"><div class="ex-header"><span class="ex-title">16 — Posizionamento WAF</span><span class="diff hard">Difficile</span></div><div class="ex-body">
+<p>In un'architettura enterprise, dove si posiziona tipicamente il WAF?</p>
+<select id="f16"><option value="">— Seleziona —</option><option value="correct">Davanti ai web server, dopo il firewall perimetrale — in DMZ o come reverse proxy</option><option value="w1">Tra il router e il firewall perimetrale</option><option value="w2">Sugli endpoint degli utenti</option><option value="w3">Sul database server</option></select>
+<br><button class="btn" onclick="chkSel('f16','correct','Corretto! Il WAF si posiziona davanti ai web server come reverse proxy o inline in DMZ — intercetta le richieste HTTP/HTTPS prima che raggiungano l\\'applicazione.','No. Il WAF protegge le applicazioni web — deve essere posizionato davanti ai web server, non sugli endpoint o sui database.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex16',['f16'])">Reset</button><div id="fb16" class="feedback"></div>
+</div></div>
+
+<footer>
+  Corso Cybersecurity — Leonardo SpA · Modulo 1 · Compiti Giorno 2 — Blocco 2<br>
+  <small>Questo blocco verifica la lettura propedeutica su firewall, NAT e WAF per il Giorno 3.</small><br>
+  <a href="https://luiroman.github.io/leonardo-esercizi-interattivi/" style="color:var(--accent)">Torna all'indice</a>
+</footer>
+
+<script>
+let done={},correct={};const TOTAL=16;
+function updateStats(){const d=Object.keys(done).length,c=Object.values(correct).filter(Boolean).length;document.getElementById('s-done').textContent=d;document.getElementById('s-correct').textContent=c;document.getElementById('s-pct').textContent=d>0?Math.round(c/d*100)+'%':'0%'}
+function markEx(id,ok){done[id]=true;correct[id]=ok;const el=document.getElementById(id);if(ok)el.classList.add('completed');else el.classList.remove('completed');updateStats()}
+function norm(s){return s.trim().toLowerCase().replace(/\s+/g,' ')}
+function chk(fid,accept,msgOk){const val=norm(document.getElementById(fid).value),n=fid.replace('f',''),fb=document.getElementById('fb'+n);if(!val){fb.className='feedback wrong';fb.style.display='block';fb.textContent='Inserisci una risposta.';return}const ok=accept.map(a=>norm(a)).includes(val);fb.className='feedback '+(ok?'correct':'wrong');fb.style.display='block';fb.textContent=ok?'✓ '+msgOk:'✗ Non corretto. Riprova!';markEx('ex'+n,ok)}
+function chkSel(fid,cv,msgOk,msgNo){const val=document.getElementById(fid).value,n=fid.replace('f',''),fb=document.getElementById('fb'+n);if(!val){fb.className='feedback wrong';fb.style.display='block';fb.textContent='Seleziona una risposta.';return}const ok=val===cv;fb.className='feedback '+(ok?'correct':'wrong');fb.style.display='block';fb.textContent=ok?'✓ '+msgOk:'✗ '+msgNo;markEx('ex'+n,ok)}
+function resetEx(exId,fields){fields.forEach(f=>{const el=document.getElementById(f);if(el.tagName==='SELECT')el.selectedIndex=0;else el.value=''});const n=exId.replace('ex',''),fb=document.getElementById('fb'+n);if(fb){fb.style.display='none';fb.className='feedback'}document.getElementById(exId).classList.remove('completed');delete done[exId];delete correct[exId];updateStats()}
+function toggleHint(hid){const h=document.getElementById(hid);h.style.display=h.style.display==='block'?'none':'block'}
+</script>
+</body>
+</html>

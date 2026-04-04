@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esercizi Compiti Blocco 1 — Consolida il Giorno 2</title>
+<style>
+:root{--accent:#0891B2;--accent2:#0077B6;--title:#0F4C75;--text:#1E293B;--muted:#64748B;--bg:#F8F9FA;--card:#FFF;--border:#E2E8F0;--success:#059669;--success-bg:#F0FDF4;--success-bd:#BBF7D0;--danger:#DC2626;--danger-bg:#FEF2F2;--danger-bd:#FECACA;--warn:#D97706;--warn-bg:#FFFBEB;--warn-bd:#FDE68A}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Calibri,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+header{background:var(--title);color:#fff;padding:24px 20px;text-align:center}header h1{font-size:1.4em;margin-bottom:4px}header p{color:#94A3B8;font-size:.9em}
+.stats-bar{background:#fff;border-bottom:2px solid var(--accent);padding:12px 20px;display:flex;gap:20px;flex-wrap:wrap;justify-content:center;position:sticky;top:0;z-index:10}
+.stat{text-align:center}.stat .num{font-size:1.4em;font-weight:bold;color:var(--accent)}.stat .label{font-size:.75em;color:var(--muted)}
+.section-title{background:var(--accent);color:#fff;padding:10px 20px;margin:20px 0 0;font-size:1.05em;font-weight:bold}
+.exercise{background:var(--card);border:1px solid var(--border);border-radius:8px;margin:12px 16px;padding:16px}
+.ex-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.ex-title{font-weight:bold;color:var(--title);font-size:.95em}.diff{font-size:.7em;padding:2px 8px;border-radius:10px;font-weight:bold;color:#fff}
+.diff.easy{background:var(--success)}.diff.medium{background:var(--warn)}.diff.hard{background:var(--danger)}
+.ex-body p,.ex-body li{margin-bottom:8px;font-size:.9em}.ex-body ul{padding-left:20px}
+.ex-body code{background:#F1F5F9;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:.88em}
+input[type="text"]{border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:.9em;width:100%;max-width:400px;font-family:Consolas,monospace}
+select{border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:.9em;width:100%;max-width:400px}
+.btn{display:inline-block;background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:.85em;margin:6px 4px 6px 0}
+.btn:hover{opacity:.9}.btn.reset{background:var(--muted)}
+.feedback{padding:10px 14px;border-radius:6px;margin-top:10px;font-size:.85em;display:none}
+.feedback.correct{display:block;background:var(--success-bg);color:var(--success);border:1px solid var(--success-bd)}
+.feedback.wrong{display:block;background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-bd)}
+.hint{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn);padding:10px 14px;border-radius:6px;margin-top:8px;font-size:.82em;display:none}
+.completed{border-left:4px solid var(--success)}
+footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;margin-top:20px}
+@media(max-width:600px){.exercise{margin:8px}.stats-bar{gap:12px}input[type="text"],select{max-width:100%}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Blocco 1 — Consolida il Giorno 2</h1>
+  <p>Routing · DNS · SSL/TLS · VPN · Wireshark</p>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><div class="num" id="s-done">0</div><div class="label">Completati</div></div>
+  <div class="stat"><div class="num" id="s-correct">0</div><div class="label">Corretti</div></div>
+  <div class="stat"><div class="num" id="s-total">18</div><div class="label">Totali</div></div>
+  <div class="stat"><div class="num" id="s-pct">0%</div><div class="label">Precisione</div></div>
+</div>
+
+<!-- ═══ A: ROUTING ═══ -->
+<div class="section-title">A · Routing (6 esercizi)</div>
+
+<div class="exercise" id="ex1"><div class="ex-header"><span class="ex-title">1 — Default Route</span><span class="diff easy">Facile</span></div><div class="ex-body">
+<p>Come si scrive la default route in notazione CIDR?</p>
+<input type="text" id="f1" placeholder="Destinazione/prefisso">
+<br><button class="btn" onclick="chk('f1',['0.0.0.0/0'],'Corretto! 0.0.0.0/0 matcha qualsiasi destinazione — è l\'ultima risorsa nella tabella.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex1',['f1'])">Reset</button><div id="fb1" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex2"><div class="ex-header"><span class="ex-title">2 — Protocollo OSPF</span><span class="diff easy">Facile</span></div><div class="ex-body">
+<p>OSPF è classificato come protocollo:</p>
+<select id="f2"><option value="">— Seleziona —</option><option value="dv">Distance Vector</option><option value="ls">Link State</option><option value="pv">Path Vector</option></select>
+<br><button class="btn" onclick="chkSel('f2','ls','Corretto! OSPF è Link State — ogni router costruisce una mappa completa della topologia.','No. OSPF non invia la tabella ai vicini (Distance Vector) né opera tra AS (Path Vector).')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex2',['f2'])">Reset</button><div id="fb2" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex3"><div class="ex-header"><span class="ex-title">3 — Convergenza OSPF</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>Quale algoritmo usa OSPF per calcolare il percorso più breve?</p>
+<input type="text" id="f3" placeholder="Nome dell'algoritmo">
+<br><button class="btn" onclick="chk('f3',['dijkstra','spf','shortest path first'],'Corretto! OSPF usa l\'algoritmo di Dijkstra (SPF — Shortest Path First) per calcolare l\'albero dei percorsi ottimali.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex3',['f3'])">Reset</button><div id="fb3" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex4"><div class="ex-header"><span class="ex-title">4 — BGP e Autonomous Systems</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>Su quale porta TCP opera BGP per stabilire le sessioni tra router?</p>
+<input type="text" id="f4" placeholder="Numero porta" style="max-width:120px">
+<br><button class="btn" onclick="chk('f4',['179'],'Corretto! BGP usa TCP porta 179. Le sessioni eBGP sono tipicamente tra router direttamente connessi (TTL=1).')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex4',['f4'])">Reset</button><div id="fb4" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex5"><div class="ex-header"><span class="ex-title">5 — BGP Hijacking</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>Un attaccante annuncia prefissi BGP che non gli appartengono, dirottando il traffico. Quale meccanismo di difesa valida crittograficamente l'origine dei prefissi?</p>
+<input type="text" id="f5" placeholder="Sigla del meccanismo">
+<br><button class="btn" onclick="chk('f5',['rpki','resource public key infrastructure'],'Corretto! RPKI (Resource Public Key Infrastructure) permette di validare crittograficamente chi è autorizzato ad annunciare un prefisso.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex5',['f5'])">Reset</button><div id="fb5" class="feedback"></div>
+<button class="btn reset" onclick="toggleHint('h5')" style="background:var(--warn)">💡 Suggerimento</button>
+<div class="hint" id="h5">Inizia per R e usa certificati per validare le origini dei prefissi BGP.</div>
+</div></div>
+
+<div class="exercise" id="ex6"><div class="ex-header"><span class="ex-title">6 — Floating Static Route</span><span class="diff hard">Difficile</span></div><div class="ex-body">
+<p>Una "floating static route" è una rotta statica con:</p>
+<select id="f6"><option value="">— Seleziona —</option><option value="low">Metrica più bassa della rotta dinamica</option><option value="high">Metrica più alta della rotta dinamica</option><option value="same">Stessa metrica della rotta dinamica</option></select>
+<br><button class="btn" onclick="chkSel('f6','high','Corretto! La floating static ha metrica più alta (meno preferita), quindi viene usata solo se la rotta dinamica scompare — è un backup.','No. La floating static deve essere meno preferita della rotta dinamica per funzionare come backup.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex6',['f6'])">Reset</button><div id="fb6" class="feedback"></div>
+</div></div>
+
+<!-- ═══ B: WIRESHARK ═══ -->
+<div class="section-title">B · Wireshark (3 esercizi)</div>
+
+<div class="exercise" id="ex7"><div class="ex-header"><span class="ex-title">7 — ARP Spoofing</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>In Wireshark, quale segnale indica un possibile ARP spoofing?</p>
+<select id="f7"><option value="">— Seleziona —</option><option value="correct">Stesso IP associato a MAC diversi in tempi ravvicinati</option><option value="w1">Molte DNS query verso lo stesso dominio</option><option value="w2">Pacchetti TCP con flag RST</option><option value="w3">Traffico HTTP su porta non standard</option></select>
+<br><button class="btn" onclick="chkSel('f7','correct','Corretto! Se lo stesso IP appare con MAC diversi, qualcuno sta inviando ARP Reply fasulli per dirottare il traffico.','No. L\'ARP spoofing manipola la corrispondenza IP-MAC, non il traffico DNS o TCP.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex7',['f7'])">Reset</button><div id="fb7" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex8"><div class="ex-header"><span class="ex-title">8 — Statistiche Wireshark</span><span class="diff easy">Facile</span></div><div class="ex-body">
+<p>Quale funzione di Wireshark mostra la distribuzione percentuale dei protocolli in un .pcap?</p>
+<select id="f8"><option value="">— Seleziona —</option><option value="ph">Statistics → Protocol Hierarchy</option><option value="conv">Statistics → Conversations</option><option value="ep">Statistics → Endpoints</option><option value="io">Statistics → I/O Graph</option></select>
+<br><button class="btn" onclick="chkSel('f8','ph','Corretto! Protocol Hierarchy mostra la percentuale di ogni protocollo — utile per un overview rapida del traffico.','No. Protocol Hierarchy è la risposta — mostra la distribuzione dei protocolli.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex8',['f8'])">Reset</button><div id="fb8" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex9"><div class="ex-header"><span class="ex-title">9 — Filtro Port Scan</span><span class="diff hard">Difficile</span></div><div class="ex-body">
+<p>Per identificare un possibile port scan in Wireshark, quale combinazione di filtri è più utile?</p>
+<select id="f9"><option value="">— Seleziona —</option><option value="correct">SYN senza ACK da un singolo IP verso molte porte diverse</option><option value="w1">Molto traffico DNS verso un singolo server</option><option value="w2">Pacchetti ICMP echo request ripetuti</option><option value="w3">Traffico HTTP con User-Agent sconosciuto</option></select>
+<br><button class="btn" onclick="chkSel('f9','correct','Corretto! Un port scan invia SYN a molte porte — il filtro tcp.flags.syn==1 && tcp.flags.ack==0 combinato con Statistics → Endpoints rivela il pattern.','No. Un port scan si riconosce dai SYN iniziali verso molte porte diverse da un singolo IP sorgente.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex9',['f9'])">Reset</button><div id="fb9" class="feedback"></div>
+</div></div>
+
+<!-- ═══ C: DNS ═══ -->
+<div class="section-title">C · DNS (4 esercizi)</div>
+
+<div class="exercise" id="ex10"><div class="ex-header"><span class="ex-title">10 — Gerarchia DNS</span><span class="diff easy">Facile</span></div><div class="ex-body">
+<p>Quanti gruppi di Root Server DNS esistono (identificati da lettere)?</p>
+<input type="text" id="f10" placeholder="Numero" style="max-width:100px">
+<br><button class="btn" onclick="chk('f10',['13'],'Corretto! 13 gruppi (A-M), gestiti da organizzazioni diverse e distribuiti globalmente tramite anycast.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex10',['f10'])">Reset</button><div id="fb10" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex11"><div class="ex-header"><span class="ex-title">11 — Record MX</span><span class="diff easy">Facile</span></div><div class="ex-body">
+<p>Quale tipo di record DNS indica quale server gestisce la posta per un dominio?</p>
+<input type="text" id="f11" placeholder="Tipo record" style="max-width:100px">
+<br><button class="btn" onclick="chk('f11',['mx','MX'],'Corretto! MX (Mail Exchange) specifica il mail server per il dominio, con una priorità numerica.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex11',['f11'])">Reset</button><div id="fb11" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex12"><div class="ex-header"><span class="ex-title">12 — DNS Tunneling</span><span class="diff hard">Difficile</span></div><div class="ex-body">
+<p>Il DNS tunneling nasconde dati dentro le query DNS. Dove vengono tipicamente codificati i dati nel pacchetto DNS?</p>
+<select id="f12"><option value="">— Seleziona —</option><option value="correct">Nel nome del subdomain della query (es: dGVzdA.evil.com)</option><option value="w1">Nel campo TTL della risposta</option><option value="w2">Nell'header UDP del pacchetto</option><option value="w3">Nel Transaction ID</option></select>
+<br><button class="btn" onclick="chkSel('f12','correct','Corretto! I dati vengono codificati (spesso in base64) come subdomain della query: il dato diventa parte del nome di dominio richiesto.','No. I dati vengono nascosti nel nome del subdomain — è l\'unico campo abbastanza grande e flessibile per trasportare dati.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex12',['f12'])">Reset</button><div id="fb12" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex13"><div class="ex-header"><span class="ex-title">13 — DNSSEC Limiti</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>DNSSEC protegge l'autenticità delle risposte DNS, ma NON protegge:</p>
+<select id="f13"><option value="">— Seleziona —</option><option value="correct">La privacy delle query (il contenuto resta in chiaro)</option><option value="w1">L'integrità delle risposte</option><option value="w2">L'identità del server autorevole</option></select>
+<br><button class="btn" onclick="chkSel('f13','correct','Corretto! DNSSEC firma le risposte ma non le cifra — le query DNS restano leggibili. Per la privacy serve DoH o DoT.','No. DNSSEC protegge autenticità e integrità, ma ha un limite importante riguardo alla privacy.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex13',['f13'])">Reset</button><div id="fb13" class="feedback"></div>
+</div></div>
+
+<!-- ═══ D: SSL/TLS E VPN ═══ -->
+<div class="section-title">D · SSL/TLS e VPN (5 esercizi)</div>
+
+<div class="exercise" id="ex14"><div class="ex-header"><span class="ex-title">14 — Forward Secrecy</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>La Perfect Forward Secrecy (PFS) garantisce che:</p>
+<select id="f14"><option value="">— Seleziona —</option><option value="correct">Compromettere la chiave privata del server non permette di decifrare sessioni passate</option><option value="w1">Il certificato non può essere revocato</option><option value="w2">La connessione è immune a attacchi DDoS</option></select>
+<br><button class="btn" onclick="chkSel('f14','correct','Corretto! Con PFS, ogni sessione usa chiavi effimere (ECDHE) — compromettere la chiave privata del server non compromette le sessioni passate.','No. PFS riguarda la protezione delle sessioni passate in caso di compromissione della chiave del server.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex14',['f14'])">Reset</button><div id="fb14" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex15"><div class="ex-header"><span class="ex-title">15 — Catena di Fiducia</span><span class="diff easy">Facile</span></div><div class="ex-body">
+<p>Nella catena di fiducia dei certificati, quale CA è autofirmata e presente nel trust store del browser?</p>
+<select id="f15"><option value="">— Seleziona —</option><option value="root">Root CA</option><option value="inter">Intermediate CA</option><option value="server">Il certificato del server</option></select>
+<br><button class="btn" onclick="chkSel('f15','root','Corretto! La Root CA è autofirmata e pre-installata nel trust store del SO/browser. Tutte le altre CA derivano la fiducia dalla Root.','No. Solo la Root CA è autofirmata e pre-installata — è la base della catena di fiducia.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex15',['f15'])">Reset</button><div id="fb15" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex16"><div class="ex-header"><span class="ex-title">16 — IPSec ESP vs AH</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>Quale componente di IPSec fornisce sia cifratura che autenticazione?</p>
+<select id="f16"><option value="">— Seleziona —</option><option value="esp">ESP (Encapsulating Security Payload)</option><option value="ah">AH (Authentication Header)</option><option value="ike">IKE (Internet Key Exchange)</option></select>
+<br><button class="btn" onclick="chkSel('f16','esp','Corretto! ESP fornisce cifratura + autenticazione + integrità. AH fornisce solo autenticazione (senza cifratura).','No. AH non cifra, e IKE negozia le chiavi ma non cifra i dati. Chi fornisce entrambi?')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex16',['f16'])">Reset</button><div id="fb16" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex17"><div class="ex-header"><span class="ex-title">17 — Split Tunnel vs Full Tunnel</span><span class="diff medium">Medio</span></div><div class="ex-body">
+<p>Dal punto di vista del SOC, quale configurazione VPN è preferibile per i dipendenti remoti?</p>
+<select id="f17"><option value="">— Seleziona —</option><option value="full">Full tunnel — tutto il traffico passa nella VPN</option><option value="split">Split tunnel — solo traffico aziendale nella VPN</option></select>
+<br><button class="btn" onclick="chkSel('f17','full','Corretto! Il full tunnel permette al SOC di monitorare tutto il traffico del dipendente, incluso quello Internet — più sicuro anche se più lento.','No. Il SOC vuole visibilità totale — quale configurazione permette di vedere tutto il traffico?')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex17',['f17'])">Reset</button><div id="fb17" class="feedback"></div>
+</div></div>
+
+<div class="exercise" id="ex18"><div class="ex-header"><span class="ex-title">18 — Scenario VPN Completo</span><span class="diff hard">Difficile</span></div><div class="ex-body">
+<p>Un'azienda deve collegare la sede di Roma al data center su Azure con un tunnel VPN always-on. Quale combinazione è corretta?</p>
+<select id="f18"><option value="">— Seleziona —</option><option value="correct">Site-to-site IPSec con IKEv2 e certificati X.509</option><option value="w1">Remote access SSL VPN con username/password</option><option value="w2">Site-to-site con SSL VPN su porta 443</option><option value="w3">IPSec in transport mode con pre-shared key</option></select>
+<br><button class="btn" onclick="chkSel('f18','correct','Corretto! Site-to-site IPSec è lo standard per collegare sedi/cloud. IKEv2 è il protocollo di negoziazione moderno, e i certificati X.509 sono più sicuri delle PSK.','No. Per un tunnel always-on sede-cloud, serve site-to-site (non remote access), IPSec (non SSL VPN per S2S), tunnel mode, con autenticazione forte.')">Verifica</button>
+<button class="btn reset" onclick="resetEx('ex18',['f18'])">Reset</button><div id="fb18" class="feedback"></div>
+</div></div>
+
+<footer>
+  Corso Cybersecurity — Leonardo SpA · Modulo 1 · Compiti Giorno 2 — Blocco 1<br>
+  <a href="https://luiroman.github.io/leonardo-esercizi-interattivi/" style="color:var(--accent)">Torna all'indice</a>
+</footer>
+
+<script>
+let done={},correct={};const TOTAL=18;
+function updateStats(){const d=Object.keys(done).length,c=Object.values(correct).filter(Boolean).length;document.getElementById('s-done').textContent=d;document.getElementById('s-correct').textContent=c;document.getElementById('s-pct').textContent=d>0?Math.round(c/d*100)+'%':'0%'}
+function markEx(id,ok){done[id]=true;correct[id]=ok;const el=document.getElementById(id);if(ok)el.classList.add('completed');else el.classList.remove('completed');updateStats()}
+function norm(s){return s.trim().toLowerCase().replace(/\s+/g,' ')}
+function chk(fid,accept,msgOk){const val=norm(document.getElementById(fid).value),n=fid.replace('f',''),fb=document.getElementById('fb'+n);if(!val){fb.className='feedback wrong';fb.style.display='block';fb.textContent='Inserisci una risposta.';return}const ok=accept.map(a=>norm(a)).includes(val);fb.className='feedback '+(ok?'correct':'wrong');fb.style.display='block';fb.textContent=ok?'✓ '+msgOk:'✗ Non corretto. Riprova!';markEx('ex'+n,ok)}
+function chkSel(fid,cv,msgOk,msgNo){const val=document.getElementById(fid).value,n=fid.replace('f',''),fb=document.getElementById('fb'+n);if(!val){fb.className='feedback wrong';fb.style.display='block';fb.textContent='Seleziona una risposta.';return}const ok=val===cv;fb.className='feedback '+(ok?'correct':'wrong');fb.style.display='block';fb.textContent=ok?'✓ '+msgOk:'✗ '+msgNo;markEx('ex'+n,ok)}
+function resetEx(exId,fields){fields.forEach(f=>{const el=document.getElementById(f);if(el.tagName==='SELECT')el.selectedIndex=0;else el.value=''});const n=exId.replace('ex',''),fb=document.getElementById('fb'+n);if(fb){fb.style.display='none';fb.className='feedback'}document.getElementById(exId).classList.remove('completed');delete done[exId];delete correct[exId];updateStats()}
+function toggleHint(hid){const h=document.getElementById(hid);h.style.display=h.style.display==='block'?'none':'block'}
+</script>
+</body>
+</html>
