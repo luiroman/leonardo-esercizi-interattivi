@@ -226,6 +226,8 @@ footer{text-align:center;padding:1.5rem;color:var(--muted);font-size:.75rem;bord
 <strong>Perché ISN casuali?</strong> Se i numeri di sequenza fossero prevedibili, un attaccante potrebbe iniettare pacchetti in una connessione TCP esistente (TCP Sequence Prediction Attack). I sistemi moderni usano ISN pseudo-casuali per prevenire questo.
 </div>
 
+<p style="font-size:.82rem;color:var(--muted)">🔗 <a href="https://luiroman.github.io/leonardo-esercizi-interattivi/anim-tcp-handshake.html" target="_blank" style="color:var(--accent)">Vedi l'animazione del three-way handshake</a></p>
+
 <h4 class="sub">UDP (RFC 768)</h4>
 <p>UDP è <em>connectionless</em>, <em>unreliable</em> e <em>unordered</em>. Header minimale di soli 8 byte. Usato quando la velocità è più importante dell'affidabilità (DNS, streaming, VoIP).</p>
 
@@ -274,6 +276,8 @@ footer{text-align:center;padding:1.5rem;color:var(--muted);font-size:.75rem;bord
 </ol>
 <p><em>Questo percorso sarà sviluppato praticamente nel Giorno 2 con Wireshark.</em></p>
 </details>
+
+<p style="font-size:.82rem;color:var(--muted)">🔗 <a href="https://luiroman.github.io/leonardo-esercizi-interattivi/anim-incapsulamento.html" target="_blank" style="color:var(--accent)">Vedi l'animazione dell'incapsulamento</a></p>
 
 <!-- ══════════════════════════════════════ -->
 <h2 class="section" id="s3">3. Indirizzamento IPv4 e Subnetting</h2>
@@ -502,7 +506,25 @@ footer{text-align:center;padding:1.5rem;color:var(--muted);font-size:.75rem;bord
 <li>Scarica VirtualBox da <a href="https://www.virtualbox.org/wiki/Downloads" target="_blank">virtualbox.org</a></li>
 <li>Scarica Ubuntu Server 24.04 LTS da <a href="https://ubuntu.com/download/server" target="_blank">ubuntu.com</a> (~2.5 GB)</li>
 <li>Crea una VM: nome <code>Ubuntu-Lab</code>, 2 GB RAM, 20 GB disco, rete NAT</li>
-<li>Monta la ISO, installa con opzioni predefinite, verifica che faccia boot</li>
+<li>Monta la ISO e avvia la VM</li>
+<li>Quando appare il menu iniziale, scegli <strong>"Try or Install Ubuntu Server"</strong></li>
+<li>Segui il wizard interattivo passo per passo — lingua, tastiera, rete (lascia DHCP), disco (usa intero disco)</li>
+<li>Quando ti chiede <strong>nome, username e password: annotali!</strong> Ti serviranno per ogni accesso</li>
+<li>Alla domanda su OpenSSH: <strong>seleziona "Install OpenSSH server"</strong> — ci servirà per connetterci</li>
+<li>Completa l'installazione e riavvia</li>
+</ol>
+
+<div class="warning-box">
+<strong>Attenzione: installazione interattiva, non automatica.</strong> Ubuntu Server può partire in modalità "autoinstall" senza chiedere le credenziali. Se succede, il sistema si installa senza utenti e non potrai accedere. Assicurati di seguire il wizard interattivo e di impostare username e password quando richiesto. Se ti ritrovi bloccato al login, reinstalla seguendo i passi sopra.
+</div>
+
+<h4 class="sub">Accesso comodo via SSH (opzionale)</h4>
+<p>La console di VirtualBox è scomoda (no copia-incolla). Per lavorare meglio, configura l'accesso SSH:</p>
+<ol>
+<li>Nella VM, verifica SSH: <code>sudo systemctl status ssh</code></li>
+<li>In VirtualBox: <strong>Impostazioni VM → Rete → Avanzate → Port Forwarding</strong></li>
+<li>Aggiungi: Nome <code>ssh</code>, Protocollo <code>TCP</code>, Host Port <code>2222</code>, Guest Port <code>22</code></li>
+<li>Dal tuo terminale: <code>ssh -p 2222 tuoutente@127.0.0.1</code></li>
 </ol>
 </div>
 
