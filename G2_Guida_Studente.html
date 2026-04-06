@@ -139,7 +139,7 @@ OSPF è vulnerabile a router rogue che annunciano rotte false (rogue router, LSA
 
 <p>BGP è l'unico protocollo EGP (Exterior Gateway Protocol) in uso su Internet. Mentre OSPF gestisce il routing dentro un'organizzazione, BGP gestisce il routing tra le grandi reti (Autonomous Systems) che compongono Internet. Ogni ISP, cloud provider e grande azienda è un AS con un proprio numero (ASN).</p>
 
-<p>Le decisioni di routing BGP non si basano sulla distanza, ma su un insieme di <strong>attributi e policy</strong> configurate dall'operatore. La tabella BGP globale contiene circa 950.000 prefissi IPv4 — il che dà un'idea della scala a cui BGP opera.</p>
+<p>Le decisioni di routing BGP non si basano sulla distanza, ma su un insieme di <strong>attributi e policy</strong> configurate dall'operatore. La tabella BGP globale ha superato 1 milione di prefissi IPv4 nel 2025 e conta oggi circa 1.050.000 prefissi IPv4 e 221.000 IPv6 — il che dà un'idea della scala a cui BGP opera.</p>
 
 <table>
 <tr><th>Tipo</th><th>Dove opera</th><th>Caratteristiche</th></tr>
@@ -151,6 +151,8 @@ OSPF è vulnerabile a router rogue che annunciano rotte false (rogue router, LSA
 <strong>⚠ BGP Hijacking</strong><br>
 Un attaccante può annunciare prefissi BGP che non gli appartengono, dirottando il traffico verso la propria rete. Casi celebri: Pakistan Telecom vs YouTube (2008), China Telecom (2018). La difesa è <strong>RPKI</strong> (Resource Public Key Infrastructure) che valida crittograficamente l'origine dei prefissi.
 </div>
+
+<p style="font-size:0.82em; color:var(--muted);">📌 <em>Il BGP hijacking è un attacco infrastrutturale tipico degli ISP. Nel corso lo incontrerete come concetto nel Modulo 3 (architetture cloud e connettività) ma non lo simulerete in laboratorio.</em></p>
 
 <h3>In pratica: strategia enterprise</h3>
 <p>In un'azienda come Leonardo, la strategia tipica è: <strong>OSPF per il routing interno</strong> (campus, data center, sedi) + <strong>BGP per la connettività esterna</strong> (verso ISP e cloud provider). Le rotte statiche restano per casi specifici: default route, tunnel VPN, rotte di management.</p>
@@ -189,6 +191,8 @@ Un attaccante può annunciare prefissi BGP che non gli appartengono, dirottando 
 L'ARP spoofing permette a un attaccante di associare il proprio MAC all'IP del gateway, intercettando tutto il traffico (Man-in-the-Middle). Segnali in Wireshark: stesso IP con MAC diversi, ARP Reply non richiesti. Difesa: <strong>Dynamic ARP Inspection (DAI)</strong> sugli switch managed.
 </div>
 
+<p style="font-size:0.82em; color:var(--muted);">📌 <em>Questo attacco verrà ripreso nella Lezione 6 (simulazione con Kali Linux e arpspoof) e nel Modulo 5 (rilevamento nel SIEM durante l'incident response).</em></p>
+
 <h3>Funzioni statistiche</h3>
 <p>Quattro funzioni utili per l'analisi rapida: <strong>Protocol Hierarchy</strong> (distribuzione dei protocolli), <strong>Conversations</strong> (coppie di host comunicanti), <strong>Endpoints</strong> (inventario degli host), <strong>I/O Graph</strong> (traffico nel tempo). Tutte accessibili dal menu Statistics.</p>
 
@@ -213,6 +217,8 @@ L'ARP spoofing permette a un attaccante di associare il proprio MAC all'IP del g
 
 <h3>Attacchi DNS</h3>
 <p>Il DNS è uno dei servizi più attaccati di Internet. I principali attacchi sono: <strong>DNS Spoofing</strong> (risposte false iniettate nella cache), <strong>DNS Tunneling</strong> (dati nascosti nelle query per exfiltration o C2), <strong>DNS Amplification</strong> (DDoS volumetrico), <strong>Domain Hijacking</strong> (modifica dei record NS) e <strong>Typosquatting</strong> (domini simili per phishing).</p>
+
+<p style="font-size:0.82em; color:var(--muted);">📌 <em>Il DNS tunneling e la detection di domini malevoli saranno tra i casi d'uso principali del Modulo 5 (SOC e SIEM con Wazuh). L'amplification DDoS verrà ripresa nel Modulo 3 (architetture cloud e mitigazione DDoS).</em></p>
 
 <h3>Difese DNS</h3>
 <p><strong>DNSSEC</strong> (RFC 4033-4035) aggiunge firme crittografiche ai record DNS — il resolver può verificare autenticità e integrità, ma DNSSEC non cifra le query. Per la privacy servono <strong>DNS over HTTPS</strong> (DoH, RFC 8484 — porta 443, indistinguibile dal traffico web) o <strong>DNS over TLS</strong> (DoT, RFC 7858 — porta 853).</p>
@@ -239,6 +245,8 @@ DoH è problematico per il SOC perché rende il traffico DNS invisibile (cifrato
 <strong>Perfect Forward Secrecy (PFS)</strong><br>
 TLS 1.3 impone la PFS usando solo scambi di chiave effimeri (ECDHE). Ogni sessione ha chiavi temporanee che vengono distrutte alla fine — se qualcuno compromette la chiave privata del server, non può decifrare le sessioni passate. TLS 1.3 ha anche rimosso tutti gli algoritmi deboli: niente RSA key exchange, CBC, RC4, SHA-1.
 </div>
+
+<p style="font-size:0.82em; color:var(--muted);">📌 <em>I certificati e la gestione PKI torneranno nel Modulo 3 (TLS in architetture cloud, certificate management) e nel Modulo 4 (DevSecOps — secure coding, HTTPS enforcement, gestione dei segreti).</em></p>
 
 <h3>Certificati X.509 e catena di fiducia</h3>
 <p>Un certificato X.509 è la "carta d'identità digitale" di un server. Contiene il Subject (identità), l'Issuer (CA che l'ha firmato), la validità temporale, la chiave pubblica, i Subject Alternative Names (SAN — i domini per cui è valido), e la firma della CA.</p>
@@ -276,6 +284,8 @@ TLS 1.3 impone la PFS usando solo scambi di chiave effimeri (ECDHE). Ogni sessio
 <strong>🔒 Best practice VPN enterprise</strong><br>
 MFA obbligatorio per remote access. Full tunnel per dipendenti (visibilità SOC). Certificati X.509 al posto delle pre-shared keys. Logging VPN integrato nel SIEM. Patching tempestivo dei VPN gateway (bersagli critici: vulnerabilità Fortinet, Ivanti, Citrix). Network segmentation post-VPN (least privilege).
 </div>
+
+<p style="font-size:0.82em; color:var(--muted);">📌 <em>La VPN verrà praticata nelle Lezioni 3 e 4 (configurazione OpenVPN e IPSec su pfSense). Il logging VPN nel SIEM e il monitoraggio delle connessioni anomale saranno parte del Modulo 5 (SOC).</em></p>
 
 <div class="tip-box">
 <strong>💡 ZTNA — Il futuro oltre la VPN</strong><br>
