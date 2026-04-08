@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riepilogo Giorno 1 + NAT/PAT — Esercizi</title>
+<style>
+  :root {
+    --accent: #0891B2; --accent2: #0077B6; --title: #0F4C75;
+    --text: #1E293B; --muted: #64748B; --bg: #F8F9FA; --card: #FFFFFF;
+    --success: #059669; --success-bg: #F0FDF4;
+    --danger: #DC2626; --danger-bg: #FEF2F2;
+    --warn: #D97706; --warn-bg: #FFFBEB; --border: #E2E8F0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; padding: 0 0 3rem 0; }
+  header { background: var(--title); color: white; padding: 1.5rem 1rem; text-align: center; border-bottom: 4px solid var(--accent); }
+  header h1 { font-size: 1.4rem; margin-bottom: 0.3rem; }
+  header p { font-size: 0.85rem; opacity: 0.85; }
+  .container { max-width: 760px; margin: 0 auto; padding: 0 1rem; }
+  .stats-bar { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin: 1rem auto; padding: 0.8rem 1rem; display: flex; justify-content: space-between; align-items: center; max-width: 760px; font-size: 0.9rem; }
+  .stats-bar .stat { text-align: center; }
+  .stats-bar .stat-num { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+  .stats-bar .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; }
+  .section-divider { background: var(--title); color: white; padding: 0.8rem 1rem; border-radius: 8px; margin: 1.5rem 0 0.8rem 0; font-size: 0.95rem; font-weight: 600; text-align: center; }
+  .section-divider.nat { background: var(--accent); }
+  .exercise { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin: 1rem 0; overflow: hidden; }
+  .exercise-header { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .exercise-header h2 { font-size: 1rem; color: var(--title); }
+  .difficulty { font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 12px; font-weight: 600; text-transform: uppercase; }
+  .diff-easy { background: var(--success-bg); color: var(--success); }
+  .diff-medium { background: var(--warn-bg); color: var(--warn); }
+  .diff-hard { background: var(--danger-bg); color: var(--danger); }
+  .exercise-body { padding: 1rem; }
+  .exercise-body p { margin-bottom: 0.6rem; font-size: 0.9rem; }
+  .exercise-body code { background: #F1F5F9; padding: 0.15rem 0.4rem; border-radius: 3px; font-family: Consolas, 'Courier New', monospace; font-size: 0.85rem; }
+  .exercise-body pre { background: #F1F5F9; padding: 0.6rem; border-radius: 6px; font-size: 0.82rem; font-family: Consolas, monospace; margin: 0.4rem 0 0.6rem 0; overflow-x: auto; }
+  .question { background: #F8FAFC; border: 1px solid var(--border); border-radius: 6px; padding: 0.8rem; margin: 0.6rem 0; }
+  .question label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text); }
+  .question input[type="text"] { width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem; font-family: Consolas, 'Courier New', monospace; }
+  .question input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(8,145,178,0.15); }
+  .question select { width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem; background: white; }
+  .feedback { margin-top: 0.4rem; padding: 0.4rem 0.6rem; border-radius: 4px; font-size: 0.82rem; display: none; }
+  .feedback.correct { display: block; background: var(--success-bg); color: var(--success); border: 1px solid #BBF7D0; }
+  .feedback.wrong { display: block; background: var(--danger-bg); color: var(--danger); border: 1px solid #FECACA; }
+  .btn-row { display: flex; gap: 0.5rem; margin-top: 0.8rem; flex-wrap: wrap; }
+  .btn { padding: 0.5rem 1.2rem; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-secondary { background: var(--border); color: var(--text); }
+  .btn-secondary:hover { background: #CBD5E1; }
+  .exercise.completed-correct { border-left: 4px solid var(--success); }
+  .exercise.completed-wrong { border-left: 4px solid var(--danger); }
+  .hint { background: var(--warn-bg); border: 1px solid #FDE68A; border-radius: 6px; padding: 0.6rem 0.8rem; margin: 0.6rem 0 0 0; font-size: 0.82rem; color: var(--warn); display: none; }
+  .hint.visible { display: block; }
+  footer { text-align: center; padding: 1.5rem 1rem; color: var(--muted); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 2rem; }
+  @media (max-width: 480px) {
+    header h1 { font-size: 1.2rem; }
+    .exercise-body { padding: 0.8rem; }
+    .stats-bar { flex-wrap: wrap; gap: 0.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Riepilogo Giorno 1 + NAT/PAT</h1>
+  <p>Lezione 1 • Fondamenti di Rete, Segmentazione e NAT • 25 esercizi</p>
+</header>
+
+<div class="container">
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num" id="completed">0</div><div class="stat-label">Completati</div></div>
+  <div class="stat"><div class="stat-num" id="correct">0</div><div class="stat-label">Corretti</div></div>
+  <div class="stat"><div class="stat-num" id="total">25</div><div class="stat-label">Totali</div></div>
+  <div class="stat"><div class="stat-num" id="pct">0%</div><div class="stat-label">Precisione</div></div>
+</div>
+
+<div class="section-divider">📘 Parte 1 — Riepilogo Giorno 1 (20 esercizi)</div>
+
+<!-- ESERCIZIO 1 -->
+<div class="exercise" id="ex1">
+  <div class="exercise-header"><h2>Esercizio 1 — Modello TCP/IP</h2><span class="difficulty diff-easy">Facile</span></div>
+  <div class="exercise-body">
+    <p>Il modello TCP/IP ha 4 livelli. Assegna ogni protocollo al suo layer.</p>
+    <div class="question">
+      <label>HTTP appartiene al layer...</label>
+      <select id="ex1_a"><option value="">Seleziona...</option><option value="accesso">Accesso alla rete</option><option value="internet">Internet</option><option value="trasporto">Trasporto</option><option value="applicazione">Applicazione</option></select>
+      <div class="feedback" id="ex1_a_fb"></div>
+    </div>
+    <div class="question">
+      <label>IP appartiene al layer...</label>
+      <select id="ex1_b"><option value="">Seleziona...</option><option value="accesso">Accesso alla rete</option><option value="internet">Internet</option><option value="trasporto">Trasporto</option><option value="applicazione">Applicazione</option></select>
+      <div class="feedback" id="ex1_b_fb"></div>
+    </div>
+    <div class="question">
+      <label>Ethernet/MAC appartiene al layer...</label>
+      <select id="ex1_c"><option value="">Seleziona...</option><option value="accesso">Accesso alla rete</option><option value="internet">Internet</option><option value="trasporto">Trasporto</option><option value="applicazione">Applicazione</option></select>
+      <div class="feedback" id="ex1_c_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx1()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex1',['ex1_a','ex1_b','ex1_c'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 2 -->
+<div class="exercise" id="ex2">
+  <div class="exercise-header"><h2>Esercizio 2 — Porte critiche</h2><span class="difficulty diff-easy">Facile</span></div>
+  <div class="exercise-body">
+    <p>Associa ogni porta al servizio corretto.</p>
+    <div class="question"><label>Porta 22</label><select id="ex2_a"><option value="">Seleziona...</option><option value="ssh">SSH</option><option value="dns">DNS</option><option value="http">HTTP</option><option value="smb">SMB</option></select><div class="feedback" id="ex2_a_fb"></div></div>
+    <div class="question"><label>Porta 53</label><select id="ex2_b"><option value="">Seleziona...</option><option value="ssh">SSH</option><option value="dns">DNS</option><option value="https">HTTPS</option><option value="rdp">RDP</option></select><div class="feedback" id="ex2_b_fb"></div></div>
+    <div class="question"><label>Porta 443</label><select id="ex2_c"><option value="">Seleziona...</option><option value="http">HTTP</option><option value="https">HTTPS</option><option value="smtp">SMTP</option><option value="ftp">FTP</option></select><div class="feedback" id="ex2_c_fb"></div></div>
+    <div class="question"><label>Porta 3389</label><select id="ex2_d"><option value="">Seleziona...</option><option value="ssh">SSH</option><option value="smb">SMB</option><option value="rdp">RDP</option><option value="dns">DNS</option></select><div class="feedback" id="ex2_d_fb"></div></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx2()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex2',['ex2_a','ex2_b','ex2_c','ex2_d'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 3 -->
+<div class="exercise" id="ex3">
+  <div class="exercise-header"><h2>Esercizio 3 — TCP Three-Way Handshake</h2><span class="difficulty diff-easy">Facile</span></div>
+  <div class="exercise-body">
+    <p>Qual è la sequenza corretta dei flag TCP durante l'apertura di una connessione?</p>
+    <div class="question"><label>Sequenza</label>
+      <select id="ex3_a"><option value="">Seleziona...</option>
+        <option value="1">SYN → SYN-ACK → ACK</option>
+        <option value="2">SYN → ACK → SYN-ACK</option>
+        <option value="3">ACK → SYN → SYN-ACK</option>
+        <option value="4">SYN → FIN → ACK</option>
+      </select>
+      <div class="feedback" id="ex3_a_fb"></div>
+    </div>
+    <div class="question"><label>Quale flag viene inviato per terminare "gracefully" una connessione TCP?</label>
+      <select id="ex3_b"><option value="">Seleziona...</option><option value="rst">RST</option><option value="fin">FIN</option><option value="syn">SYN</option><option value="psh">PSH</option></select>
+      <div class="feedback" id="ex3_b_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx3()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex3',['ex3_a','ex3_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 4 -->
+<div class="exercise" id="ex4">
+  <div class="exercise-header"><h2>Esercizio 4 — TCP vs UDP</h2><span class="difficulty diff-easy">Facile</span></div>
+  <div class="exercise-body">
+    <div class="question"><label>Quale protocollo è <em>connection-oriented</em> e garantisce la consegna?</label>
+      <select id="ex4_a"><option value="">Seleziona...</option><option value="tcp">TCP</option><option value="udp">UDP</option><option value="ip">IP</option></select>
+      <div class="feedback" id="ex4_a_fb"></div>
+    </div>
+    <div class="question"><label>Quale protocollo è tipicamente usato da DNS query, DHCP e streaming video live?</label>
+      <select id="ex4_b"><option value="">Seleziona...</option><option value="tcp">TCP</option><option value="udp">UDP</option><option value="icmp">ICMP</option></select>
+      <div class="feedback" id="ex4_b_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx4()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex4',['ex4_a','ex4_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 5 -->
+<div class="exercise" id="ex5">
+  <div class="exercise-header"><h2>Esercizio 5 — ARP</h2><span class="difficulty diff-easy">Facile</span></div>
+  <div class="exercise-body">
+    <p>Il protocollo ARP serve a risolvere un indirizzo IP in un indirizzo MAC all'interno della stessa LAN.</p>
+    <div class="question"><label>A quale layer del modello TCP/IP opera ARP?</label>
+      <select id="ex5_a"><option value="">Seleziona...</option><option value="accesso">Accesso alla rete (L2)</option><option value="internet">Internet (L3)</option><option value="trasporto">Trasporto (L4)</option></select>
+      <div class="feedback" id="ex5_a_fb"></div>
+    </div>
+    <div class="question"><label>Un ARP request viene inviato come...</label>
+      <select id="ex5_b"><option value="">Seleziona...</option><option value="unicast">Unicast</option><option value="broadcast">Broadcast</option><option value="multicast">Multicast</option></select>
+      <div class="feedback" id="ex5_b_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx5()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex5',['ex5_a','ex5_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 6 -->
+<div class="exercise" id="ex6">
+  <div class="exercise-header"><h2>Esercizio 6 — Indirizzi privati RFC 1918</h2><span class="difficulty diff-easy">Facile</span></div>
+  <div class="exercise-body">
+    <p>Per ognuno dei seguenti indirizzi, indica se è privato (RFC 1918) o pubblico.</p>
+    <div class="question"><label>10.50.12.7</label><select id="ex6_a"><option value="">Seleziona...</option><option value="priv">Privato</option><option value="pub">Pubblico</option></select><div class="feedback" id="ex6_a_fb"></div></div>
+    <div class="question"><label>172.15.0.10</label><select id="ex6_b"><option value="">Seleziona...</option><option value="priv">Privato</option><option value="pub">Pubblico</option></select><div class="feedback" id="ex6_b_fb"></div></div>
+    <div class="question"><label>172.20.5.1</label><select id="ex6_c"><option value="">Seleziona...</option><option value="priv">Privato</option><option value="pub">Pubblico</option></select><div class="feedback" id="ex6_c_fb"></div></div>
+    <div class="question"><label>192.168.100.50</label><select id="ex6_d"><option value="">Seleziona...</option><option value="priv">Privato</option><option value="pub">Pubblico</option></select><div class="feedback" id="ex6_d_fb"></div></div>
+    <div class="hint" id="ex6_hint">💡 RFC 1918: 10.0.0.0/8 — 172.16.0.0/12 (da 172.16 a 172.31) — 192.168.0.0/16</div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx6()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('ex6_hint')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('ex6',['ex6_a','ex6_b','ex6_c','ex6_d'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 7 -->
+<div class="exercise" id="ex7">
+  <div class="exercise-header"><h2>Esercizio 7 — Host in una /27</h2><span class="difficulty diff-easy">Facile</span></div>
+  <div class="exercise-body">
+    <p>Considera la rete <code>192.168.1.0/27</code>.</p>
+    <div class="question"><label>Quanti host utilizzabili?</label><input type="text" id="ex7_a" placeholder="Es: 30"><div class="feedback" id="ex7_a_fb"></div></div>
+    <div class="question"><label>Qual è il broadcast?</label><input type="text" id="ex7_b" placeholder="Es: 192.168.1.31"><div class="feedback" id="ex7_b_fb"></div></div>
+    <div class="hint" id="ex7_hint">💡 /27 → 32−27=5 bit host → 2⁵−2=30. Blocco di 32: .0–.31</div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx7()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('ex7_hint')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('ex7',['ex7_a','ex7_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 8 -->
+<div class="exercise" id="ex8">
+  <div class="exercise-header"><h2>Esercizio 8 — Appartenenza a una subnet</h2><span class="difficulty diff-medium">Medio</span></div>
+  <div class="exercise-body">
+    <p>Dato l'host <code>10.20.30.200/25</code>, calcola:</p>
+    <div class="question"><label>Network address</label><input type="text" id="ex8_a" placeholder="Es: 10.20.30.128"><div class="feedback" id="ex8_a_fb"></div></div>
+    <div class="question"><label>Broadcast</label><input type="text" id="ex8_b" placeholder="Es: 10.20.30.255"><div class="feedback" id="ex8_b_fb"></div></div>
+    <div class="question"><label>Primo host utilizzabile</label><input type="text" id="ex8_c" placeholder="Es: 10.20.30.129"><div class="feedback" id="ex8_c_fb"></div></div>
+    <div class="hint" id="ex8_hint">💡 /25 = blocchi di 128. 200 sta nel blocco 128–255.</div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx8()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('ex8_hint')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('ex8',['ex8_a','ex8_b','ex8_c'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 9 -->
+<div class="exercise" id="ex9">
+  <div class="exercise-header"><h2>Esercizio 9 — VLSM con 200 host</h2><span class="difficulty diff-medium">Medio</span></div>
+  <div class="exercise-body">
+    <p>Devi creare una sottorete che ospiti <strong>200 host</strong>. Quale CIDR è il più piccolo (cioè che spreca meno indirizzi) adatto?</p>
+    <div class="question"><label>CIDR</label><input type="text" id="ex9_a" placeholder="Es: /24"><div class="feedback" id="ex9_a_fb"></div></div>
+    <div class="question"><label>Quanti host utilizzabili offre?</label><input type="text" id="ex9_b" placeholder="Es: 254"><div class="feedback" id="ex9_b_fb"></div></div>
+    <div class="hint" id="ex9_hint">💡 2ⁿ−2 ≥ 200 → n=8 → 256−2=254 → /24</div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx9()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('ex9_hint')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('ex9',['ex9_a','ex9_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 10 -->
+<div class="exercise" id="ex10">
+  <div class="exercise-header"><h2>Esercizio 10 — Supernetting</h2><span class="difficulty diff-medium">Medio</span></div>
+  <div class="exercise-body">
+    <p>Un router ha queste 2 rotte contigue:</p>
+    <pre>192.168.8.0/24
+192.168.9.0/24</pre>
+    <div class="question"><label>Summary route aggregata</label><input type="text" id="ex10_a" placeholder="Es: 192.168.8.0/23"><div class="feedback" id="ex10_a_fb"></div></div>
+    <div class="hint" id="ex10_hint">💡 2 rotte /24 contigue → aggreghi togliendo 1 bit → /23. 8 è pari → va bene.</div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx10()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('ex10_hint')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('ex10',['ex10_a'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 11 -->
+<div class="exercise" id="ex11">
+  <div class="exercise-header"><h2>Esercizio 11 — Flag TCP</h2><span class="difficulty diff-medium">Medio</span></div>
+  <div class="exercise-body">
+    <div class="question"><label>Quale flag TCP indica "reset immediato" della connessione (chiusura forzata)?</label>
+      <select id="ex11_a"><option value="">Seleziona...</option><option value="fin">FIN</option><option value="rst">RST</option><option value="syn">SYN</option><option value="urg">URG</option></select>
+      <div class="feedback" id="ex11_a_fb"></div>
+    </div>
+    <div class="question"><label>Un pacchetto con solo SYN=1 e ACK=0 rappresenta...</label>
+      <select id="ex11_b"><option value="">Seleziona...</option><option value="apert">Apertura di una connessione (client→server)</option><option value="rispo">Risposta del server al SYN</option><option value="chiu">Chiusura della connessione</option></select>
+      <div class="feedback" id="ex11_b_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx11()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex11',['ex11_a','ex11_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 12 -->
+<div class="exercise" id="ex12">
+  <div class="exercise-header"><h2>Esercizio 12 — Incapsulamento</h2><span class="difficulty diff-medium">Medio</span></div>
+  <div class="exercise-body">
+    <p>Un pacchetto HTTP viaggia verso il destinatario. Qual è l'ordine corretto di incapsulamento (dal dato al frame sul cavo)?</p>
+    <div class="question"><label>Ordine</label>
+      <select id="ex12_a"><option value="">Seleziona...</option>
+        <option value="1">HTTP → TCP → IP → Ethernet</option>
+        <option value="2">Ethernet → IP → TCP → HTTP</option>
+        <option value="3">HTTP → IP → TCP → Ethernet</option>
+        <option value="4">TCP → HTTP → IP → Ethernet</option>
+      </select>
+      <div class="feedback" id="ex12_a_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx12()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex12',['ex12_a'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 13 -->
+<div class="exercise" id="ex13">
+  <div class="exercise-header"><h2>Esercizio 13 — VLAN: a quale layer?</h2><span class="difficulty diff-medium">Medio</span></div>
+  <div class="exercise-body">
+    <div class="question"><label>Le VLAN (IEEE 802.1Q) operano a quale layer?</label>
+      <select id="ex13_a"><option value="">Seleziona...</option><option value="l1">Layer 1</option><option value="l2">Layer 2</option><option value="l3">Layer 3</option><option value="l4">Layer 4</option></select>
+      <div class="feedback" id="ex13_a_fb"></div>
+    </div>
+    <div class="question"><label>Una VLAN separa principalmente...</label>
+      <select id="ex13_b"><option value="">Seleziona...</option><option value="broad">Il dominio di broadcast</option><option value="coll">Il dominio di collisione</option><option value="ip">Il range di IP pubblici</option></select>
+      <div class="feedback" id="ex13_b_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx13()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex13',['ex13_a','ex13_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 14 -->
+<div class="exercise" id="ex14">
+  <div class="exercise-header"><h2>Esercizio 14 — VLAN + Firewall</h2><span class="difficulty diff-medium">Medio</span></div>
+  <div class="exercise-body">
+    <p>Vero o falso:</p>
+    <div class="question"><label>"Separare HR e IT in due VLAN diverse è sufficiente per impedire che HR acceda ai server IT."</label>
+      <select id="ex14_a"><option value="">Seleziona...</option><option value="v">Vero</option><option value="f">Falso</option></select>
+      <div class="feedback" id="ex14_a_fb"></div>
+    </div>
+    <div class="question"><label>Qual è l'aggiunta necessaria per ottenere vera segmentazione?</label>
+      <select id="ex14_b"><option value="">Seleziona...</option><option value="fw">Regole firewall/ACL tra le VLAN</option><option value="swl2">Un secondo switch L2</option><option value="wifi">Una rete WiFi separata</option></select>
+      <div class="feedback" id="ex14_b_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx14()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex14',['ex14_a','ex14_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 15 -->
+<div class="exercise" id="ex15">
+  <div class="exercise-header"><h2>Esercizio 15 — Trunk vs Access</h2><span class="difficulty diff-medium">Medio</span></div>
+  <div class="exercise-body">
+    <div class="question"><label>Una porta <strong>access</strong> trasporta il traffico di...</label>
+      <select id="ex15_a"><option value="">Seleziona...</option><option value="1">Una sola VLAN, senza tag verso l'host</option><option value="n">Più VLAN con tag 802.1Q</option><option value="0">Nessuna VLAN</option></select>
+      <div class="feedback" id="ex15_a_fb"></div>
+    </div>
+    <div class="question"><label>Una porta <strong>trunk</strong> è tipicamente usata...</label>
+      <select id="ex15_b"><option value="">Seleziona...</option><option value="host">Per collegare un PC</option><option value="sw">Tra switch (o tra switch e router/firewall)</option><option value="ap">Solo per access point WiFi</option></select>
+      <div class="feedback" id="ex15_b_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx15()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex15',['ex15_a','ex15_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 16 -->
+<div class="exercise" id="ex16">
+  <div class="exercise-header"><h2>Esercizio 16 — DMZ</h2><span class="difficulty diff-medium">Medio</span></div>
+  <div class="exercise-body">
+    <div class="question"><label>La DMZ è una zona destinata a...</label>
+      <select id="ex16_a"><option value="">Seleziona...</option>
+        <option value="ext">Servizi esposti verso l'esterno (web, mail)</option>
+        <option value="int">PC degli utenti interni</option>
+        <option value="db">Database critici interni</option>
+      </select>
+      <div class="feedback" id="ex16_a_fb"></div>
+    </div>
+    <div class="question"><label>Regola tipica: <code>DMZ → Inside</code> deve essere...</label>
+      <select id="ex16_b"><option value="">Seleziona...</option>
+        <option value="ap">Aperta liberamente</option>
+        <option value="rest">Molto restrittiva (solo porte specifiche verso host specifici)</option>
+        <option value="blo">Sempre bloccata al 100%</option>
+      </select>
+      <div class="feedback" id="ex16_b_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx16()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex16',['ex16_a','ex16_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 17 -->
+<div class="exercise" id="ex17">
+  <div class="exercise-header"><h2>Esercizio 17 — Lateral movement</h2><span class="difficulty diff-hard">Difficile</span></div>
+  <div class="exercise-body">
+    <p>Un attaccante compromette il PC di un dipendente e da lì si muove verso un server interno sullo stesso segmento, poi verso il DB. Questo comportamento si chiama:</p>
+    <div class="question"><label>Termine</label>
+      <select id="ex17_a"><option value="">Seleziona...</option>
+        <option value="lm">Lateral movement</option>
+        <option value="pe">Privilege escalation</option>
+        <option value="exf">Exfiltration</option>
+        <option value="rec">Reconnaissance</option>
+      </select>
+      <div class="feedback" id="ex17_a_fb"></div>
+    </div>
+    <div class="question"><label>Quale misura rende il lateral movement significativamente più difficile?</label>
+      <select id="ex17_b"><option value="">Seleziona...</option>
+        <option value="seg">Segmentazione di rete (VLAN + firewall tra segmenti)</option>
+        <option value="av">Solo antivirus sugli endpoint</option>
+        <option value="vlan">Una sola VLAN per tutta l'azienda</option>
+      </select>
+      <div class="feedback" id="ex17_b_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx17()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex17',['ex17_a','ex17_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 18 -->
+<div class="exercise" id="ex18">
+  <div class="exercise-header"><h2>Esercizio 18 — Blast radius</h2><span class="difficulty diff-hard">Difficile</span></div>
+  <div class="exercise-body">
+    <p>In una rete piatta <code>192.168.0.0/24</code> con 80 PC, 5 server e WiFi ospiti tutti sullo stesso segmento, un PC viene infettato da ransomware.</p>
+    <div class="question"><label>Quanti host sono potenzialmente raggiungibili dall'infezione via SMB (porta 445)?</label>
+      <select id="ex18_a"><option value="">Seleziona...</option>
+        <option value="1">Solo il PC infetto</option>
+        <option value="all">Tutti i 253 host raggiungibili della /24</option>
+        <option value="5">Solo i 5 server</option>
+      </select>
+      <div class="feedback" id="ex18_a_fb"></div>
+    </div>
+    <div class="question"><label>Il concetto di "blast radius" descrive:</label>
+      <select id="ex18_b"><option value="">Seleziona...</option>
+        <option value="imp">L'estensione del danno che una compromissione può provocare</option>
+        <option value="vel">La velocità di una scansione di rete</option>
+        <option value="lar">La larghezza di banda di un link</option>
+      </select>
+      <div class="feedback" id="ex18_b_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx18()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex18',['ex18_a','ex18_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 19 -->
+<div class="exercise" id="ex19">
+  <div class="exercise-header"><h2>Esercizio 19 — Subnet troubleshooting</h2><span class="difficulty diff-hard">Difficile</span></div>
+  <div class="exercise-body">
+    <p>Un amministratore configura la VLAN con rete <code>192.168.20.0/26</code> e assegna come gateway <code>192.168.20.63</code>. I PC non riescono a uscire dalla VLAN.</p>
+    <div class="question"><label>Qual è il problema?</label>
+      <select id="ex19_a"><option value="">Seleziona...</option>
+        <option value="br">.63 è l'indirizzo di broadcast della /26</option>
+        <option value="nw">.63 è il network address della /26</option>
+        <option value="ms">La subnet mask è sbagliata</option>
+      </select>
+      <div class="feedback" id="ex19_a_fb"></div>
+    </div>
+    <div class="question"><label>Gateway corretto (primo host valido)</label><input type="text" id="ex19_b" placeholder="Es: 192.168.20.1"><div class="feedback" id="ex19_b_fb"></div></div>
+    <div class="hint" id="ex19_hint">💡 /26 → blocco di 64. La rete va da .0 a .63. Broadcast = .63, primo host = .1.</div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx19()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('ex19_hint')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('ex19',['ex19_a','ex19_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 20 -->
+<div class="exercise" id="ex20">
+  <div class="exercise-header"><h2>Esercizio 20 — VLSM scenario</h2><span class="difficulty diff-hard">Difficile</span></div>
+  <div class="exercise-body">
+    <p>Hai la rete <code>172.16.0.0/24</code>. Devi creare 3 sottoreti VLSM per:</p>
+    <ul style="margin: 0.4rem 0 0.6rem 1.2rem; font-size: 0.9rem;">
+      <li>Uffici: <strong>100 host</strong></li>
+      <li>Server: <strong>25 host</strong></li>
+      <li>Link punto-punto: <strong>2 host</strong></li>
+    </ul>
+    <p>Parti dalla sottorete più grande.</p>
+    <div class="question"><label>Uffici — CIDR e network</label><input type="text" id="ex20_a" placeholder="Es: /25 172.16.0.0"><div class="feedback" id="ex20_a_fb"></div></div>
+    <div class="question"><label>Server — CIDR e network</label><input type="text" id="ex20_b" placeholder="Es: /27 172.16.0.128"><div class="feedback" id="ex20_b_fb"></div></div>
+    <div class="question"><label>Link — CIDR e network</label><input type="text" id="ex20_c" placeholder="Es: /30 172.16.0.160"><div class="feedback" id="ex20_c_fb"></div></div>
+    <div class="hint" id="ex20_hint">💡 100→/25 (126 host, blocco 128). Poi 25→/27 (30 host, blocco 32). Poi 2→/30 (2 host, blocco 4).</div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx20()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('ex20_hint')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('ex20',['ex20_a','ex20_b','ex20_c'])">Azzera</button></div>
+  </div>
+</div>
+
+<div class="section-divider nat">🔀 Parte 2 — NAT, PAT e MASQUERADE (5 esercizi)</div>
+
+<!-- ESERCIZIO 21 -->
+<div class="exercise" id="ex21">
+  <div class="exercise-header"><h2>Esercizio 21 — Cosa fa MASQUERADE</h2><span class="difficulty diff-medium">Medio</span></div>
+  <div class="exercise-body">
+    <p>Il target <code>MASQUERADE</code> di iptables (catena POSTROUTING, tabella nat).</p>
+    <div class="question"><label>È una forma di...</label>
+      <select id="ex21_a"><option value="">Seleziona...</option>
+        <option value="snat">SNAT dinamico (IP sorgente = IP dell'interfaccia di uscita)</option>
+        <option value="dnat">DNAT (riscrive l'IP di destinazione)</option>
+        <option value="rout">Un protocollo di routing</option>
+        <option value="fw">Una regola di filtraggio del firewall</option>
+      </select>
+      <div class="feedback" id="ex21_a_fb"></div>
+    </div>
+    <div class="question"><label>Nel caso "N host interni → 1 IP pubblico", per poter distinguere i flussi di ritorno MASQUERADE:</label>
+      <select id="ex21_b"><option value="">Seleziona...</option>
+        <option value="port">Riscrive anche la porta sorgente se necessario (fa PAT)</option>
+        <option value="ip">Non riscrive mai le porte</option>
+        <option value="mac">Riscrive l'indirizzo MAC</option>
+      </select>
+      <div class="feedback" id="ex21_b_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx21()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex21',['ex21_a','ex21_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 22 -->
+<div class="exercise" id="ex22">
+  <div class="exercise-header"><h2>Esercizio 22 — SNAT vs DNAT</h2><span class="difficulty diff-medium">Medio</span></div>
+  <div class="exercise-body">
+    <div class="question"><label>Un utente della LAN naviga su Internet: il router deve applicare...</label>
+      <select id="ex22_a"><option value="">Seleziona...</option><option value="snat">SNAT (riscrive IP sorgente)</option><option value="dnat">DNAT (riscrive IP destinazione)</option><option value="no">Nessun NAT</option></select>
+      <div class="feedback" id="ex22_a_fb"></div>
+    </div>
+    <div class="question"><label>Vogliamo pubblicare un web server interno sull'IP pubblico del router: serve...</label>
+      <select id="ex22_b"><option value="">Seleziona...</option><option value="snat">SNAT</option><option value="dnat">DNAT (port forwarding)</option><option value="arp">Solo ARP</option></select>
+      <div class="feedback" id="ex22_b_fb"></div>
+    </div>
+    <div class="question"><label>In iptables, il DNAT per pacchetti in ingresso va messo in quale catena?</label>
+      <select id="ex22_c"><option value="">Seleziona...</option><option value="pre">PREROUTING</option><option value="post">POSTROUTING</option><option value="fwd">FORWARD</option></select>
+      <div class="feedback" id="ex22_c_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx22()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex22',['ex22_a','ex22_b','ex22_c'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 23 -->
+<div class="exercise" id="ex23">
+  <div class="exercise-header"><h2>Esercizio 23 — Conntrack e collisione di porta</h2><span class="difficulty diff-hard">Difficile</span></div>
+  <div class="exercise-body">
+    <p>Due host interni aprono per coincidenza una connessione verso lo stesso server esterno con la stessa porta sorgente:</p>
+    <pre>Host A: 192.168.1.10:54321 → 140.82.121.4:443
+Host B: 192.168.1.11:54321 → 140.82.121.4:443</pre>
+    <p>Il router ha un solo IP pubblico <code>93.45.12.7</code> e applica MASQUERADE.</p>
+    <div class="question"><label>Cosa fa il kernel per il flusso dell'host B?</label>
+      <select id="ex23_a"><option value="">Seleziona...</option>
+        <option value="rw">Riscrive la porta sorgente di B in una porta libera (es: 61001)</option>
+        <option value="dr">Scarta il pacchetto di B</option>
+        <option value="sa">Lascia entrambe uguali, si arrangia il server</option>
+      </select>
+      <div class="feedback" id="ex23_a_fb"></div>
+    </div>
+    <div class="question"><label>Qual è la chiave di univocità che il kernel deve preservare?</label>
+      <select id="ex23_b"><option value="">Seleziona...</option>
+        <option value="tup">La tupla (IP_src_NAT, porta_src_NAT, IP_dst, porta_dst, proto)</option>
+        <option value="ip">Solo l'IP sorgente NAT</option>
+        <option value="mac">L'indirizzo MAC del router</option>
+      </select>
+      <div class="feedback" id="ex23_b_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx23()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex23',['ex23_a','ex23_b'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 24 -->
+<div class="exercise" id="ex24">
+  <div class="exercise-header"><h2>Esercizio 24 — Port forwarding e limiti</h2><span class="difficulty diff-hard">Difficile</span></div>
+  <div class="exercise-body">
+    <p>Con <strong>un solo IP pubblico</strong>, vuoi pubblicare due web server HTTPS interni (<code>.20</code> e <code>.21</code>), entrambi in ascolto sulla porta 443.</p>
+    <div class="question"><label>Puoi pubblicarli entrambi sulla porta esterna 443?</label>
+      <select id="ex24_a"><option value="">Seleziona...</option><option value="si">Sì, basta scrivere due regole DNAT</option><option value="no">No: la tupla (IP_pub:443/tcp) è unica, va a uno solo</option></select>
+      <div class="feedback" id="ex24_a_fb"></div>
+    </div>
+    <div class="question"><label>Soluzioni valide (scegli quella più "pulita" lato utente):</label>
+      <select id="ex24_b"><option value="">Seleziona...</option>
+        <option value="rp">Un reverse proxy (es: nginx) davanti che instrada per Host header</option>
+        <option value="rm">Rimappare il secondo su porta 8443 (utenti devono digitare :8443)</option>
+        <option value="dh">Disabilitare uno dei due</option>
+      </select>
+      <div class="feedback" id="ex24_b_fb"></div>
+    </div>
+    <div class="question"><label>Con 3 IP pubblici invece, puoi tenere entrambi sulla 443?</label>
+      <select id="ex24_c"><option value="">Seleziona...</option><option value="si">Sì: basta legare ciascun DNAT al proprio IP (-d IP1, -d IP2)</option><option value="no">No, il problema è di protocollo</option></select>
+      <div class="feedback" id="ex24_c_fb"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx24()">Verifica</button><button class="btn btn-secondary" onclick="resetEx('ex24',['ex24_a','ex24_b','ex24_c'])">Azzera</button></div>
+  </div>
+</div>
+
+<!-- ESERCIZIO 25 -->
+<div class="exercise" id="ex25">
+  <div class="exercise-header"><h2>Esercizio 25 — DNAT + FORWARD</h2><span class="difficulty diff-hard">Difficile</span></div>
+  <div class="exercise-body">
+    <p>Hai configurato correttamente questa regola DNAT:</p>
+    <pre>iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 \
+         -j DNAT --to-destination 192.168.1.20:80</pre>
+    <p>Ma i client esterni non riescono a raggiungere il server. Il pacchetto viene tradotto correttamente (lo vedi in <code>conntrack -L</code>) ma non arriva mai all'host interno.</p>
+    <div class="question"><label>Qual è la causa più probabile?</label>
+      <select id="ex25_a"><option value="">Seleziona...</option>
+        <option value="fw">Manca una regola ACCEPT nella catena FORWARD (tabella filter)</option>
+        <option value="snat">Serve anche una regola di SNAT</option>
+        <option value="arp">ARP è bloccato</option>
+      </select>
+      <div class="feedback" id="ex25_a_fb"></div>
+    </div>
+    <div class="question"><label>Vero o falso: "Il <code>ip_forward</code> del kernel deve essere abilitato (<code>net.ipv4.ip_forward=1</code>) per far funzionare qualsiasi NAT di transito."</label>
+      <select id="ex25_b"><option value="">Seleziona...</option><option value="v">Vero</option><option value="f">Falso</option></select>
+      <div class="feedback" id="ex25_b_fb"></div>
+    </div>
+    <div class="hint" id="ex25_hint">💡 Il NAT riscrive le intestazioni, ma il pacchetto poi passa comunque dalla catena FORWARD del filter — se la policy è DROP e non c'è ACCEPT esplicito, muore lì.</div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="checkEx25()">Verifica</button><button class="btn btn-secondary" onclick="toggleHint('ex25_hint')">Suggerimento</button><button class="btn btn-secondary" onclick="resetEx('ex25',['ex25_a','ex25_b'])">Azzera</button></div>
+  </div>
+</div>
+
+</div>
+
+<footer>
+  Corso Cybersecurity Leonardo — Lezione 1 Riepilogo • 25 esercizi<br>
+  Parte 1: Fondamenti TCP/IP, Subnetting, VLSM, Segmentazione, VLAN, DMZ • Parte 2: NAT, PAT, MASQUERADE
+</footer>
+
+<script>
+let stats = { completed: new Set(), correct: new Set() };
+function updateStats() {
+  document.getElementById('completed').textContent = stats.completed.size;
+  document.getElementById('correct').textContent = stats.correct.size;
+  const pct = stats.completed.size ? Math.round(stats.correct.size / stats.completed.size * 100) : 0;
+  document.getElementById('pct').textContent = pct + '%';
+}
+function markEx(id, isCorrect) {
+  const el = document.getElementById(id);
+  el.classList.remove('completed-correct', 'completed-wrong');
+  stats.completed.add(id);
+  if (isCorrect) { stats.correct.add(id); el.classList.add('completed-correct'); }
+  else { stats.correct.delete(id); el.classList.add('completed-wrong'); }
+  updateStats();
+}
+function norm(s) { return (s||'').trim().replace(/\s+/g, ' ').toLowerCase(); }
+function setFB(id, correct, msg) {
+  const el = document.getElementById(id);
+  el.className = 'feedback ' + (correct ? 'correct' : 'wrong');
+  el.textContent = (correct ? '✓ ' : '✗ ') + msg;
+  el.style.display = 'block';
+}
+function val(id) { const el = document.getElementById(id); return el.tagName === 'SELECT' ? el.value : el.value.trim(); }
+function toggleHint(id) { document.getElementById(id).classList.toggle('visible'); }
+function resetEx(exId, fields) {
+  fields.forEach(f => {
+    const el = document.getElementById(f);
+    if (el.tagName === 'SELECT') el.selectedIndex = 0; else el.value = '';
+    const fb = document.getElementById(f + '_fb');
+    if (fb) { fb.style.display = 'none'; fb.className = 'feedback'; }
+  });
+  const ex = document.getElementById(exId);
+  ex.classList.remove('completed-correct', 'completed-wrong');
+  stats.completed.delete(exId); stats.correct.delete(exId);
+  updateStats();
+}
+function checkSel(fieldId, correctVal, msg) {
+  const v = val(fieldId);
+  const ok = v === correctVal;
+  setFB(fieldId + '_fb', ok, ok ? 'Corretto!' : msg);
+  return ok;
+}
+function checkAnswer(fieldId, acceptable, correctDisplay) {
+  const v = norm(val(fieldId));
+  const ok = acceptable.some(a => norm(a) === v);
+  setFB(fieldId + '_fb', ok, ok ? 'Corretto!' : 'Risposta: ' + correctDisplay);
+  return ok;
+}
+
+// ─── CHECKS ───
+function checkEx1() {
+  const a = checkSel('ex1_a', 'applicazione', 'HTTP è Applicazione');
+  const b = checkSel('ex1_b', 'internet', 'IP è Internet');
+  const c = checkSel('ex1_c', 'accesso', 'Ethernet/MAC è Accesso alla rete');
+  markEx('ex1', a && b && c);
+}
+function checkEx2() {
+  const a = checkSel('ex2_a', 'ssh', '22 = SSH');
+  const b = checkSel('ex2_b', 'dns', '53 = DNS');
+  const c = checkSel('ex2_c', 'https', '443 = HTTPS');
+  const d = checkSel('ex2_d', 'rdp', '3389 = RDP');
+  markEx('ex2', a && b && c && d);
+}
+function checkEx3() {
+  const a = checkSel('ex3_a', '1', 'SYN → SYN-ACK → ACK');
+  const b = checkSel('ex3_b', 'fin', 'FIN (RST è chiusura forzata)');
+  markEx('ex3', a && b);
+}
+function checkEx4() {
+  const a = checkSel('ex4_a', 'tcp', 'TCP è connection-oriented');
+  const b = checkSel('ex4_b', 'udp', 'UDP: niente handshake, basso overhead');
+  markEx('ex4', a && b);
+}
+function checkEx5() {
+  const a = checkSel('ex5_a', 'accesso', 'ARP opera a L2 (Accesso alla rete)');
+  const b = checkSel('ex5_b', 'broadcast', 'ARP request = broadcast L2 (FF:FF:FF:FF:FF:FF)');
+  markEx('ex5', a && b);
+}
+function checkEx6() {
+  const a = checkSel('ex6_a', 'priv', '10.0.0.0/8 è privato');
+  const b = checkSel('ex6_b', 'pub', '172.15.x.x NON è privato (il range privato parte da 172.16)');
+  const c = checkSel('ex6_c', 'priv', '172.20.x.x sta in 172.16.0.0/12 → privato');
+  const d = checkSel('ex6_d', 'priv', '192.168.0.0/16 è privato');
+  markEx('ex6', a && b && c && d);
+}
+function checkEx7() {
+  const a = checkAnswer('ex7_a', ['30'], '30 (2⁵−2)');
+  const b = checkAnswer('ex7_b', ['192.168.1.31'], '192.168.1.31');
+  markEx('ex7', a && b);
+}
+function checkEx8() {
+  const a = checkAnswer('ex8_a', ['10.20.30.128'], '10.20.30.128');
+  const b = checkAnswer('ex8_b', ['10.20.30.255'], '10.20.30.255');
+  const c = checkAnswer('ex8_c', ['10.20.30.129'], '10.20.30.129');
+  markEx('ex8', a && b && c);
+}
+function checkEx9() {
+  const a = checkAnswer('ex9_a', ['/24', '24'], '/24');
+  const b = checkAnswer('ex9_b', ['254'], '254');
+  markEx('ex9', a && b);
+}
+function checkEx10() {
+  const a = checkAnswer('ex10_a', ['192.168.8.0/23'], '192.168.8.0/23');
+  markEx('ex10', a);
+}
+function checkEx11() {
+  const a = checkSel('ex11_a', 'rst', 'RST = reset immediato (FIN è chiusura graceful)');
+  const b = checkSel('ex11_b', 'apert', 'Primo pacchetto del three-way handshake');
+  markEx('ex11', a && b);
+}
+function checkEx12() {
+  const a = checkSel('ex12_a', '1', 'HTTP (L7) → TCP (L4) → IP (L3) → Ethernet (L2)');
+  markEx('ex12', a);
+}
+function checkEx13() {
+  const a = checkSel('ex13_a', 'l2', 'VLAN = Layer 2 (tag 802.1Q nel frame Ethernet)');
+  const b = checkSel('ex13_b', 'broad', 'Le VLAN separano domini di broadcast a L2');
+  markEx('ex13', a && b);
+}
+function checkEx14() {
+  const a = checkSel('ex14_a', 'f', 'Falso: il routing inter-VLAN riconnette tutto');
+  const b = checkSel('ex14_b', 'fw', 'Servono regole firewall/ACL tra le VLAN');
+  markEx('ex14', a && b);
+}
+function checkEx15() {
+  const a = checkSel('ex15_a', '1', 'Access = 1 VLAN, nessun tag verso l\'host');
+  const b = checkSel('ex15_b', 'sw', 'Trunk = tra switch/router/firewall, trasporta più VLAN con tag');
+  markEx('ex15', a && b);
+}
+function checkEx16() {
+  const a = checkSel('ex16_a', 'ext', 'DMZ = servizi esposti verso l\'esterno');
+  const b = checkSel('ex16_b', 'rest', 'DMZ→Inside deve essere molto restrittiva');
+  markEx('ex16', a && b);
+}
+function checkEx17() {
+  const a = checkSel('ex17_a', 'lm', 'Lateral movement');
+  const b = checkSel('ex17_b', 'seg', 'Segmentazione rete (VLAN + firewall)');
+  markEx('ex17', a && b);
+}
+function checkEx18() {
+  const a = checkSel('ex18_a', 'all', 'Tutti: rete piatta → nessuna barriera interna');
+  const b = checkSel('ex18_b', 'imp', 'Blast radius = estensione del danno');
+  markEx('ex18', a && b);
+}
+function checkEx19() {
+  const a = checkSel('ex19_a', 'br', '.63 è il broadcast della /26 (blocco 0–63)');
+  const b = checkAnswer('ex19_b', ['192.168.20.1'], '192.168.20.1');
+  markEx('ex19', a && b);
+}
+function checkEx20() {
+  const a = checkAnswer('ex20_a', ['/25 172.16.0.0'], '/25 172.16.0.0');
+  const b = checkAnswer('ex20_b', ['/27 172.16.0.128'], '/27 172.16.0.128');
+  const c = checkAnswer('ex20_c', ['/30 172.16.0.160'], '/30 172.16.0.160');
+  markEx('ex20', a && b && c);
+}
+function checkEx21() {
+  const a = checkSel('ex21_a', 'snat', 'MASQUERADE = SNAT dinamico (prende l\'IP dell\'interfaccia)');
+  const b = checkSel('ex21_b', 'port', 'Riscrive la porta sorgente (fa PAT) per poter demultiplexare');
+  markEx('ex21', a && b);
+}
+function checkEx22() {
+  const a = checkSel('ex22_a', 'snat', 'SNAT: riscrive IP sorgente interno con quello pubblico');
+  const b = checkSel('ex22_b', 'dnat', 'DNAT (port forwarding): riscrive destinazione');
+  const c = checkSel('ex22_c', 'pre', 'PREROUTING: il DNAT va applicato prima del routing decision');
+  markEx('ex22', a && b && c);
+}
+function checkEx23() {
+  const a = checkSel('ex23_a', 'rw', 'Riscrive la porta sorgente di B per evitare la collisione');
+  const b = checkSel('ex23_b', 'tup', 'La tupla completa (5-tuple) deve essere univoca');
+  markEx('ex23', a && b);
+}
+function checkEx24() {
+  const a = checkSel('ex24_a', 'no', 'No: (93.45.12.7:443/tcp) è una sola destinazione possibile');
+  const b = checkSel('ex24_b', 'rp', 'Reverse proxy: multiplexa per Host header, utenti vedono :443 pulito');
+  const c = checkSel('ex24_c', 'si', 'Sì: con -d IP1 e -d IP2 le regole non si sovrappongono');
+  markEx('ex24', a && b && c);
+}
+function checkEx25() {
+  const a = checkSel('ex25_a', 'fw', 'Manca ACCEPT in FORWARD: il NAT traduce ma il filter droppa');
+  const b = checkSel('ex25_b', 'v', 'Vero: senza ip_forward il kernel non fa routing tra interfacce');
+  markEx('ex25', a && b);
+}
+</script>
+
+</body>
+</html>
