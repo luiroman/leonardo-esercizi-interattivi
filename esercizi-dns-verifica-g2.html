@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DNS — 10 Esercizi Riepilogo e Verifica | Giorno 2</title>
+<style>
+:root{
+  --bg:#F8F9FA;--card:#fff;--border:#E2E8F0;--text:#1E293B;--muted:#64748B;
+  --accent:#0891B2;--accent-soft:#E0F2FE;--title:#0F4C75;
+  --success:#10B981;--success-bg:#ECFDF5;--success-bd:#A7F3D0;
+  --err:#DC2626;--err-bg:#FEE2E2;--err-bd:#FCA5A5;
+  --warn:#B45309;--warn-bg:#FEF3C7;--warn-bd:#FCD34D;
+  --easy:#059669;--medium:#D97706;--hard:#DC2626;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'Calibri',sans-serif;color:var(--text);line-height:1.55;padding:16px}
+.container{max-width:950px;margin:0 auto}
+header{background:var(--card);border:.5px solid var(--border);border-radius:12px;padding:28px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+header h1{color:var(--title);font-family:'Trebuchet MS',sans-serif;font-size:clamp(22px,5vw,30px);margin-bottom:6px}
+header p{color:var(--muted);font-size:14px}
+.stats-bar{display:flex;gap:20px;background:var(--card);border:.5px solid var(--border);border-radius:12px;padding:18px;margin-bottom:22px;flex-wrap:wrap;justify-content:space-around}
+.stat{text-align:center;min-width:80px}
+.stat .num{font-size:26px;font-weight:700;color:var(--accent);font-family:'Trebuchet MS',sans-serif}
+.stat .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.section-title{color:var(--title);font-family:'Trebuchet MS',sans-serif;font-size:18px;margin:24px 8px 12px;padding-bottom:6px;border-bottom:2px solid var(--accent)}
+.exercise{background:var(--card);border:.5px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:border-color .2s}
+.exercise.completed{border-left:4px solid var(--success)}
+.ex-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.ex-title{color:var(--title);font-weight:600;font-size:15px}
+.diff{font-size:11px;padding:3px 10px;border-radius:12px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.diff.easy{background:var(--easy)}
+.diff.medium{background:var(--medium)}
+.diff.hard{background:var(--hard)}
+.ex-body p{font-size:14px;margin-bottom:10px}
+.ex-body code{background:#F1F5F9;padding:2px 6px;border-radius:4px;font-family:'Consolas',monospace;font-size:12px;color:#0F172A}
+.ex-body pre{background:#0F172A;color:#E2E8F0;padding:12px 14px;border-radius:6px;font-size:12px;overflow-x:auto;margin:10px 0;font-family:'Consolas',monospace;line-height:1.55}
+.ex-body pre .hl{color:#7DD3FC;font-weight:bold}
+.ex-body pre .bad{color:#FCA5A5;font-weight:bold}
+input[type="text"],select{font-family:inherit;font-size:14px;padding:8px 12px;border:.5px solid var(--border);border-radius:6px;width:100%;max-width:420px;background:#fff}
+input[type="text"]:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.btn{font-family:inherit;font-size:13px;padding:8px 16px;border:.5px solid var(--accent);background:#fff;color:var(--accent);border-radius:6px;cursor:pointer;margin:8px 6px 0 0;transition:all .15s}
+.btn:hover{background:var(--accent-soft)}
+.btn.reset{border-color:#CBD5E1;color:var(--muted)}
+.btn.reset:hover{background:#F1F5F9}
+.btn.hint{border-color:var(--warn);color:var(--warn)}
+.btn.hint:hover{background:var(--warn-bg)}
+.feedback{margin-top:10px;padding:10px 14px;border-radius:6px;font-size:13px;display:none;border-left:3px solid;line-height:1.5}
+.feedback.show{display:block}
+.feedback.ok{background:var(--success-bg);color:#065F46;border-left-color:var(--success)}
+.feedback.ko{background:var(--err-bg);color:#991B1B;border-left-color:var(--err)}
+.hint-box{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn);padding:10px 14px;border-radius:6px;margin-top:8px;font-size:12px;display:none}
+.hint-box.show{display:block}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:24px;margin-top:20px;border-top:1px solid var(--border)}
+@media(max-width:600px){.exercise{padding:14px}.stats-bar{gap:10px}.ex-body pre{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>🌐 DNS — 10 Esercizi di Riepilogo e Verifica</h1>
+  <p>Giorno 2 · Corso Cybersecurity Leonardo · Modulo 1 — Reti, Sistemi Operativi e Hardening</p>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><div class="num" id="s-done">0</div><div class="label">Completati</div></div>
+  <div class="stat"><div class="num" id="s-correct">0</div><div class="label">Corretti</div></div>
+  <div class="stat"><div class="num" id="s-total">10</div><div class="label">Totali</div></div>
+  <div class="stat"><div class="num" id="s-pct">0%</div><div class="label">Precisione</div></div>
+</div>
+
+<div class="section-title">A · Record, zone file e risoluzione</div>
+
+<!-- ═══ EX 1 — Trailing dot ═══ -->
+<div class="exercise" id="ex1">
+<div class="ex-header"><span class="ex-title">1 — Il punto finale nei file di zona</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Un amministratore scrive questo file di zona per <code>leonardo.com</code>:</p>
+<pre>$ORIGIN leonardo.com.
+@       IN  A      203.0.113.10
+<span class="bad">www     IN  CNAME  leonardo.com</span></pre>
+<p>Dopo il caricamento, <code>www.leonardo.com</code> non funziona più. Qual è l'errore?</p>
+<select id="f1">
+<option value="">— Seleziona —</option><option value="d">www è una parola riservata</option><option value="c">Manca il TTL del record</option><option value="b">I CNAME non sono ammessi alla radice della zona</option><option value="a">Manca il punto finale dopo leonardo.com: BIND appende $ORIGIN e il CNAME punta a leonardo.com.leonardo.com.</option>
+</select>
+<br><button class="btn" onclick="chkSel('f1','a','Corretto! È l\'errore più famoso dei file di zona BIND. Un nome che non termina con punto è relativo: BIND gli appende $ORIGIN. Quindi <code>leonardo.com</code> diventa <code>leonardo.com.leonardo.com.</code> e il CNAME punta a un nome inesistente. Regola operativa: nomi di destinazione (CNAME, MX, NS) sempre con il punto finale; nomi di sorgente (colonna sx) meglio relativi — più leggibili e a prova di refuso.','No. L\'errore è sottile e riguarda il punto finale. Rileggi la regola di $ORIGIN: un nome senza punto finale è relativo e viene espanso appendendo l\'origine.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex1','f1')">Reset</button>
+<button class="btn hint" onclick="toggle('h1')">💡 Suggerimento</button>
+<div class="hint-box" id="h1">Guarda con attenzione la riga del CNAME: finisce con un punto il nome di destinazione? Cosa fa BIND ai nomi che non terminano con un punto?</div>
+<div class="feedback" id="fb1"></div>
+</div>
+</div>
+
+<!-- ═══ EX 2 — SOA ═══ -->
+<div class="exercise" id="ex2">
+<div class="ex-header"><span class="ex-title">2 — Il record SOA</span><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>Il record <strong>SOA</strong> (Start of Authority) è obbligatorio in ogni zona DNS. A cosa serve?</p>
+<select id="f2">
+<option value="">— Seleziona —</option><option value="d">È il record di firma DNSSEC</option><option value="a">Indica il server autoritativo primario, l'email dell'amministratore e i parametri di refresh/expire/TTL minimo</option><option value="c">Specifica il mail server del dominio</option><option value="b">Mappa un nome a un indirizzo IP</option>
+</select>
+<br><button class="btn" onclick="chkSel('f2','a','Corretto! Il SOA sta al vertice di ogni zona e contiene: nome del primary NS, email dell\'amministratore (con il primo punto trasformato in @), serial number (usato dagli slave per capire se la zona è cambiata), refresh/retry/expire per la replica secondaria, e il TTL minimo negativo (per il caching degli NXDOMAIN). È il primo record che vedi con <code>dig SOA dominio.it</code>.','No. I singoli compiti (mappare nomi a IP, indicare mail server, firme) sono di altri record (A, MX, RRSIG). Il SOA è il record di intestazione della zona.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex2','f2')">Reset</button>
+<div class="feedback" id="fb2"></div>
+</div>
+</div>
+
+<!-- ═══ EX 3 — A vs AAAA ═══ -->
+<div class="exercise" id="ex3">
+<div class="ex-header"><span class="ex-title">3 — Record per IPv6</span><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>Quale tipo di record DNS associa un nome a un indirizzo <strong>IPv6</strong>?</p>
+<input type="text" id="f3" placeholder="Tipo record" style="max-width:180px">
+<br><button class="btn" onclick="chk('f3',['aaaa'],'Corretto! AAAA (pronunciato &quot;quad-A&quot;) è il gemello IPv6 del record A. Il nome deriva dal fatto che un indirizzo IPv6 è 4× più lungo di un IPv4 (128 bit vs 32 bit), quindi 4 volte la A. In uno scenario dual-stack, un hostname ha sia un record A sia un record AAAA — il client sceglie quale usare in base alla propria connettività (Happy Eyeballs).')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex3','f3')">Reset</button>
+<div class="feedback" id="fb3"></div>
+</div>
+</div>
+
+<!-- ═══ EX 4 — TXT / SPF ═══ -->
+<div class="exercise" id="ex4">
+<div class="ex-header"><span class="ex-title">4 — SPF e record TXT</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Il dominio <code>leonardo.com</code> ha questo record TXT pubblicato:</p>
+<pre>leonardo.com.  IN TXT  "v=spf1 ip4:203.0.113.0/24 include:_spf.google.com -all"</pre>
+<p>Questo record serve a:</p>
+<select id="f4">
+<option value="">— Seleziona —</option><option value="d">Firmare digitalmente ogni email con una chiave privata</option><option value="a">Dichiarare quali server sono autorizzati a inviare email per leonardo.com (SPF), usato dai riceventi per rilevare email spoofate</option><option value="b">Cifrare la posta in uscita</option><option value="c">Bloccare lo spam in entrata verso leonardo.com</option>
+</select>
+<br><button class="btn" onclick="chkSel('f4','a','Corretto! SPF (Sender Policy Framework) è una lista di server autorizzati, pubblicata come record TXT. Un server ricevente che riceve un\'email &quot;da leonardo.com&quot; controlla l\'IP del mittente contro il record SPF: se non matcha, l\'email è probabilmente spoofata. Il <code>-all</code> finale significa &quot;rigetta tutto ciò che non matcha&quot;. SPF è uno dei tre pilastri anti-spoofing email, insieme a DKIM (firma digitale DNS-based) e DMARC (policy di allineamento).','No. SPF non cifra né firma: è una lista dichiarativa di server autorizzati a spedire per il dominio. La firma digitale email è DKIM (anche lui in un record TXT, ma con chiave pubblica).')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex4','f4')">Reset</button>
+<div class="feedback" id="fb4"></div>
+</div>
+</div>
+
+<!-- ═══ EX 5 — PTR reverse DNS ═══ -->
+<div class="exercise" id="ex5">
+<div class="ex-header"><span class="ex-title">5 — Reverse DNS e anti-spam</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Un mail server riceve una connessione SMTP dall'IP <code>203.0.113.45</code>. Prima di accettare la posta, verifica che esista un record <strong>PTR</strong> coerente (reverse DNS). Perché?</p>
+<select id="f5">
+<option value="">— Seleziona —</option><option value="c">Senza PTR non si può instradare la risposta</option><option value="b">Il PTR è obbligatorio per stabilire la connessione TCP</option><option value="d">Il PTR cifra la sessione SMTP</option><option value="a">Gli IP senza PTR, o con PTR generico/dinamico, sono spesso host compromessi o botnet — è un filtro anti-spam molto efficace</option>
+</select>
+<br><button class="btn" onclick="chkSel('f5','a','Corretto! Un mail server legittimo ha quasi sempre un PTR esplicito e coerente (es. <code>mail.leonardo.com</code>), configurato dall\'ISP del blocco IP. Gli host compromessi in reti residenziali hanno PTR generici del tipo <code>host-203-113-0-45.isp.example.com</code>, o nessun PTR. Molti MTA (Postfix, Sendmail) rifiutano la connessione o aumentano lo score anti-spam in questi casi. È il motivo per cui, se configuri un mail server in cloud, devi richiedere al provider di impostare il PTR — altrimenti la tua posta finisce sistematicamente in spam.','No. Il PTR non è necessario per il routing IP (quello si basa su indirizzi, non nomi) né per TCP. È un controllo di reputazione/identità usato dai filtri anti-spam.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex5','f5')">Reset</button>
+<div class="feedback" id="fb5"></div>
+</div>
+</div>
+
+<div class="section-title">B · Risoluzione, caching e trasporto</div>
+
+<!-- ═══ EX 6 — Iterative vs recursive ═══ -->
+<div class="exercise" id="ex6">
+<div class="ex-header"><span class="ex-title">6 — Chi fa le query iterative?</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Quando un utente digita <code>www.example.com</code> nel browser, chi si occupa di fare le query iterative verso root → TLD → authoritative?</p>
+<select id="f6">
+<option value="">— Seleziona —</option><option value="d">Il router di casa, sempre</option><option value="b">Il browser, che contatta direttamente i root server</option><option value="c">Il sistema operativo del client, passando per tutti i server uno per uno</option><option value="a">Il resolver ricorsivo (es. il DNS aziendale o 8.8.8.8): il client fa una singola query ricorsiva e il resolver gestisce internamente le iterazioni</option>
+</select>
+<br><button class="btn" onclick="chkSel('f6','a','Corretto! Il client fa una sola query &quot;ricorsiva&quot; al suo resolver (&quot;dimmi l\'IP di www.example.com e fammi sapere quando hai finito&quot;). Il resolver si prende l\'onere di contattare root, TLD e authoritative in sequenza — queste query sono &quot;iterative&quot; perché ogni server risponde &quot;non lo so, ma chiedi a quest\'altro&quot;. Il risultato viene cacheato dal resolver per servire velocemente altre richieste. Il client non parla mai direttamente con i root server — è una buona cosa, altrimenti i root crollerebbero sotto il carico.','No. Il client fa una query ricorsiva verso un solo resolver, che a sua volta gestisce le query iterative. Se ogni client contattasse i root direttamente, il DNS globale non reggerebbe.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex6','f6')">Reset</button>
+<div class="feedback" id="fb6"></div>
+</div>
+</div>
+
+<!-- ═══ EX 7 — TTL ═══ -->
+<div class="exercise" id="ex7">
+<div class="ex-header"><span class="ex-title">7 — TTL e propagazione dei cambi</span><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>Stai per migrare <code>www.leonardo.com</code> su un nuovo IP. Il record A ha <strong>TTL = 86400</strong> (24 ore). Cosa dovresti fare <em>prima</em> della migrazione per minimizzare i disservizi?</p>
+<select id="f7">
+<option value="">— Seleziona —</option><option value="d">Niente, il cambio si propaga in tempo reale</option><option value="c">Disattivare il caching DNS su tutti i client</option><option value="b">Aumentare il TTL a 7 giorni per essere più sicuri</option><option value="a">Abbassare il TTL (es. a 300 secondi) almeno 24 ore prima, poi fare il cambio</option>
+</select>
+<br><button class="btn" onclick="chkSel('f7','a','Corretto! Il TTL dice ai resolver quanto tempo tenere in cache la risposta. Con TTL 86400, dopo il cambio di IP alcuni client continueranno a vedere il vecchio indirizzo fino a 24 ore. Il trucco operativo è: abbassare il TTL a 5 minuti <em>almeno 24 ore prima</em> (così il vecchio valore alto scade e tutti i resolver rileggono il nuovo TTL basso), fare la migrazione, aspettare qualche ora per la stabilizzazione, poi rialzare il TTL per ridurre il carico sui server autoritativi. È il playbook standard di ogni migrazione DNS.','No. Aumentare il TTL peggiora il problema. Disattivare il caching client-side non serve (non controlli i client degli utenti). La propagazione DNS non è mai in tempo reale: dipende interamente dal TTL precedente.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex7','f7')">Reset</button>
+<div class="feedback" id="fb7"></div>
+</div>
+</div>
+
+<!-- ═══ EX 8 — DNS su TCP ═══ -->
+<div class="exercise" id="ex8">
+<div class="ex-header"><span class="ex-title">8 — Quando DNS usa TCP invece di UDP</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Il DNS classico usa quasi sempre UDP porta 53, ma in alcuni casi cade su TCP porta 53. Quali sono i due scenari classici in cui DNS usa TCP? (seleziona la risposta più completa)</p>
+<select id="f8">
+<option value="">— Seleziona —</option><option value="c">Solo quando il client è dietro NAT</option><option value="a">Trasferimenti di zona (AXFR/IXFR) tra master e slave, e risposte che superano i 512 byte (o oltre il limite EDNS)</option><option value="d">Mai, DNS è sempre UDP</option><option value="b">Solo per DNSSEC</option>
+</select>
+<br><button class="btn" onclick="chkSel('f8','a','Corretto! Due scenari: (1) <strong>AXFR/IXFR</strong> — il trasferimento dell\'intera zona da un name server primary a uno secondary richiede affidabilità e ordine, quindi TCP. Per questo nel firewall dei name server si vedono regole &quot;TCP/53 solo dai secondary autorizzati&quot;. (2) <strong>Risposte grandi</strong> — il limite storico del DNS su UDP era 512 byte (RFC 1035). Quando una risposta supera quel limite, il server imposta il flag TC (truncated) e il client ripete la query su TCP. Con EDNS0 (RFC 6891) il limite UDP può essere alzato a 4096 byte, ma le risposte DNSSEC e alcune risposte con molti record le saturano comunque — cadendo su TCP. Un firewall che blocca TCP/53 &quot;perché tanto DNS è UDP&quot; è una fonte classica di guasti intermittenti.','No. DNS usa TCP in due casi specifici e ben definiti, non solo per DNSSEC. I trasferimenti di zona e le risposte oversize sono le ragioni storiche, entrambe ancora attuali.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex8','f8')">Reset</button>
+<div class="feedback" id="fb8"></div>
+</div>
+</div>
+
+<div class="section-title">C · Attacchi e difese</div>
+
+<!-- ═══ EX 9 — DNS Amplification ═══ -->
+<div class="exercise" id="ex9">
+<div class="ex-header"><span class="ex-title">9 — DNS Amplification Attack</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Negli attacchi DNS amplification, un attaccante invia piccole query DNS con <strong>IP sorgente spoofato</strong> (l'IP della vittima) a resolver aperti, e questi rispondono alla vittima con risposte molto più grandi. Due fattori rendono l'attacco efficace. Quali?</p>
+<select id="f9">
+<option value="">— Seleziona —</option><option value="c">I resolver DNS sono lenti e accumulano pacchetti</option><option value="a">UDP senza handshake permette lo spoofing dell'IP sorgente; risposte DNS (specialmente ANY/DNSSEC) sono 50-100× più grandi della query</option><option value="d">Le query DNS sono sempre inviate in multicast</option><option value="b">DNS usa TCP con handshake debole e risposte cifrate</option>
+</select>
+<br><button class="btn" onclick="chkSel('f9','a','Corretto! Due ingredienti concorrono: (1) <strong>UDP stateless</strong> — non c\'è handshake, quindi l\'attaccante mette come source IP quello della vittima e il resolver risponde alla vittima senza verificare nulla. (2) <strong>Fattore di amplificazione</strong> — una query da ~60 byte per un record ANY con DNSSEC può generare risposte da 3000-4000 byte, un rapporto di 50-70×. L\'attaccante quindi genera 1 Gbps di query spoofate e scarica 50-70 Gbps sulla vittima, usando resolver ignari come moltiplicatori. Contromisure: BCP38 (gli ISP filtrano il traffico con source IP non appartenente alla propria rete), response rate limiting sui resolver, chiusura dei resolver aperti (non accettare query da Internet).','No. TCP con handshake preverrebbe lo spoofing (il SYN-ACK non tornerebbe all\'attaccante). DNS non è multicast. Il meccanismo chiave è UDP stateless + risposte molto più grandi delle query.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex9','f9')">Reset</button>
+<button class="btn hint" onclick="toggle('h9')">💡 Suggerimento</button>
+<div class="hint-box" id="h9">Pensa alle due proprietà che rendono il DNS &quot;sfruttabile&quot;: il protocollo di trasporto (che non autentica il mittente) e il rapporto dimensionale tra query e risposta.</div>
+<div class="feedback" id="fb9"></div>
+</div>
+</div>
+
+<!-- ═══ EX 10 — Canary domain Firefox ═══ -->
+<div class="exercise" id="ex10">
+<div class="ex-header"><span class="ex-title">10 — Il canary domain di Firefox</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Firefox, prima di abilitare DoH, interroga via DNS classico il dominio speciale <code>use-application-dns.net</code>. Come deve rispondere il resolver aziendale per segnalare a Firefox di <strong>non</strong> attivare DoH su quella rete?</p>
+<select id="f10">
+<option value="">— Seleziona —</option><option value="b">Con l'indirizzo IP del resolver aziendale</option><option value="c">Con un record TXT "DoH=off"</option><option value="a">Con NXDOMAIN (dominio non esistente)</option><option value="d">Con un timeout (nessuna risposta)</option>
+</select>
+<br><button class="btn" onclick="chkSel('f10','a','Corretto! Questo è il &quot;canary domain&quot; di Mozilla: se il resolver interno risponde NXDOMAIN, Firefox interpreta il segnale come &quot;siamo in una rete enterprise che non vuole DoH&quot; e disabilita automaticamente la funzione per quella sessione. È una cortesia unilaterale di Mozilla (Chrome ed Edge non la implementano e richiedono policy sugli endpoint), ma copre gratis tutta la base Firefox con una riga di configurazione sul resolver interno. Nota: il dominio <em>esiste davvero</em> ed è risolvibile dal DNS pubblico — è il resolver aziendale che deve sovrascriverlo con NXDOMAIN per attivare il canary.','No. Timeout e risposte positive non attivano il canary. Il segnale concordato tra Mozilla e gli enterprise è esattamente NXDOMAIN — una risposta autoritativa &quot;questo dominio non esiste&quot;.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex10','f10')">Reset</button>
+<div class="feedback" id="fb10"></div>
+</div>
+</div>
+
+<footer>
+  <p>Corso Cybersecurity Leonardo · Giorno 2 — 10 aprile 2026</p>
+  <p style="margin-top:6px;color:#94A3B8">Modulo 1: Reti, Sistemi Operativi e Hardening — Esercizi di riepilogo e verifica sul DNS</p>
+</footer>
+
+</div>
+
+<script>
+const state = {done:new Set(),correct:new Set()};
+
+function updateStats(){
+  document.getElementById('s-done').textContent = state.done.size;
+  document.getElementById('s-correct').textContent = state.correct.size;
+  const pct = state.done.size ? Math.round(state.correct.size/state.done.size*100) : 0;
+  document.getElementById('s-pct').textContent = pct + '%';
+}
+
+function norm(s){return s.trim().toLowerCase().replace(/\s+/g,' ');}
+
+function chk(id, validAnswers, okMsg){
+  const el = document.getElementById(id);
+  const fb = document.getElementById('fb'+id.slice(1));
+  const exId = 'ex'+id.slice(1);
+  const val = norm(el.value);
+  if(!val){showFb(fb,false,'⚠️ Inserisci una risposta prima di verificare.');return;}
+  const ok = validAnswers.some(v => norm(v) === val);
+  state.done.add(exId);
+  if(ok){state.correct.add(exId);document.getElementById(exId).classList.add('completed');showFb(fb,true,'✓ '+okMsg);}
+  else{showFb(fb,false,'✗ Non corretto. Una risposta accettata è: <strong>'+validAnswers[0]+'</strong>');}
+  updateStats();
+}
+
+function chkSel(id, correctVal, okMsg, koMsg){
+  const el = document.getElementById(id);
+  const fb = document.getElementById('fb'+id.slice(1));
+  const exId = 'ex'+id.slice(1);
+  if(!el.value){showFb(fb,false,'⚠️ Seleziona un\'opzione.');return;}
+  const ok = el.value === correctVal;
+  state.done.add(exId);
+  if(ok){state.correct.add(exId);document.getElementById(exId).classList.add('completed');showFb(fb,true,'✓ '+okMsg);}
+  else{showFb(fb,false,'✗ '+koMsg);}
+  updateStats();
+}
+
+function showFb(fb, ok, msg){
+  fb.className = 'feedback show ' + (ok?'ok':'ko');
+  fb.innerHTML = msg;
+}
+
+function reset1(exId, inputId){
+  const ex = document.getElementById(exId);
+  const inp = document.getElementById(inputId);
+  const fb = document.getElementById('fb'+inputId.slice(1));
+  if(inp) inp.value = '';
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+  ex.classList.remove('completed');
+  state.done.delete(exId);
+  state.correct.delete(exId);
+  updateStats();
+}
+
+function toggle(id){
+  const el = document.getElementById(id);
+  el.classList.toggle('show');
+}
+</script>
+</body>
+</html>

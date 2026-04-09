@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wireshark — 15 Esercizi Riepilogo e Verifica | Giorno 2</title>
+<style>
+:root{
+  --bg:#F8F9FA;--card:#fff;--border:#E2E8F0;--text:#1E293B;--muted:#64748B;
+  --accent:#0891B2;--accent-soft:#E0F2FE;--title:#0F4C75;
+  --success:#10B981;--success-bg:#ECFDF5;--success-bd:#A7F3D0;
+  --err:#DC2626;--err-bg:#FEE2E2;--err-bd:#FCA5A5;
+  --warn:#B45309;--warn-bg:#FEF3C7;--warn-bd:#FCD34D;
+  --easy:#059669;--medium:#D97706;--hard:#DC2626;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'Calibri',sans-serif;color:var(--text);line-height:1.55;padding:16px}
+.container{max-width:950px;margin:0 auto}
+header{background:var(--card);border:.5px solid var(--border);border-radius:12px;padding:28px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+header h1{color:var(--title);font-family:'Trebuchet MS',sans-serif;font-size:clamp(22px,5vw,30px);margin-bottom:6px}
+header p{color:var(--muted);font-size:14px}
+.info-banner{background:var(--accent-soft);border:.5px solid var(--accent);border-left:4px solid var(--accent);border-radius:8px;padding:14px 18px;margin-bottom:20px;font-size:13px;color:var(--title)}
+.stats-bar{display:flex;gap:20px;background:var(--card);border:.5px solid var(--border);border-radius:12px;padding:18px;margin-bottom:22px;flex-wrap:wrap;justify-content:space-around}
+.stat{text-align:center;min-width:80px}
+.stat .num{font-size:26px;font-weight:700;color:var(--accent);font-family:'Trebuchet MS',sans-serif}
+.stat .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.section-title{color:var(--title);font-family:'Trebuchet MS',sans-serif;font-size:18px;margin:24px 8px 12px;padding-bottom:6px;border-bottom:2px solid var(--accent)}
+.exercise{background:var(--card);border:.5px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:border-color .2s}
+.exercise.completed{border-left:4px solid var(--success)}
+.ex-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.ex-title{color:var(--title);font-weight:600;font-size:15px}
+.diff{font-size:11px;padding:3px 10px;border-radius:12px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.diff.easy{background:var(--easy)}
+.diff.medium{background:var(--medium)}
+.diff.hard{background:var(--hard)}
+.ex-body p{font-size:14px;margin-bottom:10px}
+.ex-body code{background:#F1F5F9;padding:2px 6px;border-radius:4px;font-family:'Consolas',monospace;font-size:12px;color:#0F172A}
+.ex-body pre{background:#0F172A;color:#E2E8F0;padding:12px 14px;border-radius:6px;font-size:12px;overflow-x:auto;margin:10px 0;font-family:'Consolas',monospace;line-height:1.5}
+.ex-body pre .hl{color:#7DD3FC;font-weight:bold}
+input[type="text"],select{font-family:inherit;font-size:14px;padding:8px 12px;border:.5px solid var(--border);border-radius:6px;width:100%;max-width:420px;background:#fff}
+input[type="text"]:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.btn{font-family:inherit;font-size:13px;padding:8px 16px;border:.5px solid var(--accent);background:#fff;color:var(--accent);border-radius:6px;cursor:pointer;margin:8px 6px 0 0;transition:all .15s}
+.btn:hover{background:var(--accent-soft)}
+.btn.reset{border-color:#CBD5E1;color:var(--muted)}
+.btn.reset:hover{background:#F1F5F9}
+.btn.hint{border-color:var(--warn);color:var(--warn)}
+.btn.hint:hover{background:var(--warn-bg)}
+.feedback{margin-top:10px;padding:10px 14px;border-radius:6px;font-size:13px;display:none;border-left:3px solid;line-height:1.5}
+.feedback.show{display:block}
+.feedback.ok{background:var(--success-bg);color:#065F46;border-left-color:var(--success)}
+.feedback.ko{background:var(--err-bg);color:#991B1B;border-left-color:var(--err)}
+.hint-box{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn);padding:10px 14px;border-radius:6px;margin-top:8px;font-size:12px;display:none}
+.hint-box.show{display:block}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:24px;margin-top:20px;border-top:1px solid var(--border)}
+@media(max-width:600px){.exercise{padding:14px}.stats-bar{gap:10px}.ex-body pre{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>🦈 Wireshark — 15 Esercizi di Riepilogo e Verifica</h1>
+  <p>Giorno 2 · Corso Cybersecurity Leonardo · Modulo 1 — Reti, Sistemi Operativi e Hardening</p>
+</header>
+
+<div class="info-banner">
+  <strong>📝 Nota didattica:</strong> Questi esercizi sono <em>teorici/concettuali</em> e non richiedono Wireshark installato. Imparerai a riconoscere filtri, interpretare output testuali di pacchetti e identificare pattern di sicurezza senza toccare il tool. L'installazione e il laboratorio pratico arriveranno nella prossima sessione.
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><div class="num" id="s-done">0</div><div class="label">Completati</div></div>
+  <div class="stat"><div class="num" id="s-correct">0</div><div class="label">Corretti</div></div>
+  <div class="stat"><div class="num" id="s-total">15</div><div class="label">Totali</div></div>
+  <div class="stat"><div class="num" id="s-pct">0%</div><div class="label">Precisione</div></div>
+</div>
+
+<div class="section-title">A · Interfaccia e concetti base</div>
+
+<!-- ═══ EX 1 — Tre pannelli ═══ -->
+<div class="exercise" id="ex1">
+<div class="ex-header"><span class="ex-title">1 — I tre pannelli dell'interfaccia</span><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>L'interfaccia principale di Wireshark è divisa in tre pannelli impilati verticalmente. Dall'alto verso il basso sono:</p>
+<select id="f1">
+<option value="">— Seleziona —</option><option value="c">Capture Filter → Display Filter → Statistics</option><option value="a">Packet List → Packet Details → Packet Bytes</option><option value="d">Protocol → Source → Destination</option><option value="b">Packet Bytes → Packet Details → Packet List</option>
+</select>
+<br><button class="btn" onclick="chkSel('f1','a','Corretto! In alto la Packet List (sommario di ogni pacchetto), al centro i Packet Details (albero gerarchico per livelli OSI), in basso i Packet Bytes (dump esadecimale + ASCII del raw). Cliccando un pacchetto nella lista, gli altri due pannelli si aggiornano.','No. L\'ordine canonico è: elenco in alto, dettaglio per livelli al centro, byte grezzi in basso. È la struttura standard da quasi 25 anni di Wireshark.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex1','f1')">Reset</button>
+<div class="feedback" id="fb1"></div>
+</div>
+</div>
+
+<!-- ═══ EX 2 — Capture vs Display ═══ -->
+<div class="exercise" id="ex2">
+<div class="ex-header"><span class="ex-title">2 — Capture filter vs Display filter</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Qual è la differenza fondamentale tra un <strong>capture filter</strong> e un <strong>display filter</strong>?</p>
+<select id="f2">
+<option value="">— Seleziona —</option><option value="b">Sono sinonimi, solo la sintassi cambia</option><option value="a">Il capture filter scarta pacchetti prima di salvarli; il display filter nasconde solo la visualizzazione, tutti i pacchetti restano nel file</option><option value="c">Il capture filter si applica al file .pcap, il display filter solo al traffico live</option><option value="d">Il display filter è più veloce perché lavora in kernel</option>
+</select>
+<br><button class="btn" onclick="chkSel('f2','a','Corretto! Il capture filter (sintassi BPF, es. <code>tcp port 443</code>) agisce nel kernel prima della scrittura: ciò che non matcha è perso per sempre. Il display filter (sintassi Wireshark, es. <code>tcp.port==443</code>) agisce dopo, nasconde la visualizzazione ma i dati restano nel .pcap. In genere: capture filter stretto per catture lunghe, display filter flessibile per analisi.','No. La differenza è quando agiscono: il capture filter è distruttivo (pre-salvataggio), il display filter è non-distruttivo (post-salvataggio). Le due sintassi sono anche diverse: BPF vs linguaggio di Wireshark.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex2','f2')">Reset</button>
+<div class="feedback" id="fb2"></div>
+</div>
+</div>
+
+<!-- ═══ EX 3 — Promiscuous mode ═══ -->
+<div class="exercise" id="ex3">
+<div class="ex-header"><span class="ex-title">3 — Modalità promiscua</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Quando abiliti la <strong>promiscuous mode</strong> sull'interfaccia di cattura, Wireshark cattura:</p>
+<select id="f3">
+<option value="">— Seleziona —</option><option value="c">Il traffico cifrato in chiaro</option><option value="b">Tutti i frame che arrivano alla scheda, anche quelli destinati ad altri MAC</option><option value="a">Solo il traffico destinato al MAC della scheda</option><option value="d">Il traffico Wi-Fi di reti vicine</option>
+</select>
+<br><button class="btn" onclick="chkSel('f3','b','Corretto! Senza promiscuous mode la NIC scarta i frame non destinati al proprio MAC. Con la modalità attiva li passa tutti al sistema operativo. <strong>Attenzione:</strong> su reti switchate vedi comunque solo il tuo traffico + broadcast/multicast, perché lo switch non ti manda il traffico altrui. Per vedere davvero tutto serve un port mirror (SPAN) o un TAP.','No. La promiscuous mode riguarda il filtro hardware della NIC: disattivato, accetta tutti i frame in arrivo. Non ha nulla a che vedere con cifratura o Wi-Fi vicini (quello è il monitor mode, cosa diversa).')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex3','f3')">Reset</button>
+<div class="feedback" id="fb3"></div>
+</div>
+</div>
+
+<!-- ═══ EX 4 — Follow TCP Stream ═══ -->
+<div class="exercise" id="ex4">
+<div class="ex-header"><span class="ex-title">4 — Follow TCP Stream</span><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>La funzione <strong>Follow → TCP Stream</strong> (tasto destro su un pacchetto) serve a:</p>
+<select id="f4">
+<option value="">— Seleziona —</option><option value="a">Riassemblare tutti i segmenti di una conversazione TCP in un unico flusso leggibile</option><option value="b">Seguire un pacchetto mentre attraversa la rete</option><option value="c">Aprire una nuova cattura sullo stesso host</option><option value="d">Cifrare la conversazione con TLS</option>
+</select>
+<br><button class="btn" onclick="chkSel('f4','a','Corretto! TCP frammenta i dati applicativi in segmenti, che Wireshark mostra come pacchetti separati. Follow TCP Stream li riunisce nell\'ordine corretto, mostrando il dialogo applicativo completo (client in rosso, server in blu). È lo strumento principe per leggere HTTP in chiaro, SMTP, FTP, ecc.','No. Non segue il percorso fisico (Wireshark vede solo un punto della rete): ricompone i segmenti in un flusso applicativo leggibile.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex4','f4')">Reset</button>
+<div class="feedback" id="fb4"></div>
+</div>
+</div>
+
+<div class="section-title">B · Sintassi dei filtri di visualizzazione</div>
+
+<!-- ═══ EX 5 — Filtro IP specifico ═══ -->
+<div class="exercise" id="ex5">
+<div class="ex-header"><span class="ex-title">5 — Filtro per un IP specifico</span><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>Scrivi il <strong>display filter</strong> che mostra solo i pacchetti da o verso l'indirizzo <code>192.168.1.50</code> (sia come sorgente che come destinazione):</p>
+<input type="text" id="f5" placeholder="Es: protocollo.campo == valore">
+<br><button class="btn" onclick="chk('f5',['ip.addr == 192.168.1.50','ip.addr==192.168.1.50','ip.addr eq 192.168.1.50'],'Corretto! <code>ip.addr == 192.168.1.50</code> matcha sia <code>ip.src</code> che <code>ip.dst</code>. Se volessi solo il traffico <em>in uscita</em> da quell\'host, useresti <code>ip.src == 192.168.1.50</code>. Nota il doppio uguale: in Wireshark è l\'operatore di uguaglianza.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex5','f5')">Reset</button>
+<button class="btn hint" onclick="toggle('h5')">💡 Suggerimento</button>
+<div class="hint-box" id="h5">Il campo si chiama <code>ip.addr</code> e matcha sia sorgente sia destinazione. L'operatore di uguaglianza è il doppio uguale.</div>
+<div class="feedback" id="fb5"></div>
+</div>
+</div>
+
+<!-- ═══ EX 6 — Filtro combinato ═══ -->
+<div class="exercise" id="ex6">
+<div class="ex-header"><span class="ex-title">6 — Operatori logici nei filtri</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Vuoi vedere solo il traffico <strong>HTTP</strong> che proviene dall'IP <code>10.0.0.5</code>. Quale filtro è corretto?</p>
+<select id="f6">
+<option value="">— Seleziona —</option><option value="b">http AND from 10.0.0.5</option><option value="c">http + ip.src = 10.0.0.5</option><option value="d">filter(http, 10.0.0.5)</option><option value="a">http && ip.src == 10.0.0.5</option>
+</select>
+<br><button class="btn" onclick="chkSel('f6','a','Corretto! Wireshark usa gli operatori in stile C: <code>&&</code> (AND), <code>||</code> (OR), <code>!</code> (NOT). Si possono anche scrivere a parole: <code>and</code>, <code>or</code>, <code>not</code>. Quindi <code>http and ip.src == 10.0.0.5</code> è equivalente.','No. La sintassi è in stile C: <code>&&</code> per l\'AND logico. Le altre opzioni non sono linguaggio Wireshark.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex6','f6')">Reset</button>
+<div class="feedback" id="fb6"></div>
+</div>
+</div>
+
+<!-- ═══ EX 7 — HTTP POST ═══ -->
+<div class="exercise" id="ex7">
+<div class="ex-header"><span class="ex-title">7 — Isolare tentativi di login HTTP</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>In un pcap cerchi credenziali inviate via form HTTP in chiaro. I form di login usano il metodo <strong>POST</strong>. Quale display filter isola solo le richieste POST?</p>
+<input type="text" id="f7" placeholder='Es: protocollo.campo == "valore"'>
+<br><button class="btn" onclick="chk('f7',['http.request.method == \x22post\x22','http.request.method==\x22post\x22','http.request.method eq \x22post\x22','http.request.method == post','http.request.method==post'],'Corretto! <code>http.request.method == &quot;POST&quot;</code> (virgolette necessarie perché è una stringa). Combinando con Follow HTTP Stream vedi il body della richiesta, dove spesso compaiono <code>username=...&amp;password=...</code> in chiaro. È la dimostrazione didattica del perché HTTPS è essenziale.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex7','f7')">Reset</button>
+<button class="btn hint" onclick="toggle('h7')">💡 Suggerimento</button>
+<div class="hint-box" id="h7">Il campo è <code>http.request.method</code> e il valore "POST" è una stringa, quindi va tra virgolette doppie.</div>
+<div class="feedback" id="fb7"></div>
+</div>
+</div>
+
+<!-- ═══ EX 8 — Ritrasmissioni ═══ -->
+<div class="exercise" id="ex8">
+<div class="ex-header"><span class="ex-title">8 — Diagnosi problemi di rete</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Un utente lamenta una rete "lenta a tratti". Vuoi verificare se ci sono segmenti TCP ritrasmessi (sintomo di packet loss). Quale filtro applichi?</p>
+<select id="f8">
+<option value="">— Seleziona —</option><option value="d">tcp.error</option><option value="a">tcp.analysis.retransmission</option><option value="b">tcp.flags.reset == 1</option><option value="c">tcp.slow == true</option>
+</select>
+<br><button class="btn" onclick="chkSel('f8','a','Corretto! <code>tcp.analysis.retransmission</code> è uno dei &quot;flag diagnostici&quot; che Wireshark calcola automaticamente analizzando numeri di sequenza e ACK. Altri utili: <code>tcp.analysis.duplicate_ack</code>, <code>tcp.analysis.out_of_order</code>, <code>tcp.analysis.zero_window</code>. Non sono campi veri del protocollo TCP, sono annotazioni aggiunte da Wireshark.','No. Reset (<code>tcp.flags.reset</code>) indica connessioni chiuse bruscamente, non ritrasmissioni. Le altre sigle non esistono.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex8','f8')">Reset</button>
+<div class="feedback" id="fb8"></div>
+</div>
+</div>
+
+<!-- ═══ EX 9 — TLS Client Hello e SNI ═══ -->
+<div class="exercise" id="ex9">
+<div class="ex-header"><span class="ex-title">9 — TLS Client Hello e SNI</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Anche se il traffico HTTPS è cifrato, Wireshark mostra ancora alcuni campi in chiaro nel <strong>Client Hello</strong>. Il più utile per il SOC è il <strong>SNI</strong> (Server Name Indication), perché:</p>
+<select id="f9">
+<option value="">— Seleziona —</option><option value="a">Rivela il nome host che il client sta contattando (es. login.banca.it), anche senza decriptare</option><option value="c">Mostra la versione del browser in chiaro</option><option value="d">È il certificato del server</option><option value="b">Contiene la password dell'utente in forma hashata</option>
+</select>
+<br><button class="btn" onclick="chkSel('f9','a','Corretto! L\'SNI viaggia nel Client Hello in chiaro (TLS 1.2 e, di default, ancora TLS 1.3 — serve ECH per cifrarlo). Il SOC lo usa per filtrare richieste HTTPS verso domini malevoli anche senza fare TLS inspection. Filtro Wireshark: <code>tls.handshake.extensions_server_name</code>. È anche il motivo per cui <em>dove</em> ti colleghi è meno privato di quanto pensi.','No. Il Client Hello è la prima metà dell\'handshake: contiene versioni supportate, cipher suite, e l\'SNI — il nome del server a cui il client vuole parlare. Password e dati utente arrivano molto dopo, cifrati.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex9','f9')">Reset</button>
+<div class="feedback" id="fb9"></div>
+</div>
+</div>
+
+<div class="section-title">C · Lettura di pacchetti (scenario testuali)</div>
+
+<!-- ═══ EX 10 — Handshake da snippet ═══ -->
+<div class="exercise" id="ex10">
+<div class="ex-header"><span class="ex-title">10 — Riconoscere un handshake</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Guarda questo estratto della Packet List di Wireshark (colonne: No · Source → Dest · Protocol · Info):</p>
+<pre>12  10.0.0.5 → 93.184.216.34  TCP  55312 → 443 [<span class="hl">SYN</span>]      Seq=0
+13  93.184.216.34 → 10.0.0.5  TCP  443 → 55312 [<span class="hl">SYN,ACK</span>]  Seq=0 Ack=1
+14  10.0.0.5 → 93.184.216.34  TCP  55312 → 443 [<span class="hl">ACK</span>]      Seq=1 Ack=1
+15  10.0.0.5 → 93.184.216.34  TLS  Client Hello</pre>
+<p>Cosa sta succedendo nei pacchetti 12-14?</p>
+<select id="f10">
+<option value="">— Seleziona —</option><option value="b">Un tentativo di attacco DoS</option><option value="c">Un trasferimento di dati applicativi</option><option value="a">Il three-way handshake TCP di una connessione HTTPS verso la porta 443</option><option value="d">La chiusura di una connessione</option>
+</select>
+<br><button class="btn" onclick="chkSel('f10','a','Corretto! Pattern classico: SYN → SYN,ACK → ACK sulla porta destinazione 443 (HTTPS). Subito dopo (pacchetto 15) parte il Client Hello TLS, che è la prima fase dell\'handshake crittografico. I numeri di sequenza Seq=0/Ack=1 confermano: è un handshake appena iniziato.','No. I tre flag SYN → SYN,ACK → ACK in sequenza sono la firma inequivocabile del three-way handshake TCP. La porta 443 e il Client Hello successivo indicano HTTPS.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex10','f10')">Reset</button>
+<div class="feedback" id="fb10"></div>
+</div>
+</div>
+
+<!-- ═══ EX 11 — HTTP Basic Auth ═══ -->
+<div class="exercise" id="ex11">
+<div class="ex-header"><span class="ex-title">11 — Basic Auth intercettato</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Facendo Follow HTTP Stream su una richiesta, vedi questo header:</p>
+<pre>GET /admin HTTP/1.1
+Host: intranet.example.com
+<span class="hl">Authorization: Basic YWRtaW46cGFzc3dvcmQxMjM=</span>
+User-Agent: Mozilla/5.0</pre>
+<p>Quale delle seguenti affermazioni è <strong>corretta</strong>?</p>
+<select id="f11">
+<option value="">— Seleziona —</option><option value="c">È un token JWT firmato, non recuperabile</option><option value="b">È un hash bcrypt della password, sicuro anche in chiaro</option><option value="d">È la chiave pubblica del server</option><option value="a">La stringa dopo "Basic" è user:password in Base64, banalmente decodificabile: non è cifratura</option>
+</select>
+<br><button class="btn" onclick="chkSel('f11','a','Corretto! HTTP Basic Auth codifica <code>user:password</code> in Base64, che è una codifica — non cifratura. <code>YWRtaW46cGFzc3dvcmQxMjM=</code> decodificato è <code>admin:password123</code>. Base64 è reversibile con un comando (<code>echo ... | base64 -d</code>) o online. Questo è il motivo per cui Basic Auth è accettabile <em>solo</em> sopra HTTPS: su HTTP in chiaro è come mandare la password in cartolina.','No. Base64 non è un algoritmo crittografico: è una codifica reversibile usata per trasportare byte in ASCII. Non è un hash (non perde informazione) e non è firmata.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex11','f11')">Reset</button>
+<button class="btn hint" onclick="toggle('h11')">💡 Suggerimento</button>
+<div class="hint-box" id="h11">Base64 è una codifica 1:1, non una cifratura. Qualsiasi decoder Base64 può recuperare il testo originale istantaneamente.</div>
+<div class="feedback" id="fb11"></div>
+</div>
+</div>
+
+<!-- ═══ EX 12 — DNS tunneling ═══ -->
+<div class="exercise" id="ex12">
+<div class="ex-header"><span class="ex-title">12 — Query DNS sospette</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Filtrando <code>dns</code> nel pcap vedi molte query come queste verso lo stesso dominio authoritative:</p>
+<pre>dns  Standard query A <span class="hl">a3f9kd82jxm4p0q1.data.evil-c2.com</span>
+dns  Standard query A <span class="hl">b7x2lq94nvz1m8r5.data.evil-c2.com</span>
+dns  Standard query A <span class="hl">c0p8ej71yhg3k6s2.data.evil-c2.com</span></pre>
+<p>Qual è l'ipotesi più probabile?</p>
+<select id="f12">
+<option value="">— Seleziona —</option><option value="a">DNS tunneling: i sottodomini random codificano dati esfiltrati verso il C2</option><option value="d">Richieste al root DNS</option><option value="c">Normali query per un CDN</option><option value="b">Un bug del resolver locale</option>
+</select>
+<br><button class="btn" onclick="chkSel('f12','a','Corretto! La firma del DNS tunneling è proprio questa: tanti sottodomini con label alfanumeriche pseudo-random (i dati codificati, spesso Base32/Base64) tutti verso lo stesso dominio authoritative controllato dall\'attaccante. Il DNS attraversa quasi sempre i firewall perché è traffico &quot;normale&quot;, e permette sia esfiltrazione che C2. Contromisure: DNS monitoring, blocking di domini appena registrati, anomaly detection sulla lunghezza/entropia dei nomi.','No. Nessun CDN usa label random di 16 caratteri, i bug di resolver non generano pattern regolari e le query ai root sarebbero per TLD (.com, .it), non per sottodomini specifici.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex12','f12')">Reset</button>
+<div class="feedback" id="fb12"></div>
+</div>
+</div>
+
+<div class="section-title">D · Detection e funzioni statistiche</div>
+
+<!-- ═══ EX 13 — Conversations ═══ -->
+<div class="exercise" id="ex13">
+<div class="ex-header"><span class="ex-title">13 — Statistics → Conversations</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>La funzione <strong>Statistics → Conversations</strong> di Wireshark mostra:</p>
+<select id="f13">
+<option value="">— Seleziona —</option><option value="d">I commenti inseriti sui pacchetti</option><option value="c">Le notifiche di rete tra utenti</option><option value="b">Il contenuto testuale di ogni chat TCP</option><option value="a">Una tabella di tutte le coppie (src, dst) con pacchetti e byte scambiati, ordinabili per volume</option>
+</select>
+<br><button class="btn" onclick="chkSel('f13','a','Corretto! Conversations elenca ogni coppia di endpoint che ha scambiato traffico (a livello Ethernet, IP, TCP, UDP), con pacchetti e byte in ciascuna direzione. È perfetto per il &quot;top talker analysis&quot;: ordina per Bytes e trovi subito chi ha inviato più dati — ottimo per scoprire un host compromesso che sta esfiltrando. Endpoints invece mostra i singoli host, non le coppie.','No. Conversations è una vista statistica (tabella di coppie), non testuale. Non ha relazione con contenuti o commenti.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex13','f13')">Reset</button>
+<div class="feedback" id="fb13"></div>
+</div>
+</div>
+
+<!-- ═══ EX 14 — Beaconing C2 ═══ -->
+<div class="exercise" id="ex14">
+<div class="ex-header"><span class="ex-title">14 — Pattern di beaconing</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Nell'I/O Graph di Wireshark noti che un host interno apre una connessione HTTPS verso lo stesso IP esterno <strong>ogni 60 secondi esatti</strong>, con pacchetti molto piccoli. Cosa è più probabile?</p>
+<select id="f14">
+<option value="">— Seleziona —</option><option value="a">Beaconing di un malware verso il Command & Control</option><option value="c">Traffico NTP di sincronizzazione orologio</option><option value="b">Un utente che fa refresh di una pagina web</option><option value="d">Un backup automatico</option>
+</select>
+<br><button class="btn" onclick="chkSel('f14','a','Corretto! Tre indizi concordano: (1) intervallo <em>regolare</em> — il traffico umano è irregolare, (2) pacchetti <em>piccoli</em> — sono check-in &quot;sono vivo, hai comandi per me?&quot; non trasferimento dati, (3) <em>stesso IP esterno</em> — il C2. Questo è il pattern di beaconing, una delle tecniche di detection più affidabili. NTP usa UDP porta 123 (non HTTPS), i backup sono irregolari e grossi, il refresh utente è imprevedibile.','No. L\'indizio chiave è la <em>regolarità</em>: attività umana o servizi generici non producono intervalli esatti al secondo. NTP non usa HTTPS.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex14','f14')">Reset</button>
+<div class="feedback" id="fb14"></div>
+</div>
+</div>
+
+<!-- ═══ EX 15 — Expert Info ═══ -->
+<div class="exercise" id="ex15">
+<div class="ex-header"><span class="ex-title">15 — Expert Info</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>In Wireshark, dove trovi una lista automatica di anomalie rilevate (ritrasmissioni, connessioni resettate, checksum errati) raggruppate per severità (Error, Warning, Note, Chat)?</p>
+<select id="f15">
+<option value="">— Seleziona —</option><option value="b">File → Export</option><option value="c">View → Time Display Format</option><option value="d">Edit → Preferences → Security</option><option value="a">Analyze → Expert Information</option>
+</select>
+<br><button class="btn" onclick="chkSel('f15','a','Corretto! Expert Information è una finestra che raccoglie automaticamente tutti i &quot;campanelli d\'allarme&quot; calcolati da Wireshark durante l\'analisi, classificati per gravità. È un ottimo punto di partenza per un triage rapido di un pcap sconosciuto: invece di scorrere 50.000 pacchetti, parti dagli Error e dai Warning e vedi subito se c\'è qualcosa di strano. In basso a sinistra c\'è anche un pallino colorato che riassume il livello più alto rilevato.','No. Expert Information sta sotto il menu <strong>Analyze</strong>. Export è per salvare dati, Time Display è il formato del timestamp, Preferences è la configurazione generale.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex15','f15')">Reset</button>
+<div class="feedback" id="fb15"></div>
+</div>
+</div>
+
+<footer>
+  <p>Corso Cybersecurity Leonardo · Giorno 2 — 10 aprile 2026</p>
+  <p style="margin-top:6px;color:#94A3B8">Modulo 1: Reti, Sistemi Operativi e Hardening — Esercizi teorici su Wireshark (senza tool installato)</p>
+</footer>
+
+</div>
+
+<script>
+const state = {done:new Set(),correct:new Set()};
+
+function updateStats(){
+  document.getElementById('s-done').textContent = state.done.size;
+  document.getElementById('s-correct').textContent = state.correct.size;
+  const pct = state.done.size ? Math.round(state.correct.size/state.done.size*100) : 0;
+  document.getElementById('s-pct').textContent = pct + '%';
+}
+
+function norm(s){return s.trim().toLowerCase().replace(/\s+/g,' ');}
+
+function chk(id, validAnswers, okMsg){
+  const el = document.getElementById(id);
+  const fb = document.getElementById('fb'+id.slice(1));
+  const exId = 'ex'+id.slice(1);
+  const val = norm(el.value);
+  if(!val){showFb(fb,false,'⚠️ Inserisci una risposta prima di verificare.');return;}
+  const ok = validAnswers.some(v => norm(v) === val);
+  state.done.add(exId);
+  if(ok){state.correct.add(exId);document.getElementById(exId).classList.add('completed');showFb(fb,true,'✓ '+okMsg);}
+  else{showFb(fb,false,'✗ Non corretto. Una risposta accettata è: <strong>'+validAnswers[0]+'</strong>');}
+  updateStats();
+}
+
+function chkSel(id, correctVal, okMsg, koMsg){
+  const el = document.getElementById(id);
+  const fb = document.getElementById('fb'+id.slice(1));
+  const exId = 'ex'+id.slice(1);
+  if(!el.value){showFb(fb,false,'⚠️ Seleziona un\'opzione.');return;}
+  const ok = el.value === correctVal;
+  state.done.add(exId);
+  if(ok){state.correct.add(exId);document.getElementById(exId).classList.add('completed');showFb(fb,true,'✓ '+okMsg);}
+  else{showFb(fb,false,'✗ '+koMsg);}
+  updateStats();
+}
+
+function showFb(fb, ok, msg){
+  fb.className = 'feedback show ' + (ok?'ok':'ko');
+  fb.innerHTML = msg;
+}
+
+function reset1(exId, inputId){
+  const ex = document.getElementById(exId);
+  const inp = document.getElementById(inputId);
+  const fb = document.getElementById('fb'+inputId.slice(1));
+  if(inp) inp.value = '';
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+  ex.classList.remove('completed');
+  state.done.delete(exId);
+  state.correct.delete(exId);
+  updateStats();
+}
+
+function toggle(id){
+  const el = document.getElementById(id);
+  el.classList.toggle('show');
+}
+</script>
+</body>
+</html>

@@ -328,16 +328,16 @@
     <script>
         const esercizi = {
             A: [
-                { q: "Routing statico: l'admin configura manualmente le rotte. Vero o falso?", a: "vero", tipo: "select", opts: ["vero", "falso"] },
-                { q: "OSPF è usato prevalentemente dove?", a: "interno rete aziendale", tipo: "select", opts: ["internet globale", "interno rete aziendale", "fra provider", "nessuno di questi"] },
+                { q: "Routing statico: l'admin configura manualmente le rotte. Vero o falso?", a: "vero", tipo: "select", opts: ["falso", "vero"] },
+                { q: "OSPF è usato prevalentemente dove?", a: "interno rete aziendale", tipo: "select", opts: ["fra provider", "interno rete aziendale", "nessuno di questi", "internet globale"] },
                 { q: "BGP è usato per routing fra quali entità?", a: "autonomous systems", tipo: "text" },
-                { q: "Un router con routing statico può adattarsi se un link cade?", a: "no", tipo: "select", opts: ["sì", "no", "dipende"] },
+                { q: "Un router con routing statico può adattarsi se un link cade?", a: "no", tipo: "select", opts: ["dipende", "no", "sì"] },
                 { q: "Routing dinamico converge (calcola nuove rotte) in millisecondi. Vero o falso?", a: "vero", tipo: "select", opts: ["vero", "falso"] }
             ],
             B: [
                 { q: "DNS traduce domain name in quale tipo di indirizzo?", a: "ip", tipo: "text" },
                 { q: "Una query DNS parte dal PC verso quale server?", a: "dns server ricorsivo", tipo: "text" },
-                { q: "DNS spoofing è un attacco dove l'attaccante intercetta query e risponde falso. Vero o falso?", a: "vero", tipo: "select", opts: ["vero", "falso"] },
+                { q: "DNS spoofing è un attacco dove l'attaccante intercetta query e risponde falso. Vero o falso?", a: "vero", tipo: "select", opts: ["falso", "vero"] },
                 { q: "DNSSEC protegge DNS con crittografia. Quale tipo?", a: "digitale signature", tipo: "text" },
                 { q: "Se google.com viene spiegato male da DNS spoofing, l'utente finisce dove?", a: "sito clonato attaccante", tipo: "text" }
             ],
@@ -351,8 +351,8 @@
             D: [
                 { q: "In Wireshark, il TCP handshake ha 3 step. Quali flag vedete? (SYN, SYN-ACK, ACK)", a: "syn, syn-ack, ack", tipo: "text" },
                 { q: "Una DNS query in Wireshark è su quale protocollo di trasporto?", a: "udp", tipo: "text" },
-                { q: "Vedete un pacchetto HTTP leggibile in chiaro. È crittato?", a: "no", tipo: "select", opts: ["sì", "no"] },
-                { q: "Una richiesta ARP è broadcast? (sì/no)", a: "sì", tipo: "select", opts: ["sì", "no"] },
+                { q: "Vedete un pacchetto HTTP leggibile in chiaro. È crittato?", a: "no", tipo: "select", opts: ["no", "sì"] },
+                { q: "Una richiesta ARP è broadcast? (sì/no)", a: "sì", tipo: "select", opts: ["no", "sì"] },
                 { q: "In Wireshark, come si filtra per vedere solo DNS?", a: "dns", tipo: "text" }
             ]
         };

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TLS — 10 Esercizi Riepilogo e Verifica | Giorno 2</title>
+<style>
+:root{
+  --bg:#F8F9FA;--card:#fff;--border:#E2E8F0;--text:#1E293B;--muted:#64748B;
+  --accent:#0891B2;--accent-soft:#E0F2FE;--title:#0F4C75;
+  --success:#10B981;--success-bg:#ECFDF5;--success-bd:#A7F3D0;
+  --err:#DC2626;--err-bg:#FEE2E2;--err-bd:#FCA5A5;
+  --warn:#B45309;--warn-bg:#FEF3C7;--warn-bd:#FCD34D;
+  --easy:#059669;--medium:#D97706;--hard:#DC2626;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'Calibri',sans-serif;color:var(--text);line-height:1.55;padding:16px}
+.container{max-width:950px;margin:0 auto}
+header{background:var(--card);border:.5px solid var(--border);border-radius:12px;padding:28px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+header h1{color:var(--title);font-family:'Trebuchet MS',sans-serif;font-size:clamp(22px,5vw,30px);margin-bottom:6px}
+header p{color:var(--muted);font-size:14px}
+.stats-bar{display:flex;gap:20px;background:var(--card);border:.5px solid var(--border);border-radius:12px;padding:18px;margin-bottom:22px;flex-wrap:wrap;justify-content:space-around}
+.stat{text-align:center;min-width:80px}
+.stat .num{font-size:26px;font-weight:700;color:var(--accent);font-family:'Trebuchet MS',sans-serif}
+.stat .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.section-title{color:var(--title);font-family:'Trebuchet MS',sans-serif;font-size:18px;margin:24px 8px 12px;padding-bottom:6px;border-bottom:2px solid var(--accent)}
+.exercise{background:var(--card);border:.5px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:border-color .2s}
+.exercise.completed{border-left:4px solid var(--success)}
+.ex-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.ex-title{color:var(--title);font-weight:600;font-size:15px}
+.diff{font-size:11px;padding:3px 10px;border-radius:12px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.diff.easy{background:var(--easy)}
+.diff.medium{background:var(--medium)}
+.diff.hard{background:var(--hard)}
+.ex-body p{font-size:14px;margin-bottom:10px}
+.ex-body code{background:#F1F5F9;padding:2px 6px;border-radius:4px;font-family:'Consolas',monospace;font-size:12px;color:#0F172A}
+.ex-body pre{background:#0F172A;color:#E2E8F0;padding:12px 14px;border-radius:6px;font-size:12px;overflow-x:auto;margin:10px 0;font-family:'Consolas',monospace;line-height:1.55}
+.ex-body pre .hl{color:#7DD3FC;font-weight:bold}
+.ex-body pre .bad{color:#FCA5A5;font-weight:bold}
+.ex-body pre .ok{color:#86EFAC;font-weight:bold}
+input[type="text"],select{font-family:inherit;font-size:14px;padding:8px 12px;border:.5px solid var(--border);border-radius:6px;width:100%;max-width:460px;background:#fff}
+input[type="text"]:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.btn{font-family:inherit;font-size:13px;padding:8px 16px;border:.5px solid var(--accent);background:#fff;color:var(--accent);border-radius:6px;cursor:pointer;margin:8px 6px 0 0;transition:all .15s}
+.btn:hover{background:var(--accent-soft)}
+.btn.reset{border-color:#CBD5E1;color:var(--muted)}
+.btn.reset:hover{background:#F1F5F9}
+.btn.hint{border-color:var(--warn);color:var(--warn)}
+.btn.hint:hover{background:var(--warn-bg)}
+.feedback{margin-top:10px;padding:10px 14px;border-radius:6px;font-size:13px;display:none;border-left:3px solid;line-height:1.5}
+.feedback.show{display:block}
+.feedback.ok{background:var(--success-bg);color:#065F46;border-left-color:var(--success)}
+.feedback.ko{background:var(--err-bg);color:#991B1B;border-left-color:var(--err)}
+.hint-box{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn);padding:10px 14px;border-radius:6px;margin-top:8px;font-size:12px;display:none}
+.hint-box.show{display:block}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:24px;margin-top:20px;border-top:1px solid var(--border)}
+@media(max-width:600px){.exercise{padding:14px}.stats-bar{gap:10px}.ex-body pre{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>🔐 TLS — 10 Esercizi di Riepilogo e Verifica</h1>
+  <p>Giorno 2 · Corso Cybersecurity Leonardo · Modulo 1 — Reti, Sistemi Operativi e Hardening</p>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><div class="num" id="s-done">0</div><div class="label">Completati</div></div>
+  <div class="stat"><div class="num" id="s-correct">0</div><div class="label">Corretti</div></div>
+  <div class="stat"><div class="num" id="s-total">10</div><div class="label">Totali</div></div>
+  <div class="stat"><div class="num" id="s-pct">0%</div><div class="label">Precisione</div></div>
+</div>
+
+<div class="section-title">A · Handshake TLS 1.3 e chiavi di sessione</div>
+
+<!-- ═══ EX 1 — Due coppie di chiavi ═══ -->
+<div class="exercise" id="ex1">
+<div class="ex-header"><span class="ex-title">1 — Perché due coppie di chiavi direzionali</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>In TLS 1.3, per ogni fase (handshake e application) vengono derivate <strong>due chiavi</strong> — una per il verso client→server e una per il verso server→client — invece di una chiave unica condivisa. Qual è il motivo crittografico?</p>
+<select id="f1">
+<option value="">— Seleziona —</option><option value="d">Consentire il recupero della sessione in caso di crash</option><option value="c">Permettere a client e server di negoziare algoritmi diversi</option><option value="a">Evitare il riuso di (chiave, nonce) nei cifrari AEAD: con una chiave sola, i sequence number dei due versi potrebbero collidere e rompere il cifrario</option><option value="b">Raddoppiare la dimensione effettiva della chiave per maggiore sicurezza</option>
+</select>
+<br><button class="btn" onclick="chkSel('f1','a','Corretto! I cifrari AEAD (AES-GCM, ChaCha20-Poly1305) hanno una regola ferrea: mai riusare la coppia (chiave, nonce). Il nonce è derivato dal sequence number, che parte da 0 per ogni verso. Con una sola chiave condivisa, client e server manderebbero entrambi record con sequence 0, 1, 2... producendo le stesse coppie (chiave, nonce) su plaintext diversi — errore crittografico catastrofico. Con chiavi direzionali separate, i due versi vivono in universi crittografici indipendenti. È lo stesso motivo per cui SSH, IPSec e WireGuard usano tutti chiavi separate per direzione.','No. La sicurezza non dipende dal raddoppio della chiave, e la negoziazione algoritmi è un\'altra fase. Il motivo è strutturale dei cifrari AEAD: il nonce dipende dal sequence number, e due versi con la stessa chiave collidono.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex1','f1')">Reset</button>
+<div class="feedback" id="fb1"></div>
+</div>
+</div>
+
+<!-- ═══ EX 2 — Quando parte la cifratura ═══ -->
+<div class="exercise" id="ex2">
+<div class="ex-header"><span class="ex-title">2 — Quando inizia la cifratura nell'handshake</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>In TLS 1.3, il server invia il proprio certificato <strong>cifrato</strong>, non in chiaro. In quale momento dell'handshake il server ha già le chiavi per cifrarlo?</p>
+<select id="f2">
+<option value="">— Seleziona —</option><option value="a">Subito dopo aver mandato il ServerHello: ClientHello + ServerHello bastano per calcolare lo shared secret ECDHE e derivare le chiavi handshake</option><option value="b">Solo dopo che il client ha inviato il suo Finished</option><option value="c">Il certificato in TLS 1.3 è sempre in chiaro, come in TLS 1.2</option><option value="d">Dopo un secondo round-trip aggiuntivo con scambio di chiavi simmetriche</option>
+</select>
+<br><button class="btn" onclick="chkSel('f2','a','Corretto! È una delle innovazioni principali di TLS 1.3 rispetto a TLS 1.2. Appena ClientHello e ServerHello sono stati scambiati, entrambi i lati hanno i due key_share ECDHE e possono calcolare lo shared secret. Da lì derivano immediatamente le chiavi handshake e le usano per cifrare tutti i messaggi successivi: EncryptedExtensions, Certificate, CertificateVerify, Finished. In TLS 1.2 il certificato viaggiava in chiaro — chiunque sniffasse la rete vedeva con chi stavi parlando. TLS 1.3 ha chiuso questa leak di privacy, lasciando in chiaro solo l\'SNI nel ClientHello.','No. TLS 1.3 cifra il certificato, ed è uno dei miglioramenti principali rispetto a TLS 1.2. Il momento chiave è subito dopo ServerHello, perché a quel punto lo scambio ECDHE è completo e le chiavi handshake possono essere derivate.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex2','f2')">Reset</button>
+<div class="feedback" id="fb2"></div>
+</div>
+</div>
+
+<!-- ═══ EX 3 — Transcript hash ═══ -->
+<div class="exercise" id="ex3">
+<div class="ex-header"><span class="ex-title">3 — I 32 byte random nel ClientHello/ServerHello</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Il ClientHello e il ServerHello contengono ciascuno un campo <code>Random</code> di 32 byte casuali. In TLS 1.3 con ECDHE obbligatorio, a cosa servono principalmente questi random se l'unicità dello shared secret è già garantita dalle chiavi effimere Diffie-Hellman?</p>
+<select id="f3">
+<option value="">— Seleziona —</option><option value="d">Sono resti del vecchio TLS 1.0 e ignorati in TLS 1.3</option><option value="c">Servono per identificare univocamente la sessione nei log</option><option value="a">A legare crittograficamente (transcript binding) le chiavi derivate a ogni campo dei messaggi Hello, impedendo a un MITM di modificare l'handshake senza far fallire la verifica del Finished</option><option value="b">Sono l'unica fonte di entropia per derivare lo shared secret</option>
+</select>
+<br><button class="btn" onclick="chkSel('f3','a','Corretto! I random fanno parte dei messaggi Hello, che a loro volta entrano nel transcript hash — l\'hash di tutti i messaggi dell\'handshake concatenati. TLS 1.3 deriva tutte le chiavi via HKDF usando il transcript hash come input, quindi ogni bit dei messaggi (compresi i random) finisce nelle chiavi. Se un MITM modifica anche un solo bit dell\'handshake, il transcript hash cambia, le chiavi derivate divergono tra client e server, e il messaggio Finished (MAC sul transcript) non verifica → connessione rotta. I random sono un tassello del transcript binding, insieme ad altri meccanismi di difesa in profondità contro RNG deboli.','No. In TLS 1.3 lo shared secret viene da ECDHE, non dai random. Non sono identificatori di log (anche se Wireshark li usa per indicizzare le chiavi esportate). Non sono ignorati: entrano nel transcript hash e da lì nelle chiavi derivate.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex3','f3')">Reset</button>
+<button class="btn hint" onclick="toggle('h3')">💡 Suggerimento</button>
+<div class="hint-box" id="h3">Pensa a come TLS 1.3 protegge l\'integrità dell\'intero handshake: tutte le chiavi vengono derivate da HKDF usando l\'hash di <em>tutti</em> i messaggi scambiati fino a quel punto. I random sono byte di quei messaggi.</div>
+<div class="feedback" id="fb3"></div>
+</div>
+</div>
+
+<!-- ═══ EX 4 — Chiavi effimere ═══ -->
+<div class="exercise" id="ex4">
+<div class="ex-header"><span class="ex-title">4 — Il ciclo di vita delle chiavi ECDHE</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>In TLS 1.3, la <strong>parte privata</strong> delle chiavi ECDHE effimere del client e del server viene:</p>
+<select id="f4">
+<option value="">— Seleziona —</option><option value="a">Distrutta (wipata dalla memoria) subito dopo il calcolo dello shared secret — è ciò che rende possibile la Perfect Forward Secrecy</option><option value="d">Cifrata con la chiave privata a lungo termine del server</option><option value="c">Conservata per 24 ore per ottimizzare eventuali riconnessioni</option><option value="b">Salvata in un file per permettere la decifratura retroattiva del traffico in caso di audit</option>
+</select>
+<br><button class="btn" onclick="chkSel('f4','a','Corretto! Questa è letteralmente la definizione operativa di Perfect Forward Secrecy: le chiavi effimere vivono solo per la durata del calcolo dello shared secret, poi vengono azzerate in memoria. Il risultato è che se domani un attaccante ruba la chiave privata a lungo termine del server (quella del certificato), non può decifrare il traffico registrato in passato — perché gli mancano le chiavi effimere che erano vive solo per qualche secondo nella RAM di client e server e che ora non esistono più da nessuna parte. Senza PFS (TLS 1.2 con RSA key exchange), la stessa compromissione permetterebbe di decifrare anni di traffico retroattivo.','No. Le chiavi effimere non vengono mai salvate — altrimenti la parola &quot;effimere&quot; non avrebbe senso. La loro distruzione immediata è l\'ingrediente essenziale della Forward Secrecy.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex4','f4')">Reset</button>
+<div class="feedback" id="fb4"></div>
+</div>
+</div>
+
+<div class="section-title">B · Certificati X.509 e catena di fiducia</div>
+
+<!-- ═══ EX 5 — Il server non manda il root ═══ -->
+<div class="exercise" id="ex5">
+<div class="ex-header"><span class="ex-title">5 — Il server manda anche il certificato Root?</span><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>Durante l'handshake TLS, il server invia al client la propria catena di certificati. Il certificato della <strong>Root CA</strong> viene tipicamente incluso in questa catena?</p>
+<select id="f5">
+<option value="">— Seleziona —</option><option value="a">No: il Root è omesso perché il client deve comunque usare quello del proprio trust store locale, e mandarlo sprecherebbe banda senza aggiungere sicurezza</option><option value="c">Solo se il client non ha il Root nel trust store</option><option value="b">Sì, sempre: è il certificato più importante e deve essere verificato per primo</option><option value="d">Solo nelle connessioni mutual TLS</option>
+</select>
+<br><button class="btn" onclick="chkSel('f5','a','Corretto! Il server manda il proprio certificato + tutti gli intermediate, ma non il Root. Il Root è l\'ancora di fiducia e vive nel trust store del client (OS, browser, ~150 root CA pre-installate). Mandarlo sulla rete sarebbe inutile: il client userebbe comunque quello locale, perché è l\'unico di cui si fida a priori. C\'è anche un motivo di sicurezza: se il client si fidasse del Root ricevuto via rete, un attaccante potrebbe sostituirlo. La regola è: il server invia tutti i certificati della catena <em>tranne</em> il Root.','No. Il Root non viene mai inviato dal server nella pratica comune. È il client che lo cerca nel proprio trust store locale — se non lo trova, la connessione fallisce indipendentemente da quanto il server si sforzi di mandarlo.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex5','f5')">Reset</button>
+<div class="feedback" id="fb5"></div>
+</div>
+</div>
+
+<!-- ═══ EX 6 — Catena rotta, curl vs browser ═══ -->
+<div class="exercise" id="ex6">
+<div class="ex-header"><span class="ex-title">6 — "Funziona su Chrome, rotto su curl"</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Un amministratore pubblica un sito HTTPS. Su Chrome e Firefox funziona perfettamente, ma un client <code>curl</code> su un server di produzione fallisce con:</p>
+<pre>curl: (60) SSL certificate problem: <span class="bad">unable to get local issuer certificate</span></pre>
+<p>Qual è la causa più probabile?</p>
+<select id="f6">
+<option value="">— Seleziona —</option><option value="c">curl non supporta TLS 1.3</option><option value="b">Il certificato del server è scaduto</option><option value="d">Il firewall sta bloccando la porta 443 solo per curl</option><option value="a">Il server è configurato per inviare solo il certificato finale, non gli intermediate. I browser recuperano gli intermediate mancanti automaticamente via AIA, curl no.</option>
+</select>
+<br><button class="btn" onclick="chkSel('f6','a','Corretto! È un errore operativo classicissimo. L\'admin ha configurato nginx/Apache con solo il certificato server nel file PEM, dimenticando il bundle degli intermediate. I browser desktop sono tolleranti: usano l\'estensione AIA (Authority Information Access) dei certificati per recuperare al volo gli intermediate mancanti da un URL pubblico. curl, Java, wget, molte librerie embedded e client CI/CD non fanno AIA fetching e falliscono. Diagnostica: <code>openssl s_client -connect host:443 -showcerts</code> mostra esattamente cosa il server sta inviando. Fix: configurare <code>ssl_certificate</code> con il file <em>fullchain</em> (server + tutti gli intermediate concatenati).','No. Se il cert fosse scaduto fallirebbe anche su Chrome. curl supporta TLS 1.3. Il firewall non distingue curl dai browser. L\'errore &quot;unable to get local issuer certificate&quot; è letterale: manca il certificato dell\'issuer nella catena ricevuta.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex6','f6')">Reset</button>
+<button class="btn hint" onclick="toggle('h6')">💡 Suggerimento</button>
+<div class="hint-box" id="h6">L'errore dice letteralmente &quot;unable to get local issuer certificate&quot;: significa che curl, risalendo la catena, non trova il certificato dell'ente che ha firmato quello del server. Come può essere che un browser ci riesca?</div>
+<div class="feedback" id="fb6"></div>
+</div>
+</div>
+
+<!-- ═══ EX 7 — Multipli intermediate ═══ -->
+<div class="exercise" id="ex7">
+<div class="ex-header"><span class="ex-title">7 — Catene con più intermediate</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Una PKI enterprise di Leonardo è strutturata così: <code>Root CA offline</code> → <code>Policy CA</code> → <code>Issuing CA</code> → <code>certificato server</code>. Quattro livelli, due intermediate. Questa struttura è:</p>
+<select id="f7">
+<option value="">— Seleziona —</option><option value="c">Legittima ma sconsigliata perché rallenta la verifica</option><option value="b">Non conforme allo standard X.509, che prevede massimo un intermediate</option><option value="a">Legittima e comune nelle PKI enterprise, per isolare ulteriormente la Root offline dalle CA operative che firmano quotidianamente</option><option value="d">Possibile solo per certificati interni, non utilizzabile pubblicamente</option>
+</select>
+<br><button class="btn" onclick="chkSel('f7','a','Corretto! X.509 non fissa un numero massimo di livelli. Le PKI enterprise usano tipicamente 4 livelli proprio per la ragione descritta: la Root sta offline in HSM/cassaforte e firma solo la Policy CA (poche firme in tutta la sua vita); la Policy CA definisce le policy generali e firma le Issuing CA operative; le Issuing CA stanno online e firmano i certificati finali. Se un\'Issuing CA viene compromessa, si revoca solo quella senza toccare Policy o Root. Anche Let\'s Encrypt ha usato catene a 4 livelli durante la transizione del 2021 (cross-signing con DST Root per compatibilità Android). Il limite pratico è il campo pathLenConstraint che ogni CA può impostare per limitare la profondità sotto di sé.','No. X.509 non limita la profondità a uno. Le catene a 4-5 livelli sono legittime e usate sia nelle PKI enterprise sia in scenari pubblici come Let\'s Encrypt. Il rallentamento della verifica è trascurabile.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex7','f7')">Reset</button>
+<div class="feedback" id="fb7"></div>
+</div>
+</div>
+
+<!-- ═══ EX 8 — CertificateVerify ═══ -->
+<div class="exercise" id="ex8">
+<div class="ex-header"><span class="ex-title">8 — A cosa serve CertificateVerify</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>In TLS 1.3, dopo il messaggio <code>Certificate</code>, il server invia un messaggio <code>CertificateVerify</code> contenente una firma digitale sul transcript hash, fatta con la chiave privata associata al certificato. A cosa serve questo messaggio?</p>
+<select id="f8">
+<option value="">— Seleziona —</option><option value="a">A dimostrare che il server possiede davvero la chiave privata corrispondente al certificato pubblico: senza CertificateVerify, un attaccante potrebbe riutilizzare un certificato catturato senza possedere la chiave</option><option value="c">A revocare certificati compromessi</option><option value="d">A negoziare la versione di TLS da usare</option><option value="b">A cifrare il certificato del server</option>
+</select>
+<br><button class="btn" onclick="chkSel('f8','a','Corretto! È un passaggio cruciale e spesso trascurato. Il Certificate da solo non dimostra nulla: chiunque può esibire un certificato pubblico (è pubblico, per definizione). La <em>prova di possesso</em> della chiave privata avviene con CertificateVerify: il server firma il transcript hash dell\'handshake fino a quel punto usando la propria chiave privata. Il client verifica la firma usando la chiave pubblica contenuta nel certificato. Se la firma è valida, significa che il server possiede davvero la chiave privata corrispondente — e il transcript hash lega la firma a <em>quella specifica sessione</em>, impedendo replay attack. Senza CertificateVerify, un MITM potrebbe presentare il certificato di google.com (pubblico) anche senza averne la chiave privata.','No. Il certificato è già cifrato dalle handshake traffic keys, non serve CertificateVerify per quello. Le revoche si fanno via CRL/OCSP, e la versione TLS si negozia nei Hello. CertificateVerify ha un ruolo specifico e fondamentale: la prova di possesso della chiave privata.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex8','f8')">Reset</button>
+<div class="feedback" id="fb8"></div>
+</div>
+</div>
+
+<div class="section-title">C · Sicurezza operativa e meccanismi avanzati</div>
+
+<!-- ═══ EX 9 — HSTS ═══ -->
+<div class="exercise" id="ex9">
+<div class="ex-header"><span class="ex-title">9 — HSTS</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Un sito web invia nell'header HTTP:</p>
+<pre><span class="hl">Strict-Transport-Security:</span> max-age=31536000; includeSubDomains</pre>
+<p>A cosa serve questo header (HSTS)?</p>
+<select id="f9">
+<option value="">— Seleziona —</option><option value="d">Previene il certificate pinning</option><option value="a">Istruisce il browser a connettersi sempre in HTTPS per un anno, anche se l'utente digita http:// o clicca un link HTTP — protegge da attacchi di SSL stripping</option><option value="c">Forza l'uso di TLS 1.3 rifiutando versioni inferiori</option><option value="b">Cifra i cookie di sessione del sito</option>
+</select>
+<br><button class="btn" onclick="chkSel('f9','a','Corretto! HSTS (HTTP Strict Transport Security, RFC 6797) chiude una vulnerabilità sottile: la prima connessione dell\'utente a un sito può essere HTTP (perché l\'utente digita &quot;esempio.it&quot; senza specificare lo schema), e un MITM in ascolto può intercettarla prima che arrivi il redirect a HTTPS — è l\'attacco SSL stripping di Moxie Marlinspike (2009). Con HSTS, dopo la prima connessione HTTPS riuscita, il browser memorizza per max-age secondi (qui 1 anno) l\'istruzione &quot;per questo dominio, usa solo HTTPS&quot;: anche se l\'utente digita http://, il browser fa internamente l\'upgrade prima di inviare qualsiasi pacchetto. includeSubDomains estende la protezione ai sottodomini. Per chiudere anche il buco della &quot;prima visita&quot;, esiste il preload list di Chromium — un elenco hardcoded di domini HSTS pre-caricati nel browser.','No. HSTS non cifra cookie (quello è il flag Secure), non forza TLS 1.3 (è un altro ambito), non previene il pinning. Il suo scopo è uno e uno solo: forzare HTTPS per il dominio, difesa contro SSL stripping.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex9','f9')">Reset</button>
+<div class="feedback" id="fb9"></div>
+</div>
+</div>
+
+<!-- ═══ EX 10 — mTLS ═══ -->
+<div class="exercise" id="ex10">
+<div class="ex-header"><span class="ex-title">10 — Mutual TLS (mTLS)</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>In un TLS handshake classico, il <strong>server</strong> presenta un certificato e il client lo verifica. In <strong>mutual TLS</strong> (mTLS), cosa cambia?</p>
+<select id="f10">
+<option value="">— Seleziona —</option><option value="b">Il server invia due certificati invece di uno per ridondanza</option><option value="c">La cifratura diventa doppia (applicata due volte)</option><option value="a">Anche il client presenta un certificato al server, che lo verifica contro la propria CA di fiducia — entrambe le parti si autenticano crittograficamente</option><option value="d">Il client e il server si scambiano i ruoli a ogni record</option>
+</select>
+<br><button class="btn" onclick="chkSel('f10','a','Corretto! In TLS standard solo il server dimostra la propria identità (il client usa altri meccanismi: password, token, SSO). In mTLS il server, nel messaggio CertificateRequest dopo il proprio Certificate, chiede al client di autenticarsi con un certificato X.509. Il client risponde con un proprio Certificate + CertificateVerify (la stessa prova di possesso della chiave privata vista nell\'esercizio 8, ma stavolta fatta dal client). mTLS è lo standard de facto in scenari machine-to-machine: microservizi in service mesh (Istio, Linkerd), API gateway B2B, accesso VPN enterprise con smartcard, comunicazione tra IoT e cloud. Il grande vantaggio è zero password: l\'identità è legata al possesso di una chiave privata, non a un segreto condiviso che può essere phishato.','No. mTLS non duplica certificati, cifrature o ruoli. È semplicemente un\'estensione naturale: entrambe le parti presentano un certificato e dimostrano di possedere la relativa chiave privata. Il meccanismo è simmetrico rispetto a quello usato dal server in TLS standard.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex10','f10')">Reset</button>
+<div class="feedback" id="fb10"></div>
+</div>
+</div>
+
+<footer>
+  <p>Corso Cybersecurity Leonardo · Giorno 2 — 10 aprile 2026</p>
+  <p style="margin-top:6px;color:#94A3B8">Modulo 1: Reti, Sistemi Operativi e Hardening — Esercizi di riepilogo e verifica su TLS 1.3</p>
+</footer>
+
+</div>
+
+<script>
+const state = {done:new Set(),correct:new Set()};
+
+function updateStats(){
+  document.getElementById('s-done').textContent = state.done.size;
+  document.getElementById('s-correct').textContent = state.correct.size;
+  const pct = state.done.size ? Math.round(state.correct.size/state.done.size*100) : 0;
+  document.getElementById('s-pct').textContent = pct + '%';
+}
+
+function norm(s){return s.trim().toLowerCase().replace(/\s+/g,' ');}
+
+function chk(id, validAnswers, okMsg){
+  const el = document.getElementById(id);
+  const fb = document.getElementById('fb'+id.slice(1));
+  const exId = 'ex'+id.slice(1);
+  const val = norm(el.value);
+  if(!val){showFb(fb,false,'⚠️ Inserisci una risposta prima di verificare.');return;}
+  const ok = validAnswers.some(v => norm(v) === val);
+  state.done.add(exId);
+  if(ok){state.correct.add(exId);document.getElementById(exId).classList.add('completed');showFb(fb,true,'✓ '+okMsg);}
+  else{showFb(fb,false,'✗ Non corretto. Una risposta accettata è: <strong>'+validAnswers[0]+'</strong>');}
+  updateStats();
+}
+
+function chkSel(id, correctVal, okMsg, koMsg){
+  const el = document.getElementById(id);
+  const fb = document.getElementById('fb'+id.slice(1));
+  const exId = 'ex'+id.slice(1);
+  if(!el.value){showFb(fb,false,'⚠️ Seleziona un\'opzione.');return;}
+  const ok = el.value === correctVal;
+  state.done.add(exId);
+  if(ok){state.correct.add(exId);document.getElementById(exId).classList.add('completed');showFb(fb,true,'✓ '+okMsg);}
+  else{showFb(fb,false,'✗ '+koMsg);}
+  updateStats();
+}
+
+function showFb(fb, ok, msg){
+  fb.className = 'feedback show ' + (ok?'ok':'ko');
+  fb.innerHTML = msg;
+}
+
+function reset1(exId, inputId){
+  const ex = document.getElementById(exId);
+  const inp = document.getElementById(inputId);
+  const fb = document.getElementById('fb'+inputId.slice(1));
+  if(inp) inp.value = '';
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+  ex.classList.remove('completed');
+  state.done.delete(exId);
+  state.correct.delete(exId);
+  updateStats();
+}
+
+function toggle(id){
+  const el = document.getElementById(id);
+  el.classList.toggle('show');
+}
+</script>
+</body>
+</html>

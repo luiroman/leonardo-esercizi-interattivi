@@ -56,7 +56,7 @@ footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;margin-t
 
 <div class="exercise" id="ex2"><div class="ex-header"><span class="ex-title">2 — Protocollo OSPF</span><span class="diff easy">Facile</span></div><div class="ex-body">
 <p>OSPF è classificato come protocollo:</p>
-<select id="f2"><option value="">— Seleziona —</option><option value="dv">Distance Vector</option><option value="ls">Link State</option><option value="pv">Path Vector</option></select>
+<select id="f2"><option value="">— Seleziona —</option><option value="ls">Link State</option><option value="dv">Distance Vector</option><option value="pv">Path Vector</option></select>
 <br><button class="btn" onclick="chkSel('f2','ls','Corretto! OSPF è Link State — ogni router costruisce una mappa completa della topologia.','No. OSPF non invia la tabella ai vicini (Distance Vector) né opera tra AS (Path Vector).')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex2',['f2'])">Reset</button><div id="fb2" class="feedback"></div>
 </div></div>
@@ -86,7 +86,7 @@ footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;margin-t
 
 <div class="exercise" id="ex6"><div class="ex-header"><span class="ex-title">6 — Floating Static Route</span><span class="diff hard">Difficile</span></div><div class="ex-body">
 <p>Una "floating static route" è una rotta statica con:</p>
-<select id="f6"><option value="">— Seleziona —</option><option value="low">Metrica più bassa della rotta dinamica</option><option value="high">Metrica più alta della rotta dinamica</option><option value="same">Stessa metrica della rotta dinamica</option></select>
+<select id="f6"><option value="">— Seleziona —</option><option value="low">Metrica più bassa della rotta dinamica</option><option value="same">Stessa metrica della rotta dinamica</option><option value="high">Metrica più alta della rotta dinamica</option></select>
 <br><button class="btn" onclick="chkSel('f6','high','Corretto! La floating static ha metrica più alta (meno preferita), quindi viene usata solo se la rotta dinamica scompare — è un backup.','No. La floating static deve essere meno preferita della rotta dinamica per funzionare come backup.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex6',['f6'])">Reset</button><div id="fb6" class="feedback"></div>
 </div></div>
@@ -96,7 +96,7 @@ footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;margin-t
 
 <div class="exercise" id="ex7"><div class="ex-header"><span class="ex-title">7 — ARP Spoofing</span><span class="diff medium">Medio</span></div><div class="ex-body">
 <p>In Wireshark, quale segnale indica un possibile ARP spoofing?</p>
-<select id="f7"><option value="">— Seleziona —</option><option value="correct">Stesso IP associato a MAC diversi in tempi ravvicinati</option><option value="w1">Molte DNS query verso lo stesso dominio</option><option value="w2">Pacchetti TCP con flag RST</option><option value="w3">Traffico HTTP su porta non standard</option></select>
+<select id="f7"><option value="">— Seleziona —</option><option value="w1">Molte DNS query verso lo stesso dominio</option><option value="w2">Pacchetti TCP con flag RST</option><option value="w3">Traffico HTTP su porta non standard</option><option value="correct">Stesso IP associato a MAC diversi in tempi ravvicinati</option></select>
 <br><button class="btn" onclick="chkSel('f7','correct','Corretto! Se lo stesso IP appare con MAC diversi, qualcuno sta inviando ARP Reply fasulli per dirottare il traffico.','No. L\'ARP spoofing manipola la corrispondenza IP-MAC, non il traffico DNS o TCP.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex7',['f7'])">Reset</button><div id="fb7" class="feedback"></div>
 </div></div>
@@ -110,7 +110,7 @@ footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;margin-t
 
 <div class="exercise" id="ex9"><div class="ex-header"><span class="ex-title">9 — Filtro Port Scan</span><span class="diff hard">Difficile</span></div><div class="ex-body">
 <p>Per identificare un possibile port scan in Wireshark, quale combinazione di filtri è più utile?</p>
-<select id="f9"><option value="">— Seleziona —</option><option value="correct">SYN senza ACK da un singolo IP verso molte porte diverse</option><option value="w1">Molto traffico DNS verso un singolo server</option><option value="w2">Pacchetti ICMP echo request ripetuti</option><option value="w3">Traffico HTTP con User-Agent sconosciuto</option></select>
+<select id="f9"><option value="">— Seleziona —</option><option value="w3">Traffico HTTP con User-Agent sconosciuto</option><option value="w1">Molto traffico DNS verso un singolo server</option><option value="correct">SYN senza ACK da un singolo IP verso molte porte diverse</option><option value="w2">Pacchetti ICMP echo request ripetuti</option></select>
 <br><button class="btn" onclick="chkSel('f9','correct','Corretto! Un port scan invia SYN a molte porte — il filtro tcp.flags.syn==1 && tcp.flags.ack==0 combinato con Statistics → Endpoints rivela il pattern.','No. Un port scan si riconosce dai SYN iniziali verso molte porte diverse da un singolo IP sorgente.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex9',['f9'])">Reset</button><div id="fb9" class="feedback"></div>
 </div></div>
@@ -134,14 +134,14 @@ footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;margin-t
 
 <div class="exercise" id="ex12"><div class="ex-header"><span class="ex-title">12 — DNS Tunneling</span><span class="diff hard">Difficile</span></div><div class="ex-body">
 <p>Il DNS tunneling nasconde dati dentro le query DNS. Dove vengono tipicamente codificati i dati nel pacchetto DNS?</p>
-<select id="f12"><option value="">— Seleziona —</option><option value="correct">Nel nome del subdomain della query (es: dGVzdA.evil.com)</option><option value="w1">Nel campo TTL della risposta</option><option value="w2">Nell'header UDP del pacchetto</option><option value="w3">Nel Transaction ID</option></select>
+<select id="f12"><option value="">— Seleziona —</option><option value="w2">Nell'header UDP del pacchetto</option><option value="w1">Nel campo TTL della risposta</option><option value="correct">Nel nome del subdomain della query (es: dGVzdA.evil.com)</option><option value="w3">Nel Transaction ID</option></select>
 <br><button class="btn" onclick="chkSel('f12','correct','Corretto! I dati vengono codificati (spesso in base64) come subdomain della query: il dato diventa parte del nome di dominio richiesto.','No. I dati vengono nascosti nel nome del subdomain — è l\'unico campo abbastanza grande e flessibile per trasportare dati.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex12',['f12'])">Reset</button><div id="fb12" class="feedback"></div>
 </div></div>
 
 <div class="exercise" id="ex13"><div class="ex-header"><span class="ex-title">13 — DNSSEC Limiti</span><span class="diff medium">Medio</span></div><div class="ex-body">
 <p>DNSSEC protegge l'autenticità delle risposte DNS, ma NON protegge:</p>
-<select id="f13"><option value="">— Seleziona —</option><option value="correct">La privacy delle query (il contenuto resta in chiaro)</option><option value="w1">L'integrità delle risposte</option><option value="w2">L'identità del server autorevole</option></select>
+<select id="f13"><option value="">— Seleziona —</option><option value="w1">L'integrità delle risposte</option><option value="correct">La privacy delle query (il contenuto resta in chiaro)</option><option value="w2">L'identità del server autorevole</option></select>
 <br><button class="btn" onclick="chkSel('f13','correct','Corretto! DNSSEC firma le risposte ma non le cifra — le query DNS restano leggibili. Per la privacy serve DoH o DoT.','No. DNSSEC protegge autenticità e integrità, ma ha un limite importante riguardo alla privacy.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex13',['f13'])">Reset</button><div id="fb13" class="feedback"></div>
 </div></div>
@@ -151,35 +151,35 @@ footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;margin-t
 
 <div class="exercise" id="ex14"><div class="ex-header"><span class="ex-title">14 — Forward Secrecy</span><span class="diff medium">Medio</span></div><div class="ex-body">
 <p>La Perfect Forward Secrecy (PFS) garantisce che:</p>
-<select id="f14"><option value="">— Seleziona —</option><option value="correct">Compromettere la chiave privata del server non permette di decifrare sessioni passate</option><option value="w1">Il certificato non può essere revocato</option><option value="w2">La connessione è immune a attacchi DDoS</option></select>
+<select id="f14"><option value="">— Seleziona —</option><option value="w2">La connessione è immune a attacchi DDoS</option><option value="w1">Il certificato non può essere revocato</option><option value="correct">Compromettere la chiave privata del server non permette di decifrare sessioni passate</option></select>
 <br><button class="btn" onclick="chkSel('f14','correct','Corretto! Con PFS, ogni sessione usa chiavi effimere (ECDHE) — compromettere la chiave privata del server non compromette le sessioni passate.','No. PFS riguarda la protezione delle sessioni passate in caso di compromissione della chiave del server.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex14',['f14'])">Reset</button><div id="fb14" class="feedback"></div>
 </div></div>
 
 <div class="exercise" id="ex15"><div class="ex-header"><span class="ex-title">15 — Catena di Fiducia</span><span class="diff easy">Facile</span></div><div class="ex-body">
 <p>Nella catena di fiducia dei certificati, quale CA è autofirmata e presente nel trust store del browser?</p>
-<select id="f15"><option value="">— Seleziona —</option><option value="root">Root CA</option><option value="inter">Intermediate CA</option><option value="server">Il certificato del server</option></select>
+<select id="f15"><option value="">— Seleziona —</option><option value="inter">Intermediate CA</option><option value="root">Root CA</option><option value="server">Il certificato del server</option></select>
 <br><button class="btn" onclick="chkSel('f15','root','Corretto! La Root CA è autofirmata e pre-installata nel trust store del SO/browser. Tutte le altre CA derivano la fiducia dalla Root.','No. Solo la Root CA è autofirmata e pre-installata — è la base della catena di fiducia.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex15',['f15'])">Reset</button><div id="fb15" class="feedback"></div>
 </div></div>
 
 <div class="exercise" id="ex16"><div class="ex-header"><span class="ex-title">16 — IPSec ESP vs AH</span><span class="diff medium">Medio</span></div><div class="ex-body">
 <p>Quale componente di IPSec fornisce sia cifratura che autenticazione?</p>
-<select id="f16"><option value="">— Seleziona —</option><option value="esp">ESP (Encapsulating Security Payload)</option><option value="ah">AH (Authentication Header)</option><option value="ike">IKE (Internet Key Exchange)</option></select>
+<select id="f16"><option value="">— Seleziona —</option><option value="esp">ESP (Encapsulating Security Payload)</option><option value="ike">IKE (Internet Key Exchange)</option><option value="ah">AH (Authentication Header)</option></select>
 <br><button class="btn" onclick="chkSel('f16','esp','Corretto! ESP fornisce cifratura + autenticazione + integrità. AH fornisce solo autenticazione (senza cifratura).','No. AH non cifra, e IKE negozia le chiavi ma non cifra i dati. Chi fornisce entrambi?')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex16',['f16'])">Reset</button><div id="fb16" class="feedback"></div>
 </div></div>
 
 <div class="exercise" id="ex17"><div class="ex-header"><span class="ex-title">17 — Split Tunnel vs Full Tunnel</span><span class="diff medium">Medio</span></div><div class="ex-body">
 <p>Dal punto di vista del SOC, quale configurazione VPN è preferibile per i dipendenti remoti?</p>
-<select id="f17"><option value="">— Seleziona —</option><option value="full">Full tunnel — tutto il traffico passa nella VPN</option><option value="split">Split tunnel — solo traffico aziendale nella VPN</option></select>
+<select id="f17"><option value="">— Seleziona —</option><option value="split">Split tunnel — solo traffico aziendale nella VPN</option><option value="full">Full tunnel — tutto il traffico passa nella VPN</option></select>
 <br><button class="btn" onclick="chkSel('f17','full','Corretto! Il full tunnel permette al SOC di monitorare tutto il traffico del dipendente, incluso quello Internet — più sicuro anche se più lento.','No. Il SOC vuole visibilità totale — quale configurazione permette di vedere tutto il traffico?')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex17',['f17'])">Reset</button><div id="fb17" class="feedback"></div>
 </div></div>
 
 <div class="exercise" id="ex18"><div class="ex-header"><span class="ex-title">18 — Scenario VPN Completo</span><span class="diff hard">Difficile</span></div><div class="ex-body">
 <p>Un'azienda deve collegare la sede di Roma al data center su Azure con un tunnel VPN always-on. Quale combinazione è corretta?</p>
-<select id="f18"><option value="">— Seleziona —</option><option value="correct">Site-to-site IPSec con IKEv2 e certificati X.509</option><option value="w1">Remote access SSL VPN con username/password</option><option value="w2">Site-to-site con SSL VPN su porta 443</option><option value="w3">IPSec in transport mode con pre-shared key</option></select>
+<select id="f18"><option value="">— Seleziona —</option><option value="correct">Site-to-site IPSec con IKEv2 e certificati X.509</option><option value="w3">IPSec in transport mode con pre-shared key</option><option value="w1">Remote access SSL VPN con username/password</option><option value="w2">Site-to-site con SSL VPN su porta 443</option></select>
 <br><button class="btn" onclick="chkSel('f18','correct','Corretto! Site-to-site IPSec è lo standard per collegare sedi/cloud. IKEv2 è il protocollo di negoziazione moderno, e i certificati X.509 sono più sicuri delle PSK.','No. Per un tunnel always-on sede-cloud, serve site-to-site (non remote access), IPSec (non SSL VPN per S2S), tunnel mode, con autenticazione forte.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex18',['f18'])">Reset</button><div id="fb18" class="feedback"></div>
 </div></div>

@@ -49,21 +49,21 @@ footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;margin-t
 
 <div class="exercise" id="ex1"><div class="ex-header"><span class="ex-title">1 — Stateless vs Stateful</span><span class="diff easy">Facile</span></div><div class="ex-body">
 <p>Un firewall <strong>stateful</strong> si differenzia da uno stateless perché:</p>
-<select id="f1"><option value="">— Seleziona —</option><option value="correct">Tiene traccia dello stato delle connessioni (connection tracking)</option><option value="w1">Ha più interfacce di rete</option><option value="w2">Opera al Layer 7 dell'OSI</option><option value="w3">È sempre basato su hardware</option></select>
+<select id="f1"><option value="">— Seleziona —</option><option value="w3">È sempre basato su hardware</option><option value="correct">Tiene traccia dello stato delle connessioni (connection tracking)</option><option value="w2">Opera al Layer 7 dell'OSI</option><option value="w1">Ha più interfacce di rete</option></select>
 <br><button class="btn" onclick="chkSel('f1','correct','Corretto! Il firewall stateful tiene traccia delle connessioni attive — sa che un pacchetto in arrivo è parte di una connessione già autorizzata.','No. La differenza chiave è il connection tracking — il firewall stateful sa quali connessioni sono attive.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex1',['f1'])">Reset</button><div id="fb1" class="feedback"></div>
 </div></div>
 
 <div class="exercise" id="ex2"><div class="ex-header"><span class="ex-title">2 — Regola Firewall Base</span><span class="diff easy">Facile</span></div><div class="ex-body">
 <p>Una regola firewall tipica contiene questi campi. Quale NON è un campo standard?</p>
-<select id="f2"><option value="">— Seleziona —</option><option value="correct">Nome del processo applicativo</option><option value="w1">IP sorgente e destinazione</option><option value="w2">Porta sorgente e destinazione</option><option value="w3">Azione (permit/deny)</option></select>
+<select id="f2"><option value="">— Seleziona —</option><option value="w3">Azione (permit/deny)</option><option value="w1">IP sorgente e destinazione</option><option value="correct">Nome del processo applicativo</option><option value="w2">Porta sorgente e destinazione</option></select>
 <br><button class="btn" onclick="chkSel('f2','correct','Corretto! Un firewall tradizionale (L3/L4) lavora con IP e porte — non conosce il nome del processo. I NGFW possono farlo, ma non è un campo standard.','No. IP sorgente/destinazione, porte e azione sono tutti campi standard di una regola firewall.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex2',['f2'])">Reset</button><div id="fb2" class="feedback"></div>
 </div></div>
 
 <div class="exercise" id="ex3"><div class="ex-header"><span class="ex-title">3 — Default Policy</span><span class="diff medium">Medio</span></div><div class="ex-body">
 <p>In un firewall enterprise, la best practice per la policy di default (ultima regola) è:</p>
-<select id="f3"><option value="">— Seleziona —</option><option value="correct">Deny All — blocca tutto ciò che non è esplicitamente autorizzato</option><option value="w1">Permit All — permetti tutto e blocca solo le minacce note</option><option value="w2">Nessuna policy di default — le regole specifiche sono sufficienti</option></select>
+<select id="f3"><option value="">— Seleziona —</option><option value="correct">Deny All — blocca tutto ciò che non è esplicitamente autorizzato</option><option value="w2">Nessuna policy di default — le regole specifiche sono sufficienti</option><option value="w1">Permit All — permetti tutto e blocca solo le minacce note</option></select>
 <br><button class="btn" onclick="chkSel('f3','correct','Corretto! Default Deny (deny all, permit by exception) è il principio fondamentale — autorizza solo il traffico necessario.','No. La best practice è Deny All (deny by default, permit by exception) — il principio del minimo privilegio applicato alla rete.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex3',['f3'])">Reset</button><div id="fb3" class="feedback"></div>
 </div></div>
@@ -86,14 +86,14 @@ footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;margin-t
 
 <div class="exercise" id="ex6"><div class="ex-header"><span class="ex-title">6 — NGFW</span><span class="diff medium">Medio</span></div><div class="ex-body">
 <p>Un Next-Generation Firewall (NGFW) aggiunge funzionalità rispetto a un firewall tradizionale. Quale tra queste è una funzionalità NGFW?</p>
-<select id="f6"><option value="">— Seleziona —</option><option value="correct">Application awareness — identifica le applicazioni indipendentemente dalla porta</option><option value="w1">Filtraggio per indirizzo IP sorgente</option><option value="w2">Blocco basato su porta TCP/UDP</option><option value="w3">Logging dei pacchetti bloccati</option></select>
+<select id="f6"><option value="">— Seleziona —</option><option value="w2">Blocco basato su porta TCP/UDP</option><option value="w3">Logging dei pacchetti bloccati</option><option value="correct">Application awareness — identifica le applicazioni indipendentemente dalla porta</option><option value="w1">Filtraggio per indirizzo IP sorgente</option></select>
 <br><button class="btn" onclick="chkSel('f6','correct','Corretto! I NGFW possono identificare le applicazioni (es: riconoscere YouTube anche se usa porta 443) e applicare policy specifiche per applicazione.','No. Il filtraggio per IP, porta e logging sono funzionalità di un firewall tradizionale. I NGFW aggiungono consapevolezza applicativa.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex6',['f6'])">Reset</button><div id="fb6" class="feedback"></div>
 </div></div>
 
 <div class="exercise" id="ex7"><div class="ex-header"><span class="ex-title">7 — Zone Firewall</span><span class="diff hard">Difficile</span></div><div class="ex-body">
 <p>Un'architettura firewall classica ha 3 zone. In quale zona si mettono i web server pubblici?</p>
-<select id="f7"><option value="">— Seleziona —</option><option value="correct">DMZ (DeMilitarized Zone)</option><option value="w1">LAN (rete interna)</option><option value="w2">WAN (rete esterna/Internet)</option></select>
+<select id="f7"><option value="">— Seleziona —</option><option value="w2">WAN (rete esterna/Internet)</option><option value="w1">LAN (rete interna)</option><option value="correct">DMZ (DeMilitarized Zone)</option></select>
 <br><button class="btn" onclick="chkSel('f7','correct','Corretto! La DMZ è la zona intermedia tra Internet e la LAN — i server pubblici vanno qui, protetti dal firewall su entrambi i lati.','No. I server pubblici NON vanno né in LAN (troppo esposti) né direttamente su Internet. Vanno in una zona intermedia.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex7',['f7'])">Reset</button><div id="fb7" class="feedback"></div>
 </div></div>
@@ -103,7 +103,7 @@ footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;margin-t
 
 <div class="exercise" id="ex8"><div class="ex-header"><span class="ex-title">8 — Perché il NAT</span><span class="diff easy">Facile</span></div><div class="ex-body">
 <p>Il motivo principale per cui il NAT è stato introdotto è:</p>
-<select id="f8"><option value="">— Seleziona —</option><option value="correct">L'esaurimento degli indirizzi IPv4 pubblici</option><option value="w1">Migliorare le performance di rete</option><option value="w2">Cifrare il traffico in transito</option></select>
+<select id="f8"><option value="">— Seleziona —</option><option value="w2">Cifrare il traffico in transito</option><option value="correct">L'esaurimento degli indirizzi IPv4 pubblici</option><option value="w1">Migliorare le performance di rete</option></select>
 <br><button class="btn" onclick="chkSel('f8','correct','Corretto! Con soli ~4,3 miliardi di indirizzi IPv4, il NAT permette a molti dispositivi interni di condividere pochi IP pubblici.','No. Il NAT nasce per risolvere la scarsità di indirizzi IPv4 — non ha a che fare con performance o cifratura.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex8',['f8'])">Reset</button><div id="fb8" class="feedback"></div>
 </div></div>
@@ -117,21 +117,21 @@ footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;margin-t
 
 <div class="exercise" id="ex10"><div class="ex-header"><span class="ex-title">10 — SNAT vs DNAT</span><span class="diff medium">Medio</span></div><div class="ex-body">
 <p>Quando un web server interno deve essere raggiungibile da Internet, quale tipo di NAT si usa?</p>
-<select id="f10"><option value="">— Seleziona —</option><option value="correct">DNAT (Destination NAT) — traduce l'IP pubblico nell'IP privato del server</option><option value="w1">SNAT (Source NAT) — traduce l'IP sorgente del server</option><option value="w2">PAT — condivide la porta 80 tra più server</option></select>
+<select id="f10"><option value="">— Seleziona —</option><option value="w2">PAT — condivide la porta 80 tra più server</option><option value="correct">DNAT (Destination NAT) — traduce l'IP pubblico nell'IP privato del server</option><option value="w1">SNAT (Source NAT) — traduce l'IP sorgente del server</option></select>
 <br><button class="btn" onclick="chkSel('f10','correct','Corretto! DNAT traduce l\'IP di destinazione: il traffico in arrivo sull\'IP pubblico viene inoltrato all\'IP privato del server (port forwarding).','No. Per rendere un server interno raggiungibile, serve tradurre la destinazione (IP pubblico → IP privato del server).')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex10',['f10'])">Reset</button><div id="fb10" class="feedback"></div>
 </div></div>
 
 <div class="exercise" id="ex11"><div class="ex-header"><span class="ex-title">11 — NAT e Sicurezza</span><span class="diff medium">Medio</span></div><div class="ex-body">
 <p>Il NAT fornisce un livello di sicurezza perché:</p>
-<select id="f11"><option value="">— Seleziona —</option><option value="correct">Nasconde gli indirizzi interni, impedendo connessioni dirette dall'esterno</option><option value="w1">Cifra il traffico in transito</option><option value="w2">Blocca il malware nei pacchetti</option></select>
+<select id="f11"><option value="">— Seleziona —</option><option value="w1">Cifra il traffico in transito</option><option value="correct">Nasconde gli indirizzi interni, impedendo connessioni dirette dall'esterno</option><option value="w2">Blocca il malware nei pacchetti</option></select>
 <br><button class="btn" onclick="chkSel('f11','correct','Corretto! Il NAT nasconde la struttura interna della rete — un attaccante esterno non può raggiungere direttamente un host interno (a meno di port forwarding esplicito).','No. Il NAT non cifra né ispeziona il traffico — il suo effetto di sicurezza è nascondere gli IP interni.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex11',['f11'])">Reset</button><div id="fb11" class="feedback"></div>
 </div></div>
 
 <div class="exercise" id="ex12"><div class="ex-header"><span class="ex-title">12 — Port Forwarding</span><span class="diff hard">Difficile</span></div><div class="ex-body">
 <p>Un firewall pfSense ha IP pubblico <code>203.0.113.10</code>. Vuoi che il traffico sulla porta 443 raggiunga il web server interno <code>10.0.1.50:443</code>. Che tipo di regola configuri?</p>
-<select id="f12"><option value="">— Seleziona —</option><option value="correct">Port forwarding (DNAT): 203.0.113.10:443 → 10.0.1.50:443</option><option value="w1">SNAT: 10.0.1.50:443 → 203.0.113.10:443</option><option value="w2">Outbound NAT per la porta 443</option></select>
+<select id="f12"><option value="">— Seleziona —</option><option value="w2">Outbound NAT per la porta 443</option><option value="correct">Port forwarding (DNAT): 203.0.113.10:443 → 10.0.1.50:443</option><option value="w1">SNAT: 10.0.1.50:443 → 203.0.113.10:443</option></select>
 <br><button class="btn" onclick="chkSel('f12','correct','Corretto! Il port forwarding è un caso specifico di DNAT — il firewall riscrive la destinazione dei pacchetti in arrivo sull\'IP pubblico verso l\'IP del server interno.','No. Devi ridirigere il traffico in arrivo (destinazione) dall\'IP pubblico verso il server interno — questo è port forwarding (DNAT).')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex12',['f12'])">Reset</button><div id="fb12" class="feedback"></div>
 </div></div>
@@ -141,7 +141,7 @@ footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;margin-t
 
 <div class="exercise" id="ex13"><div class="ex-header"><span class="ex-title">13 — WAF vs Firewall</span><span class="diff easy">Facile</span></div><div class="ex-body">
 <p>A quale livello OSI opera un WAF (Web Application Firewall)?</p>
-<select id="f13"><option value="">— Seleziona —</option><option value="correct">Layer 7 (Applicazione)</option><option value="w1">Layer 3 (Rete)</option><option value="w2">Layer 4 (Trasporto)</option></select>
+<select id="f13"><option value="">— Seleziona —</option><option value="w1">Layer 3 (Rete)</option><option value="w2">Layer 4 (Trasporto)</option><option value="correct">Layer 7 (Applicazione)</option></select>
 <br><button class="btn" onclick="chkSel('f13','correct','Corretto! Il WAF opera al Layer 7 — ispeziona il contenuto delle richieste HTTP/HTTPS (URL, header, body) per bloccare attacchi applicativi.','No. Un WAF non lavora con IP o porte — ispeziona il contenuto applicativo HTTP.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex13',['f13'])">Reset</button><div id="fb13" class="feedback"></div>
 </div></div>
@@ -150,21 +150,21 @@ footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;margin-t
 <p>Un attaccante invia questa richiesta HTTP:</p>
 <p><code>GET /login?user=admin' OR '1'='1&pass=x</code></p>
 <p>Che tipo di attacco è e quale strumento lo blocca?</p>
-<select id="f14"><option value="">— Seleziona —</option><option value="correct">SQL Injection — bloccato dal WAF</option><option value="w1">XSS — bloccato dal firewall L3</option><option value="w2">DDoS — bloccato dal bilanciatore</option><option value="w3">DNS Spoofing — bloccato da DNSSEC</option></select>
+<select id="f14"><option value="">— Seleziona —</option><option value="w2">DDoS — bloccato dal bilanciatore</option><option value="w3">DNS Spoofing — bloccato da DNSSEC</option><option value="w1">XSS — bloccato dal firewall L3</option><option value="correct">SQL Injection — bloccato dal WAF</option></select>
 <br><button class="btn" onclick="chkSel('f14','correct','Corretto! La stringa \\' OR \\'1\\'=\\'1 è una SQL Injection classica — il WAF riconosce il pattern e blocca la richiesta prima che raggiunga l\\'applicazione.','No. La stringa contiene codice SQL iniettato nel parametro — questo è un attacco applicativo (SQL Injection) che solo un WAF al Layer 7 può riconoscere.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex14',['f14'])">Reset</button><div id="fb14" class="feedback"></div>
 </div></div>
 
 <div class="exercise" id="ex15"><div class="ex-header"><span class="ex-title">15 — OWASP Top 10</span><span class="diff medium">Medio</span></div><div class="ex-body">
 <p>L'OWASP Top 10 è:</p>
-<select id="f15"><option value="">— Seleziona —</option><option value="correct">La lista delle 10 vulnerabilità web più critiche, aggiornata periodicamente da OWASP</option><option value="w1">I 10 migliori WAF sul mercato secondo OWASP</option><option value="w2">I 10 protocolli di rete più sicuri</option></select>
+<select id="f15"><option value="">— Seleziona —</option><option value="w2">I 10 protocolli di rete più sicuri</option><option value="correct">La lista delle 10 vulnerabilità web più critiche, aggiornata periodicamente da OWASP</option><option value="w1">I 10 migliori WAF sul mercato secondo OWASP</option></select>
 <br><button class="btn" onclick="chkSel('f15','correct','Corretto! L\\'OWASP Top 10 include: Injection, Broken Auth, Sensitive Data Exposure, XXE, Broken Access Control, Security Misconfiguration, XSS, e altri. Lo approfondiremo nel Modulo 4.','No. OWASP Top 10 è una lista di vulnerabilità — non una classifica di prodotti o protocolli.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex15',['f15'])">Reset</button><div id="fb15" class="feedback"></div>
 </div></div>
 
 <div class="exercise" id="ex16"><div class="ex-header"><span class="ex-title">16 — Posizionamento WAF</span><span class="diff hard">Difficile</span></div><div class="ex-body">
 <p>In un'architettura enterprise, dove si posiziona tipicamente il WAF?</p>
-<select id="f16"><option value="">— Seleziona —</option><option value="correct">Davanti ai web server, dopo il firewall perimetrale — in DMZ o come reverse proxy</option><option value="w1">Tra il router e il firewall perimetrale</option><option value="w2">Sugli endpoint degli utenti</option><option value="w3">Sul database server</option></select>
+<select id="f16"><option value="">— Seleziona —</option><option value="correct">Davanti ai web server, dopo il firewall perimetrale — in DMZ o come reverse proxy</option><option value="w2">Sugli endpoint degli utenti</option><option value="w3">Sul database server</option><option value="w1">Tra il router e il firewall perimetrale</option></select>
 <br><button class="btn" onclick="chkSel('f16','correct','Corretto! Il WAF si posiziona davanti ai web server come reverse proxy o inline in DMZ — intercetta le richieste HTTP/HTTPS prima che raggiungano l\\'applicazione.','No. Il WAF protegge le applicazioni web — deve essere posizionato davanti ai web server, non sugli endpoint o sui database.')">Verifica</button>
 <button class="btn reset" onclick="resetEx('ex16',['f16'])">Reset</button><div id="fb16" class="feedback"></div>
 </div></div>

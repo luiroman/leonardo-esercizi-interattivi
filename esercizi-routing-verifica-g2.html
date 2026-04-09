@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Routing — 15 Esercizi Riepilogo e Verifica | Giorno 2</title>
+<style>
+:root{
+  --bg:#F8F9FA;--card:#fff;--border:#E2E8F0;--text:#1E293B;--muted:#64748B;
+  --accent:#0891B2;--accent-soft:#E0F2FE;--title:#0F4C75;
+  --success:#10B981;--success-bg:#ECFDF5;--success-bd:#A7F3D0;
+  --err:#DC2626;--err-bg:#FEE2E2;--err-bd:#FCA5A5;
+  --warn:#B45309;--warn-bg:#FEF3C7;--warn-bd:#FCD34D;
+  --easy:#059669;--medium:#D97706;--hard:#DC2626;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'Calibri',sans-serif;color:var(--text);line-height:1.55;padding:16px}
+.container{max-width:950px;margin:0 auto}
+header{background:var(--card);border:.5px solid var(--border);border-radius:12px;padding:28px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+header h1{color:var(--title);font-family:'Trebuchet MS',sans-serif;font-size:clamp(22px,5vw,30px);margin-bottom:6px}
+header p{color:var(--muted);font-size:14px}
+.stats-bar{display:flex;gap:20px;background:var(--card);border:.5px solid var(--border);border-radius:12px;padding:18px;margin-bottom:22px;flex-wrap:wrap;justify-content:space-around}
+.stat{text-align:center;min-width:80px}
+.stat .num{font-size:26px;font-weight:700;color:var(--accent);font-family:'Trebuchet MS',sans-serif}
+.stat .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.section-title{color:var(--title);font-family:'Trebuchet MS',sans-serif;font-size:18px;margin:24px 8px 12px;padding-bottom:6px;border-bottom:2px solid var(--accent)}
+.exercise{background:var(--card);border:.5px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:border-color .2s}
+.exercise.completed{border-left:4px solid var(--success)}
+.ex-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.ex-title{color:var(--title);font-weight:600;font-size:15px}
+.diff{font-size:11px;padding:3px 10px;border-radius:12px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.diff.easy{background:var(--easy)}
+.diff.medium{background:var(--medium)}
+.diff.hard{background:var(--hard)}
+.ex-body p{font-size:14px;margin-bottom:10px}
+.ex-body pre{background:#0F172A;color:#E2E8F0;padding:10px 12px;border-radius:6px;font-size:12px;overflow-x:auto;margin:8px 0;font-family:'Consolas',monospace}
+input[type="text"],select{font-family:inherit;font-size:14px;padding:8px 12px;border:.5px solid var(--border);border-radius:6px;width:100%;max-width:360px;background:#fff}
+input[type="text"]:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.btn{font-family:inherit;font-size:13px;padding:8px 16px;border:.5px solid var(--accent);background:#fff;color:var(--accent);border-radius:6px;cursor:pointer;margin:8px 6px 0 0;transition:all .15s}
+.btn:hover{background:var(--accent-soft)}
+.btn.reset{border-color:#CBD5E1;color:var(--muted)}
+.btn.reset:hover{background:#F1F5F9}
+.btn.hint{border-color:var(--warn);color:var(--warn)}
+.btn.hint:hover{background:var(--warn-bg)}
+.feedback{margin-top:10px;padding:10px 14px;border-radius:6px;font-size:13px;display:none;border-left:3px solid;line-height:1.5}
+.feedback.show{display:block}
+.feedback.ok{background:var(--success-bg);color:#065F46;border-left-color:var(--success)}
+.feedback.ko{background:var(--err-bg);color:#991B1B;border-left-color:var(--err)}
+.hint-box{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn);padding:10px 14px;border-radius:6px;margin-top:8px;font-size:12px;display:none}
+.hint-box.show{display:block}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:24px;margin-top:20px;border-top:1px solid var(--border)}
+@media(max-width:600px){.exercise{padding:14px}.stats-bar{gap:10px}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>🧭 Routing — 15 Esercizi di Riepilogo e Verifica</h1>
+  <p>Giorno 2 · Corso Cybersecurity Leonardo · Modulo 1 — Reti, Sistemi Operativi e Hardening</p>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><div class="num" id="s-done">0</div><div class="label">Completati</div></div>
+  <div class="stat"><div class="num" id="s-correct">0</div><div class="label">Corretti</div></div>
+  <div class="stat"><div class="num" id="s-total">15</div><div class="label">Totali</div></div>
+  <div class="stat"><div class="num" id="s-pct">0%</div><div class="label">Precisione</div></div>
+</div>
+
+<div class="section-title">A · Tabella di routing e decisioni di inoltro</div>
+
+<!-- ═══ EX 1 — Longest Prefix Match pratico ═══ -->
+<div class="exercise" id="ex1">
+<div class="ex-header"><span class="ex-title">1 — Longest Prefix Match (scenario)</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Un router ha questa tabella di routing:</p>
+<pre>0.0.0.0/0      via 192.0.2.1     (S)
+10.0.0.0/8     via 10.255.255.1  (O)
+10.1.0.0/16    via 10.255.255.2  (O)
+10.1.1.0/24    via 10.255.255.3  (S)</pre>
+<p>Arriva un pacchetto destinato a <strong>10.1.1.77</strong>. Quale next-hop viene scelto?</p>
+<input type="text" id="f1" placeholder="Indirizzo next-hop">
+<br><button class="btn" onclick="chk('f1',['10.255.255.3'],'Corretto! Tutte e 4 le rotte matchano 10.1.1.77, ma 10.1.1.0/24 ha il prefisso più lungo (24 bit) — vince sempre la più specifica, indipendentemente dal protocollo che l\'ha imparata.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex1','f1')">Reset</button>
+<button class="btn hint" onclick="toggle('h1')">💡 Suggerimento</button>
+<div class="hint-box" id="h1">Non conta se la rotta è statica od OSPF: il router confronta i prefissi e sceglie quello più lungo (più specifico) tra quelli che corrispondono.</div>
+<div class="feedback" id="fb1"></div>
+</div>
+</div>
+
+<!-- ═══ EX 2 — Codici tabella di routing ═══ -->
+<div class="exercise" id="ex2">
+<div class="ex-header"><span class="ex-title">2 — Codici della tabella di routing</span><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>Nell'output di <code>show ip route</code>, una rotta preceduta dalla lettera <strong>C</strong> indica:</p>
+<select id="f2">
+<option value="">— Seleziona —</option><option value="cached">Rotta in cache</option><option value="computed">Rotta computata da OSPF</option><option value="connected">Rete direttamente connessa all'interfaccia</option><option value="configured">Rotta configurata manualmente</option>
+</select>
+<br><button class="btn" onclick="chkSel('f2','connected','Corretto! C = Connected. Compare automaticamente quando assegni un IP a un\'interfaccia attiva. S = Static, O = OSPF, B = BGP.','No. La lettera per le rotte direttamente connesse inizia per C e si riferisce al fatto che la rete è fisicamente sulla propria interfaccia.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex2','f2')">Reset</button>
+<div class="feedback" id="fb2"></div>
+</div>
+</div>
+
+<!-- ═══ EX 3 — Administrative Distance ═══ -->
+<div class="exercise" id="ex3">
+<div class="ex-header"><span class="ex-title">3 — Administrative Distance</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Se un router apprende la stessa rete 10.2.0.0/24 sia da OSPF (AD=110) sia da una rotta statica (AD=1), quale installa in tabella?</p>
+<select id="f3">
+<option value="">— Seleziona —</option><option value="ospf">La rotta OSPF</option><option value="none">Nessuna, va in conflitto</option><option value="static">La rotta statica</option><option value="both">Entrambe (load balancing)</option>
+</select>
+<br><button class="btn" onclick="chkSel('f3','static','Corretto! L\'Administrative Distance è il criterio di preferenza tra sorgenti diverse: vince quella con AD più bassa. La statica (1) batte OSPF (110). Questo è il meccanismo alla base delle floating static route.','No. L\'AD più bassa è più affidabile. La statica ha AD=1, OSPF=110: vince l\'AD minore.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex3','f3')">Reset</button>
+<div class="feedback" id="fb3"></div>
+</div>
+</div>
+
+<!-- ═══ EX 4 — Route Summarization ═══ -->
+<div class="exercise" id="ex4">
+<div class="ex-header"><span class="ex-title">4 — Aggregazione di rotte</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Vuoi riassumere in un'unica rotta le due sottoreti <code>10.1.0.0/24</code> e <code>10.1.1.0/24</code>. Qual è il prefisso aggregato più compatto?</p>
+<input type="text" id="f4" placeholder="Es: 10.0.0.0/16">
+<br><button class="btn" onclick="chk('f4',['10.1.0.0/23'],'Corretto! I due /24 consecutivi (0 e 1) si aggregano in 10.1.0.0/23 — basta ridurre di 1 bit la maschera. Il supernetting riduce la dimensione della tabella di routing e l\'overhead di OSPF/BGP.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex4','f4')">Reset</button>
+<button class="btn hint" onclick="toggle('h4')">💡 Suggerimento</button>
+<div class="hint-box" id="h4">Se due /24 differiscono solo per il bit meno significativo del terzo ottetto, puoi spostare il confine della maschera di 1 bit a sinistra.</div>
+<div class="feedback" id="fb4"></div>
+</div>
+</div>
+
+<div class="section-title">B · OSPF in profondità</div>
+
+<!-- ═══ EX 5 — Area 0 ═══ -->
+<div class="exercise" id="ex5">
+<div class="ex-header"><span class="ex-title">5 — Area backbone OSPF</span><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>In una rete OSPF multi-area, come si chiama (numericamente) l'area backbone obbligatoria a cui tutte le altre aree devono connettersi?</p>
+<input type="text" id="f5" placeholder="Numero area">
+<br><button class="btn" onclick="chk('f5',['0','area 0','0.0.0.0'],'Corretto! Area 0 (anche scritta 0.0.0.0) è il backbone OSPF. Tutte le altre aree non backbone devono essere adiacenti ad essa, direttamente o tramite virtual link.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex5','f5')">Reset</button>
+<div class="feedback" id="fb5"></div>
+</div>
+</div>
+
+<!-- ═══ EX 6 — Hello Interval ═══ -->
+<div class="exercise" id="ex6">
+<div class="ex-header"><span class="ex-title">6 — OSPF Hello interval</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Su una rete Ethernet (broadcast), qual è l'intervallo di default dei pacchetti OSPF Hello, espresso in secondi?</p>
+<input type="text" id="f6" placeholder="Secondi" style="max-width:160px">
+<br><button class="btn" onclick="chk('f6',['10','10s','10 secondi'],'Corretto! 10 secondi su Ethernet/broadcast e point-to-point. Il Dead Interval è 4× l\'Hello (40s): se non ricevi Hello per 40s, il vicino è dichiarato down.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex6','f6')">Reset</button>
+<div class="feedback" id="fb6"></div>
+</div>
+</div>
+
+<!-- ═══ EX 7 — DR/BDR ═══ -->
+<div class="exercise" id="ex7">
+<div class="ex-header"><span class="ex-title">7 — Designated Router (DR)</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>A cosa serve l'elezione del <strong>DR/BDR</strong> nelle reti OSPF broadcast (es. uno switch con 10 router connessi)?</p>
+<select id="f7">
+<option value="">— Seleziona —</option><option value="bal">Fare load balancing del traffico dati</option><option value="sec">Cifrare gli scambi OSPF</option><option value="back">Fornire backup in caso di guasto fisico</option><option value="adj">Ridurre il numero di adiacenze full e il traffico di LSA</option>
+</select>
+<br><button class="btn" onclick="chkSel('f7','adj','Corretto! Senza DR, 10 router farebbero 10×9/2 = 45 adiacenze full e inonderebbero la LAN di LSA duplicati. Con DR/BDR tutti parlano con il DR: adiacenze ridotte a ~18 e un solo flusso di LSA.','No. DR/BDR non ha funzioni di sicurezza né di load balancing: è un\'ottimizzazione del numero di adiacenze e del traffico LSA su reti multi-access.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex7','f7')">Reset</button>
+<div class="feedback" id="fb7"></div>
+</div>
+</div>
+
+<!-- ═══ EX 8 — OSPF Cost ═══ -->
+<div class="exercise" id="ex8">
+<div class="ex-header"><span class="ex-title">8 — Costo OSPF</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Il costo OSPF di un'interfaccia è calcolato come:</p>
+<select id="f8">
+<option value="">— Seleziona —</option><option value="hop">numero di hop fino alla destinazione</option><option value="inv">reference_bandwidth / interface_bandwidth</option><option value="del">delay in millisecondi</option><option value="dir">interface_bandwidth / reference_bandwidth</option>
+</select>
+<br><button class="btn" onclick="chkSel('f8','inv','Corretto! Più veloce è il link, più basso il costo (inversamente proporzionale alla bandwidth). Reference default 100 Mbit/s: un\'interfaccia Gigabit ha costo 1, una FastEth costo 1, una 10 Mbit costo 10. In reti moderne si alza il reference a 100 Gbps per differenziare Gbit da 10Gbit.','No. OSPF è link-state, non distance-vector: non conta gli hop. Il costo è inverso alla banda, così i link veloci sono preferiti.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex8','f8')">Reset</button>
+<div class="feedback" id="fb8"></div>
+</div>
+</div>
+
+<!-- ═══ EX 9 — Sicurezza OSPF ═══ -->
+<div class="exercise" id="ex9">
+<div class="ex-header"><span class="ex-title">9 — Autenticazione OSPF</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Per proteggere OSPF da router rogue che iniettano LSA falsi, quale algoritmo crittografico è raccomandato oggi (RFC 5709)?</p>
+<input type="text" id="f9" placeholder="Nome algoritmo">
+<br><button class="btn" onclick="chk('f9',['sha-256','sha256','sha-2','hmac-sha-256','hmac sha-256'],'Corretto! HMAC-SHA-256 (RFC 5709) è lo standard moderno. MD5 è deprecato: vulnerabile a collisioni. La chiave simmetrica viene condivisa tra i router dell\'area e firma ogni pacchetto OSPF.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex9','f9')">Reset</button>
+<button class="btn hint" onclick="toggle('h9')">💡 Suggerimento</button>
+<div class="hint-box" id="h9">Non è MD5 (obsoleto). È la famiglia SHA-2, nello specifico quella a 256 bit usata in modalità HMAC.</div>
+<div class="feedback" id="fb9"></div>
+</div>
+</div>
+
+<div class="section-title">C · BGP tra Autonomous Systems</div>
+
+<!-- ═══ EX 10 — eBGP TTL ═══ -->
+<div class="exercise" id="ex10">
+<div class="ex-header"><span class="ex-title">10 — TTL nelle sessioni eBGP</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Per default, i pacchetti BGP tra due router <strong>eBGP</strong> vengono inviati con TTL pari a:</p>
+<input type="text" id="f10" placeholder="Valore TTL" style="max-width:160px">
+<br><button class="btn" onclick="chk('f10',['1'],'Corretto! eBGP usa TTL=1 di default: presuppone che i due peer siano direttamente connessi. Questa è anche una protezione (GTSM quando forzato a 255) contro attacchi remoti: un attaccante a più di 1 hop non può iniettare pacchetti BGP.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex10','f10')">Reset</button>
+<button class="btn hint" onclick="toggle('h10')">💡 Suggerimento</button>
+<div class="hint-box" id="h10">eBGP presume vicinato diretto: il pacchetto deve morire se attraversa anche un solo router intermedio.</div>
+<div class="feedback" id="fb10"></div>
+</div>
+</div>
+
+<!-- ═══ EX 11 — ASN privati ═══ -->
+<div class="exercise" id="ex11">
+<div class="ex-header"><span class="ex-title">11 — AS number privati (16-bit)</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Qual è il range degli AS Number privati a 16 bit (riservati per uso interno, non instradabili su Internet)?</p>
+<select id="f11">
+<option value="">— Seleziona —</option><option value="d">100 – 999</option><option value="b">64512 – 65534</option><option value="c">32768 – 65535</option><option value="a">1 – 1023</option>
+</select>
+<br><button class="btn" onclick="chkSel('f11','b','Corretto! 64512–65534 sono gli ASN privati a 16 bit (RFC 6996). Si usano per iBGP interno o per connessioni verso un singolo ISP che li rimuove prima di annunciare su Internet. Per 32 bit il range privato è 4200000000–4294967294.','No. Il range privato a 16 bit è compreso tra 64512 e 65534: si tratta di ~1000 numeri riservati all\'uso interno dalle RFC.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex11','f11')">Reset</button>
+<div class="feedback" id="fb11"></div>
+</div>
+</div>
+
+<!-- ═══ EX 12 — Route Reflector ═══ -->
+<div class="exercise" id="ex12">
+<div class="ex-header"><span class="ex-title">12 — Route Reflector iBGP</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Perché nelle grandi reti iBGP si usa un <strong>Route Reflector</strong> invece del full mesh tra tutti i router?</p>
+<select id="f12">
+<option value="">— Seleziona —</option><option value="mesh">Per evitare il full mesh iBGP, che non scala (N(N-1)/2 sessioni)</option><option value="fast">Per accelerare la convergenza eBGP</option><option value="nat">Per fare NAT sugli annunci BGP</option><option value="sec">Per cifrare le sessioni BGP</option>
+</select>
+<br><button class="btn" onclick="chkSel('f12','mesh','Corretto! iBGP non rilancia agli altri iBGP peer gli annunci ricevuti (loop prevention), quindi serve full mesh: con 100 router = 4950 sessioni. Il Route Reflector spezza questa regola: i client iBGP parlano solo con l\'RR, che riflette gli annunci. Si passa da O(N²) a O(N).','No. Il problema è di scalabilità: il full mesh iBGP richiede N(N-1)/2 sessioni e diventa ingestibile su reti grandi. Il RR non c\'entra con cifratura né con eBGP.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex12','f12')">Reset</button>
+<div class="feedback" id="fb12"></div>
+</div>
+</div>
+
+<div class="section-title">D · Scenari operativi e sicurezza</div>
+
+<!-- ═══ EX 13 — Null route ═══ -->
+<div class="exercise" id="ex13">
+<div class="ex-header"><span class="ex-title">13 — Null route / blackhole</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Per bloccare rapidamente il traffico verso un IP malevolo noto (es. un C2), un operatore aggiunge una rotta che punta all'interfaccia <code>Null0</code> (o <code>blackhole</code> su Linux). Questa tecnica è conosciuta come:</p>
+<input type="text" id="f13" placeholder="Nome tecnica">
+<br><button class="btn" onclick="chk('f13',['null route','blackhole','blackhole route','null routing','rtbh','blackholing'],'Corretto! Null route (o blackhole routing). Il router scarta silenziosamente il traffico verso quella destinazione senza consumare cicli CPU del firewall. RTBH (Remotely Triggered Black Hole) è la versione distribuita via BGP, usata per mitigare DDoS.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex13','f13')">Reset</button>
+<div class="feedback" id="fb13"></div>
+</div>
+</div>
+
+<!-- ═══ EX 14 — ECMP ═══ -->
+<div class="exercise" id="ex14">
+<div class="ex-header"><span class="ex-title">14 — ECMP</span><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>L'acronimo <strong>ECMP</strong> indica una tecnica di routing in cui più percorsi con lo stesso costo vengono usati contemporaneamente. Cosa significa ECMP?</p>
+<input type="text" id="f14" placeholder="Forma estesa dell'acronimo">
+<br><button class="btn" onclick="chk('f14',['equal cost multi-path','equal cost multipath','equal-cost multi-path','equal-cost multipath','equal cost multi path'],'Corretto! Equal Cost Multi-Path: quando OSPF o BGP trovano 2+ percorsi con lo stesso costo/metrica verso una destinazione, il traffico viene bilanciato su tutti (di solito via hashing 5-tuple). Aumenta la banda disponibile e fornisce failover istantaneo.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex14','f14')">Reset</button>
+<button class="btn hint" onclick="toggle('h14')">💡 Suggerimento</button>
+<div class="hint-box" id="h14">E = Equal, C = Cost, M = Multi, P = Path.</div>
+<div class="feedback" id="fb14"></div>
+</div>
+</div>
+
+<!-- ═══ EX 15 — Scenario Leonardo ═══ -->
+<div class="exercise" id="ex15">
+<div class="ex-header"><span class="ex-title">15 — Scenario: strategia di routing enterprise</span><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Leonardo ha: (1) un campus interno con ~40 sottoreti VLAN, (2) due uplink verso due ISP diversi per la connettività Internet, (3) una sede remota piccola con 2 sottoreti collegata via link dedicato. Quale combinazione è la scelta <em>più corretta</em>?</p>
+<select id="f15">
+<option value="">— Seleziona —</option><option value="a">OSPF ovunque, BGP disattivato</option><option value="b">BGP ovunque, anche nel campus</option><option value="c">OSPF nel campus, BGP verso i due ISP, statica verso la sede remota</option><option value="d">Tutto in routing statico per massimo controllo</option>
+</select>
+<br><button class="btn" onclick="chkSel('f15','c','Corretto! È la combinazione canonica: OSPF per il routing interno (scala e convergenza automatica su 40 VLAN), BGP verso i due ISP (multihoming, path manipulation, RPKI), e routing statico per la sede remota piccola (2 sottoreti stabili non giustificano l\'overhead di un protocollo dinamico). Regola: statico per pochi prefissi stabili, OSPF intra-AS, BGP inter-AS.','No. OSPF non parla con gli ISP (servirebbe BGP per il multihoming) e il BGP sull\'intero campus è overkill. Il routing statico ovunque non scala con 40 sottoreti e non gestisce il failover automatico tra i due ISP.')">Verifica</button>
+<button class="btn reset" onclick="reset1('ex15','f15')">Reset</button>
+<div class="feedback" id="fb15"></div>
+</div>
+</div>
+
+<footer>
+  <p>Corso Cybersecurity Leonardo · Giorno 2 — 10 aprile 2026</p>
+  <p style="margin-top:6px;color:#94A3B8">Modulo 1: Reti, Sistemi Operativi e Hardening — Esercizi di riepilogo e verifica sul routing</p>
+</footer>
+
+</div>
+
+<script>
+const state = {done:new Set(),correct:new Set()};
+
+function updateStats(){
+  document.getElementById('s-done').textContent = state.done.size;
+  document.getElementById('s-correct').textContent = state.correct.size;
+  const pct = state.done.size ? Math.round(state.correct.size/state.done.size*100) : 0;
+  document.getElementById('s-pct').textContent = pct + '%';
+}
+
+function norm(s){return s.trim().toLowerCase().replace(/\s+/g,' ');}
+
+function chk(id, validAnswers, okMsg){
+  const el = document.getElementById(id);
+  const fb = document.getElementById('fb'+id.slice(1));
+  const exId = 'ex'+id.slice(1);
+  const val = norm(el.value);
+  if(!val){showFb(fb,false,'⚠️ Inserisci una risposta prima di verificare.');return;}
+  const ok = validAnswers.some(v => norm(v) === val);
+  state.done.add(exId);
+  if(ok){state.correct.add(exId);document.getElementById(exId).classList.add('completed');showFb(fb,true,'✓ '+okMsg);}
+  else{showFb(fb,false,'✗ Non corretto. La risposta attesa è: <strong>'+validAnswers[0]+'</strong>');}
+  updateStats();
+}
+
+function chkSel(id, correctVal, okMsg, koMsg){
+  const el = document.getElementById(id);
+  const fb = document.getElementById('fb'+id.slice(1));
+  const exId = 'ex'+id.slice(1);
+  if(!el.value){showFb(fb,false,'⚠️ Seleziona un\'opzione.');return;}
+  const ok = el.value === correctVal;
+  state.done.add(exId);
+  if(ok){state.correct.add(exId);document.getElementById(exId).classList.add('completed');showFb(fb,true,'✓ '+okMsg);}
+  else{showFb(fb,false,'✗ '+koMsg);}
+  updateStats();
+}
+
+function showFb(fb, ok, msg){
+  fb.className = 'feedback show ' + (ok?'ok':'ko');
+  fb.innerHTML = msg;
+}
+
+function reset1(exId, inputId){
+  const ex = document.getElementById(exId);
+  const inp = document.getElementById(inputId);
+  const fb = document.getElementById('fb'+inputId.slice(1));
+  if(inp) inp.value = '';
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+  ex.classList.remove('completed');
+  state.done.delete(exId);
+  state.correct.delete(exId);
+  updateStats();
+}
+
+function toggle(id){
+  const el = document.getElementById(id);
+  el.classList.toggle('show');
+}
+</script>
+</body>
+</html>
