@@ -31,6 +31,11 @@ pre{background:#1E293B;color:#E2E8F0;padding:16px;border-radius:8px;overflow-x:a
 .warning-box strong{color:var(--danger)}
 .tip-box{border-left:4px solid var(--warn);background:#FFFBEB;padding:14px 16px;margin:16px 0;border-radius:0 8px 8px 0}
 .tip-box strong{color:var(--warn)}
+.deep-dive{background:#EFF6FF;border:1px dashed #93C5FD;border-radius:10px;padding:18px 22px;margin:24px 0;position:relative;font-size:.93em}
+.deep-dive::before{content:"📖 APPROFONDIMENTO";position:absolute;top:-11px;left:18px;background:var(--bg);color:#3B82F6;font-size:.72em;font-weight:700;letter-spacing:1px;padding:0 10px}
+.deep-dive h4{color:#2563EB;margin:0 0 10px;font-size:1.05em;font-style:italic}
+.deep-dive p{margin:8px 0;color:#334155}
+.deep-dive strong{color:#1E3A8A}
 .exercise-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:20px 0}
 .ex-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;text-decoration:none;color:var(--text);transition:box-shadow .2s}
 .ex-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1)}
@@ -146,6 +151,30 @@ OSPF è vulnerabile a router rogue che annunciano rotte false (rogue router, LSA
 <tr><td><code>eBGP</code> (external)</td><td>Tra AS diversi</td><td>TCP porta 179, TTL=1 (vicini diretti)</td></tr>
 <tr><td><code>iBGP</code> (internal)</td><td>Dentro lo stesso AS</td><td>Full mesh o Route Reflector per scalare</td></tr>
 </table>
+
+<div class="deep-dive">
+<h4>BGP Decision Path — Come BGP sceglie la rotta migliore</h4>
+<p>Quando un router BGP riceve più rotte per la stessa destinazione, scorre una lista di criteri in ordine rigido di priorità e si ferma al primo che produce un vincitore.</p>
+<p><strong>I criteri, nell'ordine:</strong> (1) <strong>Weight</strong> (solo Cisco, locale, più alto vince) — (2) <strong>Local Preference</strong> (propagata via iBGP, più alta vince, default 100) — (3) <strong>Locally originated</strong> — (4) <strong>AS-PATH più corto</strong> — (5) <strong>Origin type</strong> (IGP > EGP > Incomplete) — (6) <strong>MED</strong> (più basso vince, suggerimento al vicino) — (7) <strong>eBGP su iBGP</strong> — (8) <strong>IGP metric al next-hop più basso</strong> (hot-potato routing) — (9) <strong>Oldest route</strong> — (10) <strong>Router ID più basso</strong> — (11) <strong>Neighbor IP più basso</strong>.</p>
+<p>Nella pratica gli operatori lavorano prevalentemente su tre leve: <strong>Local Preference</strong> per le decisioni interne ("la nostra rete preferisce uscire da TIM piuttosto che da Vodafone"), <strong>AS-PATH prepending</strong> per influenzare come il traffico entra dall'esterno, e <strong>MED</strong> per situazioni di peering con più link verso lo stesso AS. Gli altri criteri entrano in gioco come tie-breaker automatici. Il punto 8 è particolarmente interessante: è dove la decisione BGP dipende da OSPF, e spiega concretamente perché i due protocolli convivono.</p>
+</div>
+
+<div class="deep-dive">
+<h4>Sicurezza BGP — RPKI, ROV, IRR e monitoring</h4>
+<p>BGP nasce senza autenticazione: ogni AS si fida degli annunci dei vicini. Quattro strumenti compongono la difesa moderna.</p>
+<p><strong>RPKI</strong> (Resource Public Key Infrastructure) è un'infrastruttura crittografica gestita dai cinque RIR. L'owner di un prefisso crea un <strong>ROA</strong> (Route Origin Authorization), oggetto firmato che lega il prefisso all'AS autorizzato.</p>
+<p><strong>ROV</strong> (Route Origin Validation) è il meccanismo che usa i ROA nel router BGP: ogni annuncio viene classificato come Valid, Invalid (scartato) o NotFound (accettato senza garanzie).</p>
+<p><strong>IRR filtering</strong> è il meccanismo storico: registri pubblici (RIPE-DB, RADB) dove gli operatori dichiarano i prefissi che intendono annunciare. Meno sicuro di RPKI perché non firmato, ma con copertura più ampia.</p>
+<p><strong>Monitoring</strong> con strumenti come RIPE RIS, BGPStream, BGPmon, Cloudflare Radar è la difesa reattiva: sonde distribuite osservano la tabella BGP globale e notificano in tempo reale annunci anomali.</p>
+<p>In sintesi: RPKI+ROV è la difesa crittografica preventiva, IRR copre il resto, il monitoring è la rete di sicurezza che rileva ciò che passa comunque. Gli incidenti più noti (Facebook 2021, hijack verso exchange crittovalute) mostrano cosa succede quando questi meccanismi mancano.</p>
+</div>
+
+<div class="deep-dive">
+<h4>Perché iBGP non sostituisce OSPF</h4>
+<p>iBGP e OSPF risolvono problemi diversi e lavorano insieme. <strong>OSPF</strong> gestisce la topologia interna dell'AS (link, loopback, subnet dei data center) — centinaia di prefissi, convergenza in secondi. <strong>iBGP</strong> trasporta invece le rotte esterne (Internet, peering) attraverso l'AS, preservando gli attributi BGP necessari per le policy (AS_PATH, LOCAL_PREF, communities).</p>
+<p>Mettere l'intera tabella BGP globale (~1 milione di prefissi) dentro OSPF è impraticabile: il calcolo SPF esploderebbe. Viceversa, iBGP da solo non basta: quando un router interno riceve una rotta iBGP, il NEXT_HOP è tipicamente un IP esterno (l'interfaccia dell'ISP peer) che il router non raggiunge direttamente. Per sapere come arrivarci fa un <em>recursive lookup</em> nella tabella dell'IGP — ed è OSPF a fornirgli la risposta.</p>
+<p>Regola pratica: <strong>OSPF per la topologia interna, iBGP per le rotte esterne, i due si appoggiano a vicenda</strong>. Negli ISP più grandi questa logica si evolve nel modello <em>BGP-free core</em> (solo i router di bordo parlano BGP, il core instrada via MPLS+IGP), ma il principio di complementarità resta.</p>
+</div>
 
 <div class="warning-box">
 <strong>⚠ BGP Hijacking</strong><br>
@@ -282,7 +311,7 @@ TLS 1.3 impone la PFS usando solo scambi di chiave effimeri (ECDHE). Ogni sessio
 
 <div class="security-box">
 <strong>🔒 Best practice VPN enterprise</strong><br>
-MFA obbligatorio per remote access. Full tunnel per dipendenti (visibilità SOC). Certificati X.509 al posto delle pre-shared keys. Logging VPN integrato nel SIEM. Patching tempestivo dei VPN gateway (bersagli critici: vulnerabilità Fortinet, Ivanti, Citrix). Network segmentation post-VPN (least privilege).
+MFA per remote access. Full tunnel per dipendenti (visibilità SOC). Certificati X.509 al posto delle pre-shared keys. Logging VPN integrato nel SIEM. Patching tempestivo dei VPN gateway (bersagli critici: vulnerabilità Fortinet, Ivanti, Citrix). Network segmentation post-VPN (least privilege).
 </div>
 
 <p style="font-size:0.82em; color:var(--muted);">📌 <em>La VPN verrà praticata nelle Lezioni 3 e 4 (configurazione OpenVPN e IPSec su pfSense). Il logging VPN nel SIEM e il monitoraggio delle connessioni anomale saranno parte del Modulo 5 (SOC).</em></p>
@@ -442,7 +471,7 @@ Se il browser non raggiunge 192.168.1.1: verifica che l'host-only network di Vir
 </p>
 
 <div class="warning-box">
-<strong>⚠ Prerequisito obbligatorio per il Giorno 3</strong><br>
+<strong>⚠ Prerequisito per il Giorno 3</strong><br>
 pfSense deve essere installato e funzionante PRIMA della lezione. Se hai problemi con l'installazione, scrivi al docente durante la settimana — non aspettare il giorno della lezione. Porta uno screenshot della dashboard (http://192.168.1.1, login: admin / pfsense).
 </div>
 
