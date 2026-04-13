@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esercizi di Riepilogo — Firewall</title>
+<style>
+:root{--accent:#0891B2;--accent2:#0077B6;--title:#0F4C75;--text:#1E293B;--muted:#64748B;--bg:#F8F9FA;--card:#FFFFFF;--border:#E2E8F0;--success:#059669;--success-bg:#F0FDF4;--success-border:#BBF7D0;--danger:#DC2626;--danger-bg:#FEF2F2;--danger-border:#FECACA;--warn:#D97706;--warn-bg:#FFFBEB;--warn-border:#FDE68A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Calibri,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;max-width:900px;margin:0 auto;padding:16px}
+header{background:var(--title);color:#fff;padding:24px;border-radius:12px;margin-bottom:20px}
+header h1{font-size:1.4em;margin-bottom:4px}
+header p{color:#94A3B8;font-size:.9em}
+.stats{display:flex;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:.85em}
+.stats span{color:var(--muted)}.stats b{color:var(--accent)}
+.section-title{background:var(--accent);color:#fff;padding:10px 16px;border-radius:8px;margin:20px 0 12px;font-weight:700;font-size:1em}
+.exercise{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:14px;overflow:hidden}
+.ex-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);background:#FAFBFC}
+.ex-header h3{font-size:.95em;color:var(--title)}
+.diff{font-size:.7em;padding:2px 8px;border-radius:10px;font-weight:600}
+.easy{background:#F0FDF4;color:var(--success)}.medium{background:var(--warn-bg);color:var(--warn)}.hard{background:var(--danger-bg);color:var(--danger)}
+.ex-body{padding:14px 16px}
+.ex-body p{margin-bottom:8px;font-size:.9em}
+code{background:#F1F5F9;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:.85em}
+input[type=text],select{border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:.9em;width:100%;max-width:400px;margin:4px 0;font-family:inherit}
+select{max-width:420px}
+button{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:7px 16px;cursor:pointer;font-size:.85em;margin:4px 4px 4px 0}
+button:hover{opacity:.9}
+button.reset-btn{background:var(--muted)}
+.feedback{margin-top:8px;padding:10px 14px;border-radius:6px;font-size:.85em;display:none}
+.feedback.correct{display:block;background:var(--success-bg);color:var(--success);border:1px solid var(--success-border)}
+.feedback.wrong{display:block;background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
+.hint-btn{background:var(--warn);font-size:.8em;padding:5px 12px}
+.hint{display:none;background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);padding:10px 14px;border-radius:6px;margin-top:8px;font-size:.85em}
+.completed{border-left:3px solid var(--success)}
+table.ref{width:100%;border-collapse:collapse;font-size:.85em;margin:8px 0}
+table.ref th{background:var(--accent);color:#fff;padding:6px 10px;text-align:left}
+table.ref td{padding:6px 10px;border-bottom:1px solid var(--border)}
+table.ref tr:nth-child(even){background:#F1F5F9}
+footer{text-align:center;padding:20px;color:var(--muted);font-size:.8em;margin-top:30px}
+@media(max-width:600px){body{padding:10px}input[type=text],select{max-width:100%}.stats{flex-direction:column;gap:4px}}
+</style>
+</head>
+<body>
+
+<header>
+<h1>🛡️ Esercizi di Riepilogo — Firewall</h1>
+<p>10 esercizi sui concetti fondamentali | ~30 min</p>
+</header>
+
+<div class="stats">
+<span>Completati: <b id="done">0</b>/10</span>
+<span>Corretti: <b id="ok">0</b>/10</span>
+<span>Precisione: <b id="pct">—</b></span>
+</div>
+
+<!-- ═══ 1. CONCETTI BASE ═══ -->
+<div class="section-title">A — Concetti base</div>
+
+<div class="exercise" id="ex1">
+<div class="ex-header"><h3>1. Cosa controlla un firewall</h3><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>Un firewall stateful tradizionale controlla principalmente:</p>
+<select id="f1">
+<option value="">— Seleziona —</option>
+<option value="a">Il contenuto dei file trasferiti</option>
+<option value="b">IP sorgente, IP destinazione, porte e protocollo (layer 3-4)</option>
+<option value="c">Solo gli indirizzi MAC (layer 2)</option>
+<option value="d">Le password degli utenti</option>
+</select>
+<button onclick="chkSel('f1','b','✓ Corretto! Un firewall stateful ispeziona gli header a layer 3 (IP sorgente/destinazione) e layer 4 (porte TCP/UDP, protocollo). Non vede il contenuto delle connessioni cifrate (serve il WAF per quello).','✗ Un firewall stateful opera a layer 3-4: controlla IP, porte e protocollo. Non vede il contenuto dei pacchetti cifrati (per quello serve un WAF).')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex1',['f1'])">Reset</button>
+<div class="feedback" id="fb1"></div>
+</div></div>
+
+<div class="exercise" id="ex2">
+<div class="ex-header"><h3>2. Stateful vs Stateless</h3><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>La differenza principale tra un firewall stateful e uno stateless è:</p>
+<select id="f2">
+<option value="">— Seleziona —</option>
+<option value="a">Il firewall stateful è più veloce perché non ricorda nulla</option>
+<option value="b">Il firewall stateful tiene una state table delle connessioni attive, lo stateless valuta ogni pacchetto indipendentemente</option>
+<option value="c">Solo lo stateful può fare NAT</option>
+<option value="d">Lo stateless supporta più protocolli</option>
+</select>
+<button onclick="chkSel('f2','b','✓ Corretto! Il firewall stateful traccia le connessioni nella state table: una regola che permette il traffico outbound permette automaticamente le risposte. Lo stateless valuta ogni pacchetto singolarmente e richiede regole per ENTRAMBE le direzioni.','✗ Il firewall stateful mantiene una state table che traccia ogni connessione (SYN iniziale, ACK, ecc.). Lo stateless non ha memoria — ogni pacchetto è indipendente.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex2',['f2'])">Reset</button>
+<div class="feedback" id="fb2"></div>
+</div></div>
+
+<!-- ═══ 2. REGOLE FIREWALL ═══ -->
+<div class="section-title">B — Regole e ordine di valutazione</div>
+
+<div class="exercise" id="ex3">
+<div class="ex-header"><h3>3. First match wins</h3><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>In un firewall configurato con queste regole (in ordine):</p>
+<table class="ref">
+<tr><th>#</th><th>Azione</th><th>Src</th><th>Dst</th><th>Porta</th></tr>
+<tr><td>1</td><td>DENY</td><td>Any</td><td>Any</td><td>22</td></tr>
+<tr><td>2</td><td>ALLOW</td><td>10.0.1.0/24</td><td>Any</td><td>22</td></tr>
+<tr><td>3</td><td>DENY</td><td>Any</td><td>Any</td><td>Any</td></tr>
+</table>
+<p>Un pacchetto da <code>10.0.1.50</code> verso <code>server:22</code> cosa succede?</p>
+<select id="f3">
+<option value="">— Seleziona —</option>
+<option value="a">Viene permesso dalla regola 2 (specifica per 10.0.1.0/24)</option>
+<option value="b">Viene bloccato dalla regola 1 (matcha per prima)</option>
+<option value="c">Viene bloccato dalla regola 3 (default deny)</option>
+<option value="d">Le regole 1 e 2 si annullano a vicenda</option>
+</select>
+<button onclick="chkSel('f3','b','✓ Corretto! First match wins: la regola 1 (DENY Any:22) matcha per prima e il pacchetto è bloccato. La regola 2 (ALLOW specifica) non viene mai valutata. Per far funzionare la 2, deve essere messa PRIMA della regola 1.','✗ Le regole si valutano in ordine dall alto: la prima che corrisponde determina il risultato. La regola 1 matcha qualsiasi traffico porta 22 e blocca. La regola 2 (più specifica) è irraggiungibile.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex3',['f3'])">Reset</button>
+<div class="feedback" id="fb3"></div>
+</div></div>
+
+<div class="exercise" id="ex4">
+<div class="ex-header"><h3>4. Default Deny</h3><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Il principio "Default Deny" in sicurezza di rete significa:</p>
+<select id="f4">
+<option value="">— Seleziona —</option>
+<option value="a">Bloccare solo il traffico proveniente da IP sospetti</option>
+<option value="b">Bloccare tutto il traffico, poi permettere esplicitamente solo ciò che serve (whitelist)</option>
+<option value="c">Permettere tutto il traffico di default, bloccare solo le minacce note (blacklist)</option>
+<option value="d">Applicare regole diverse a seconda dell'orario</option>
+</select>
+<button onclick="chkSel('f4','b','✓ Corretto! Default Deny = whitelist. Tutto è bloccato a meno che non sia esplicitamente permesso. È la best practice universale: più sicuro di una blacklist perché non devi elencare tutto ciò che è pericoloso (impossibile farlo in modo esaustivo).','✗ Default Deny = blocca TUTTO di default, permetti solo ciò che serve (whitelist). L opzione C descrive Default Allow, che è meno sicuro.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex4',['f4'])">Reset</button>
+<div class="feedback" id="fb4"></div>
+</div></div>
+
+<div class="exercise" id="ex5">
+<div class="ex-header"><h3>5. DENY vs REJECT</h3><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>La differenza tra le azioni DENY (o DROP) e REJECT in un firewall:</p>
+<select id="f5">
+<option value="">— Seleziona —</option>
+<option value="a">DENY scarta il pacchetto silenziosamente, REJECT invia un messaggio ICMP al mittente</option>
+<option value="b">DENY è usato sulla WAN, REJECT sulla LAN, e sono tecnicamente uguali</option>
+<option value="c">DENY è temporaneo, REJECT è permanente</option>
+<option value="d">Sono sinonimi</option>
+</select>
+<button onclick="chkSel('f5','a','✓ Corretto! DENY/DROP scarta silenziosamente (il mittente aspetta timeout). REJECT invia ICMP unreachable (il mittente sa subito). Best practice: DENY verso WAN (non rivelare informazioni agli attaccanti), REJECT sulla LAN (feedback immediato agli utenti interni).','✗ DENY/DROP = scarta senza rispondere (timeout lato mittente). REJECT = risponde con ICMP unreachable. Verso Internet si usa DENY per non dare info agli attaccanti; in LAN REJECT per non far aspettare gli utenti.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex5',['f5'])">Reset</button>
+<div class="feedback" id="fb5"></div>
+</div></div>
+
+<!-- ═══ 3. ZONE E ARCHITETTURA ═══ -->
+<div class="section-title">C — Zone e architettura</div>
+
+<div class="exercise" id="ex6">
+<div class="ex-header"><h3>6. Trust level delle zone</h3><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Ordina queste zone dalla MENO fidata alla PIÙ fidata (separate da virgole):</p>
+<p><code>DMZ, MGMT, WAN, LAN</code></p>
+<input type="text" id="f6" placeholder="es: zona1, zona2, zona3, zona4">
+<button onclick="chk('f6',['wan, dmz, lan, mgmt','wan,dmz,lan,mgmt','wan dmz lan mgmt'],'✓ Corretto! WAN (zero trust, Internet) → DMZ (bassa, server esposti) → LAN (medio-alta, workstation) → MGMT (massima, management interfaces). Il traffico da trust alto a basso è tipicamente permesso, da basso ad alto è bloccato per default.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex6',['f6'])">Reset</button>
+<button class="hint-btn" onclick="toggleHint('h6')">Suggerimento</button>
+<div class="hint" id="h6">💡 Pensa: dove sta il più pericoloso (Internet)? Dove stanno le cose più delicate (le credenziali di amministrazione)?</div>
+<div class="feedback" id="fb6"></div>
+</div></div>
+
+<div class="exercise" id="ex7">
+<div class="ex-header"><h3>7. Scopo della DMZ</h3><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>Lo scopo principale di avere una DMZ è:</p>
+<select id="f7">
+<option value="">— Seleziona —</option>
+<option value="a">Rendere il traffico più veloce</option>
+<option value="b">Isolare i servizi esposti a Internet dalla LAN, così se un server DMZ viene compromesso, l'attaccante non ha accesso diretto alla rete interna</option>
+<option value="c">Fornire un'area pubblica per gli ospiti Wi-Fi</option>
+<option value="d">Creare un backup automatico dei dati</option>
+</select>
+<button onclick="chkSel('f7','b','✓ Corretto! La DMZ è una zona a trust basso dove si mettono web server, mail server, DNS server — servizi che devono essere raggiungibili da Internet. Se uno viene compromesso, l attaccante è in DMZ e NON ha accesso alla LAN interna grazie alle regole firewall che bloccano DMZ→LAN.','✗ La DMZ serve a ISOLARE i servizi esposti. Accepta connessioni da Internet (permesso), ma NON può iniziare connessioni verso la LAN (bloccato dal firewall). Questo limita il blast radius di una compromissione.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex7',['f7'])">Reset</button>
+<div class="feedback" id="fb7"></div>
+</div></div>
+
+<!-- ═══ 4. FIREWALL MODERNI ═══ -->
+<div class="section-title">D — NGFW ed evoluzione</div>
+
+<div class="exercise" id="ex8">
+<div class="ex-header"><h3>8. Cosa aggiunge un NGFW</h3><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Un NGFW (Next-Generation Firewall) si distingue da un firewall stateful tradizionale perché aggiunge (seleziona TUTTE le funzionalità correte):</p>
+<p><label><input type="checkbox" id="f8a" value="y"> Application awareness (distinguere YouTube da Netflix sulla stessa porta 443)</label></p>
+<p><label><input type="checkbox" id="f8b" value="y"> Integrazione con l'identità utente (regole per utente via AD/Entra ID)</label></p>
+<p><label><input type="checkbox" id="f8c" value="n"> Supporto per IPv6 (esclusivo NGFW)</label></p>
+<p><label><input type="checkbox" id="f8d" value="y"> IPS integrato (rilevamento exploit in tempo reale)</label></p>
+<p><label><input type="checkbox" id="f8e" value="y"> TLS inspection (decifratura HTTPS per ispezione del contenuto)</label></p>
+<p><label><input type="checkbox" id="f8f" value="n"> Prezzo più basso rispetto ai firewall tradizionali</label></p>
+<button onclick="chk8()">Verifica</button>
+<button class="reset-btn" onclick="resetEx8()">Reset</button>
+<div class="feedback" id="fb8"></div>
+</div></div>
+
+<!-- ═══ 5. SCENARI PRATICI ═══ -->
+<div class="section-title">E — Scenari pratici</div>
+
+<div class="exercise" id="ex9">
+<div class="ex-header"><h3>9. Troubleshooting — perché la navigazione si rompe?</h3><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>In pfSense hai configurato queste regole sulla LAN (in ordine):</p>
+<table class="ref">
+<tr><th>#</th><th>Azione</th><th>Proto</th><th>Src</th><th>Dst</th><th>Porta</th></tr>
+<tr><td>1</td><td>ALLOW</td><td>TCP</td><td>LAN net</td><td>Any</td><td>443</td></tr>
+<tr><td>2</td><td>ALLOW</td><td>TCP</td><td>LAN net</td><td>Any</td><td>80</td></tr>
+<tr><td>3</td><td>ALLOW</td><td>ICMP</td><td>LAN net</td><td>Any</td><td>Any</td></tr>
+</table>
+<p>Un utente della LAN NON riesce a caricare <code>https://www.google.com</code>. Il ping a <code>google.com</code> neanche funziona (timeout sul nome). Qual è la causa più probabile?</p>
+<select id="f9">
+<option value="">— Seleziona —</option>
+<option value="a">Manca la regola per il DNS (UDP porta 53)</option>
+<option value="b">La regola HTTPS (443) è in posizione sbagliata</option>
+<option value="c">Serve una regola per l'indirizzo IP specifico di Google</option>
+<option value="d">Il firewall è rotto, va riavviato</option>
+</select>
+<button onclick="chkSel('f9','a','✓ Corretto! Senza la regola DNS (UDP/53), la risoluzione dei nomi fallisce. Il browser non può nemmeno iniziare la connessione HTTPS perché non sa l IP di google.com. Il ping sul nome fallisce per lo stesso motivo. Aggiungere: ALLOW UDP LAN net → Any porta 53.','✗ Il problema è il DNS! Senza regola per UDP/53 (DNS), i nomi non vengono risolti. HTTPS e HTTP non funzionano perché prima del TCP handshake il browser deve risolvere google.com in IP via DNS. Questo è uno degli errori più classici di configurazione firewall.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex9',['f9'])">Reset</button>
+<button class="hint-btn" onclick="toggleHint('h9')">Suggerimento</button>
+<div class="hint" id="h9">💡 Prima di connettersi a google.com, il browser deve sapere CHE IP ha google.com. Chi glielo dice?</div>
+<div class="feedback" id="fb9"></div>
+</div></div>
+
+<div class="exercise" id="ex10">
+<div class="ex-header"><h3>10. Difesa in profondità</h3><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Un'azienda ha: <strong>firewall stateful perimetrale + WAF per il web server in DMZ + IDS/IPS interno + EDR sugli endpoint + SIEM centralizzato</strong>.</p>
+<p>Un'affermazione CORRETTA su questa architettura:</p>
+<select id="f10">
+<option value="">— Seleziona —</option>
+<option value="a">Il firewall è ridondante perché il WAF fa già il suo lavoro</option>
+<option value="b">Il SIEM è inutile se ci sono già IDS/IPS</option>
+<option value="c">Ogni strato copre un aspetto diverso — firewall blocca accessi non autorizzati, WAF blocca attacchi applicativi (SQLi/XSS), IDS rileva pattern sospetti, EDR protegge sul singolo endpoint, SIEM correla eventi da tutte le fonti</option>
+<option value="d">L'EDR sostituisce completamente il firewall</option>
+</select>
+<button onclick="chkSel('f10','c','✓ Corretto! Questa è la defense in depth: ogni strato protegge da classi diverse di attacchi. Il firewall da solo non vede SQL injection (servirebbe WAF). Il WAF non rileva movimenti laterali (servirebbe IDS/EDR). Nessuno correla gli eventi da fonti diverse (serve SIEM). Insieme costruiscono una difesa robusta. Se un singolo strato fallisce, gli altri compensano.','✗ Defense in depth = strati MULTIPLI di protezione, ognuno con scopo diverso. Nessuno è ridondante: coprono classi diverse di attacchi (layer 3-4, layer 7, anomalie, endpoint, correlazione). Il concetto è alla base di qualunque architettura di sicurezza moderna.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex10',['f10'])">Reset</button>
+<div class="feedback" id="fb10"></div>
+</div></div>
+
+<footer>
+Corso Cybersecurity — Leonardo SpA | Modulo 1 — Esercizi di Riepilogo Firewall<br>
+<a href="https://luiroman.github.io/leonardo-esercizi-interattivi/">Tutti gli esercizi</a>
+</footer>
+
+<script>
+let completed={},correct={};
+function updateStats(){
+  const d=Object.keys(completed).length, c=Object.values(correct).filter(Boolean).length;
+  document.getElementById('done').textContent=d;
+  document.getElementById('ok').textContent=c;
+  document.getElementById('pct').textContent=d>0?Math.round(c/d*100)+'%':'—';
+}
+function markEx(id,ok){
+  completed[id]=true; correct[id]=ok;
+  document.getElementById(id).classList.toggle('completed',ok);
+  updateStats();
+}
+function chk(fid,accept,msgOk){
+  const v=document.getElementById(fid).value.trim().toLowerCase().replace(/\s+/g,' ');
+  const num=fid.replace('f','');
+  const fb=document.getElementById('fb'+num);
+  const ok=accept.some(a=>v===a.toLowerCase());
+  fb.className='feedback '+(ok?'correct':'wrong');
+  fb.textContent=ok?msgOk:'✗ Non corretto. Riprova!';
+  fb.style.display='block';
+  markEx('ex'+num,ok);
+}
+function chkSel(fid,val,msgOk,msgNo){
+  const v=document.getElementById(fid).value;
+  const num=fid.replace('f','');
+  const fb=document.getElementById('fb'+num);
+  if(!v){fb.className='feedback wrong';fb.textContent='Seleziona una risposta.';fb.style.display='block';return;}
+  const ok=v===val;
+  fb.className='feedback '+(ok?'correct':'wrong');
+  fb.textContent=ok?msgOk:msgNo;
+  fb.style.display='block';
+  markEx('ex'+num,ok);
+}
+function chk8(){
+  // Le risposte corrette sono a, b, d, e (value="y")
+  const correct_ids=['f8a','f8b','f8d','f8e'];
+  const wrong_ids=['f8c','f8f'];
+  const allCorrect=correct_ids.every(id=>document.getElementById(id).checked) 
+                   && wrong_ids.every(id=>!document.getElementById(id).checked);
+  const fb=document.getElementById('fb8');
+  fb.className='feedback '+(allCorrect?'correct':'wrong');
+  fb.textContent=allCorrect
+    ?'✓ Corretto! Un NGFW aggiunge: application awareness (layer 7), identity integration, IPS integrato, TLS inspection. IPv6 non è esclusivo NGFW (anche firewall stateful lo supportano), e gli NGFW enterprise costano di più, non meno.'
+    :'✗ Le risposte corrette sono: application awareness, user identity, IPS integrato, TLS inspection. IPv6 non è esclusivo NGFW. Gli NGFW sono più costosi, non meno.';
+  fb.style.display='block';
+  markEx('ex8',allCorrect);
+}
+function resetEx(exId,fields){
+  fields.forEach(f=>{const el=document.getElementById(f);if(el.tagName==='SELECT')el.selectedIndex=0;else el.value='';});
+  const num=exId.replace('ex','');
+  const fb=document.getElementById('fb'+num);
+  if(fb){fb.style.display='none';fb.className='feedback';}
+  document.getElementById(exId).classList.remove('completed');
+  delete completed[exId];delete correct[exId];
+  updateStats();
+}
+function resetEx8(){
+  ['f8a','f8b','f8c','f8d','f8e','f8f'].forEach(id=>document.getElementById(id).checked=false);
+  const fb=document.getElementById('fb8');
+  fb.style.display='none';
+  document.getElementById('ex8').classList.remove('completed');
+  delete completed['ex8'];delete correct['ex8'];
+  updateStats();
+}
+function toggleHint(id){const h=document.getElementById(id);h.style.display=h.style.display==='block'?'none':'block';}
+</script>
+</body>
+</html>

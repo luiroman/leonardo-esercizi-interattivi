@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esercizi di Riepilogo — NAT</title>
+<style>
+:root{--accent:#0891B2;--accent2:#0077B6;--title:#0F4C75;--text:#1E293B;--muted:#64748B;--bg:#F8F9FA;--card:#FFFFFF;--border:#E2E8F0;--success:#059669;--success-bg:#F0FDF4;--success-border:#BBF7D0;--danger:#DC2626;--danger-bg:#FEF2F2;--danger-border:#FECACA;--warn:#D97706;--warn-bg:#FFFBEB;--warn-border:#FDE68A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Calibri,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;max-width:900px;margin:0 auto;padding:16px}
+header{background:var(--title);color:#fff;padding:24px;border-radius:12px;margin-bottom:20px}
+header h1{font-size:1.4em;margin-bottom:4px}
+header p{color:#94A3B8;font-size:.9em}
+.stats{display:flex;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:.85em}
+.stats span{color:var(--muted)}.stats b{color:var(--accent)}
+.section-title{background:var(--accent);color:#fff;padding:10px 16px;border-radius:8px;margin:20px 0 12px;font-weight:700;font-size:1em}
+.exercise{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:14px;overflow:hidden}
+.ex-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);background:#FAFBFC}
+.ex-header h3{font-size:.95em;color:var(--title)}
+.diff{font-size:.7em;padding:2px 8px;border-radius:10px;font-weight:600}
+.easy{background:#F0FDF4;color:var(--success)}.medium{background:var(--warn-bg);color:var(--warn)}.hard{background:var(--danger-bg);color:var(--danger)}
+.ex-body{padding:14px 16px}
+.ex-body p{margin-bottom:8px;font-size:.9em}
+code{background:#F1F5F9;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:.85em}
+input[type=text],select{border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:.9em;width:100%;max-width:400px;margin:4px 0;font-family:inherit}
+select{max-width:420px}
+button{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:7px 16px;cursor:pointer;font-size:.85em;margin:4px 4px 4px 0}
+button:hover{opacity:.9}
+button.reset-btn{background:var(--muted)}
+.feedback{margin-top:8px;padding:10px 14px;border-radius:6px;font-size:.85em;display:none}
+.feedback.correct{display:block;background:var(--success-bg);color:var(--success);border:1px solid var(--success-border)}
+.feedback.wrong{display:block;background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
+.hint-btn{background:var(--warn);font-size:.8em;padding:5px 12px}
+.hint{display:none;background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);padding:10px 14px;border-radius:6px;margin-top:8px;font-size:.85em}
+.completed{border-left:3px solid var(--success)}
+table.ref{width:100%;border-collapse:collapse;font-size:.85em;margin:8px 0}
+table.ref th{background:var(--accent);color:#fff;padding:6px 10px;text-align:left}
+table.ref td{padding:6px 10px;border-bottom:1px solid var(--border)}
+table.ref tr:nth-child(even){background:#F1F5F9}
+footer{text-align:center;padding:20px;color:var(--muted);font-size:.8em;margin-top:30px}
+@media(max-width:600px){body{padding:10px}input[type=text],select{max-width:100%}.stats{flex-direction:column;gap:4px}}
+</style>
+</head>
+<body>
+
+<header>
+<h1>🔄 Esercizi di Riepilogo — NAT</h1>
+<p>10 esercizi sul Network Address Translation | ~30 min</p>
+</header>
+
+<div class="stats">
+<span>Completati: <b id="done">0</b>/10</span>
+<span>Corretti: <b id="ok">0</b>/10</span>
+<span>Precisione: <b id="pct">—</b></span>
+</div>
+
+<!-- ═══ A. FONDAMENTI ═══ -->
+<div class="section-title">A — Fondamenti del NAT</div>
+
+<div class="exercise" id="ex1">
+<div class="ex-header"><h3>1. Perché esiste il NAT?</h3><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>Il NAT è stato inventato principalmente per risolvere quale problema?</p>
+<select id="f1">
+<option value="">— Seleziona —</option>
+<option value="a">Proteggere la rete interna dagli attacchi esterni</option>
+<option value="b">L'esaurimento degli indirizzi IPv4 pubblici (solo ~4.3 miliardi disponibili)</option>
+<option value="c">Velocizzare il routing tra reti</option>
+<option value="d">Comprimere il traffico di rete</option>
+</select>
+<button onclick="chkSel('f1','b','✓ Corretto! Gli IP IPv4 pubblici sono solo 4.3 miliardi e sono esauriti da tempo. Il NAT permette a migliaia di host interni con IP privati (RFC 1918) di uscire su Internet usando pochi IP pubblici. La protezione è un effetto collaterale (e limitato), non lo scopo.','✗ Il NAT nasce per risolvere l esaurimento di IPv4: le reti interne usano IP privati (RFC 1918: 10.x, 172.16-31.x, 192.168.x), e il NAT li traduce in IP pubblici quando escono su Internet. La protezione è un mito (vedremo dopo).')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex1',['f1'])">Reset</button>
+<div class="feedback" id="fb1"></div>
+</div></div>
+
+<div class="exercise" id="ex2">
+<div class="ex-header"><h3>2. Range IP privati RFC 1918</h3><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>Quale di questi range IP NON è un indirizzo privato definito dall'RFC 1918?</p>
+<select id="f2">
+<option value="">— Seleziona —</option>
+<option value="a">10.0.0.0/8</option>
+<option value="b">172.16.0.0/12</option>
+<option value="c">192.168.0.0/16</option>
+<option value="d">100.64.0.0/10</option>
+</select>
+<button onclick="chkSel('f2','d','✓ Corretto! Gli IP privati RFC 1918 sono: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16. Il range 100.64.0.0/10 è definito dall RFC 6598 ed è il CGN (Carrier-Grade NAT), usato dai provider Internet per il NAT di livello operatore — diverso dagli IP privati tradizionali.','✗ 100.64.0.0/10 è il range del Carrier-Grade NAT (CGN), usato dagli ISP ma non è un IP privato RFC 1918. Gli altri tre (10.x, 172.16-31.x, 192.168.x) sono i veri IP privati.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex2',['f2'])">Reset</button>
+<div class="feedback" id="fb2"></div>
+</div></div>
+
+<!-- ═══ B. TIPI DI NAT ═══ -->
+<div class="section-title">B — Tipi di NAT</div>
+
+<div class="exercise" id="ex3">
+<div class="ex-header"><h3>3. Tipo di NAT in casa</h3><span class="diff easy">Facile</span></div>
+<div class="ex-body">
+<p>A casa tua hai 4 dispositivi (PC, telefono, tablet, smart TV) che navigano tutti su Internet contemporaneamente usando l'unico IP pubblico dato dal tuo ISP. Che tipo di NAT sta facendo il router?</p>
+<select id="f3">
+<option value="">— Seleziona —</option>
+<option value="snat">SNAT 1:1 (Source NAT)</option>
+<option value="pat">PAT (Port Address Translation)</option>
+<option value="dnat">DNAT (Destination NAT)</option>
+<option value="none">Nessun NAT, è solo routing</option>
+</select>
+<button onclick="chkSel('f3','pat','✓ Corretto! PAT (Port Address Translation) è quello che fa il tuo router di casa: 4 dispositivi (o 100, o 1000) condividono UN solo IP pubblico. Il router usa le porte sorgente come discriminante per capire a quale dispositivo interno consegnare le risposte. Questo è il caso d uso più comune del NAT oggi.','✗ Quando molti host condividono UN IP pubblico, è PAT. Il router deve distinguere le connessioni dei 4 dispositivi su un solo IP — lo fa cambiando la porta sorgente di ogni connessione. Senza PAT dovresti avere 4 IP pubblici.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex3',['f3'])">Reset</button>
+<div class="feedback" id="fb3"></div>
+</div></div>
+
+<div class="exercise" id="ex4">
+<div class="ex-header"><h3>4. Port Forward / DNAT</h3><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>La tua azienda ha UN solo IP pubblico (<code>203.0.113.1</code>) ma deve esporre TRE servizi interni diversi su Internet:</p>
+<table class="ref">
+<tr><th>Servizio</th><th>IP interno</th><th>Porta</th></tr>
+<tr><td>Web server</td><td>10.0.2.10</td><td>443</td></tr>
+<tr><td>Database Oracle</td><td>10.0.2.20</td><td>1521</td></tr>
+<tr><td>SSH server</td><td>10.0.2.30</td><td>22</td></tr>
+</table>
+<p>Come lo realizzi tecnicamente?</p>
+<select id="f4">
+<option value="">— Seleziona —</option>
+<option value="a">Servono 3 IP pubblici diversi, uno per servizio</option>
+<option value="b">Con 3 Port Forward (DNAT con port mapping), usando porte pubbliche diverse: es. 203.0.113.1:443→Web, 203.0.113.1:1521→DB, 203.0.113.1:2222→SSH</option>
+<option value="c">Con un solo SNAT dinamico</option>
+<option value="d">Non è tecnicamente possibile con un solo IP</option>
+</select>
+<button onclick="chkSel('f4','b','✓ Corretto! Port Forward con port mapping permette di usare UN IP pubblico per molti servizi interni, discriminando tramite porta destinazione. Il cambio porta SSH (22→2222) è anche una best practice per ridurre il rumore degli scanner automatici. Tecnicamente questo è PAT applicato in direzione inbound: traduce sia IP dst sia porta dst.','✗ Non servono 3 IP pubblici! Un port forward con port mapping fa esattamente questo: 1 IP pubblico + N porte diverse → N servizi interni. È una delle feature più usate in PMI.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex4',['f4'])">Reset</button>
+<div class="feedback" id="fb4"></div>
+</div></div>
+
+<!-- ═══ C. FLUSSO NAT ═══ -->
+<div class="section-title">C — Flusso dei pacchetti</div>
+
+<div class="exercise" id="ex5">
+<div class="ex-header"><h3>5. Traduzione outbound (PAT)</h3><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Un PC con IP <code>10.0.1.50</code> e porta sorgente <code>49152</code> naviga su <code>142.250.180.14:443</code> (google.com). Il firewall ha IP pubblico <code>203.0.113.1</code>.</p>
+<p>Il pacchetto che ESCE verso Google su Internet ha:</p>
+<select id="f5">
+<option value="">— Seleziona —</option>
+<option value="a">src: 10.0.1.50:49152 → dst: 142.250.180.14:443</option>
+<option value="b">src: 203.0.113.1:30001 → dst: 142.250.180.14:443</option>
+<option value="c">src: 203.0.113.1:49152 → dst: 10.0.1.50:443</option>
+<option value="d">src: 10.0.1.50:443 → dst: 203.0.113.1:49152</option>
+</select>
+<button onclick="chkSel('f5','b','✓ Corretto! Il PAT traduce sia l IP sorgente (10.0.1.50 → 203.0.113.1) sia la porta sorgente (49152 → 30001, scelta dal firewall). La destinazione resta invariata. Il PC interno non sa che il suo IP viene riscritto — è trasparente. Quando Google risponde a 203.0.113.1:30001, il firewall consulta la NAT table e consegna il pacchetto a 10.0.1.50:49152.','✗ Il PAT modifica src IP e src PORT. La destinazione (IP+porta di Google) resta intatta. La porta sorgente cambia perché il firewall usa le porte come identificatori per distinguere connessioni di client diversi sullo stesso IP pubblico.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex5',['f5'])">Reset</button>
+<div class="feedback" id="fb5"></div>
+</div></div>
+
+<div class="exercise" id="ex6">
+<div class="ex-header"><h3>6. Quante connessioni con PAT?</h3><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Con PAT e UN solo IP pubblico, qual è il limite teorico di connessioni simultanee?</p>
+<select id="f6">
+<option value="">— Seleziona —</option>
+<option value="a">256 (una porta per host interno)</option>
+<option value="b">~1.000 (legato al numero di host interni)</option>
+<option value="c">~65.000 (65.535 porte TCP/UDP disponibili)</option>
+<option value="d">Illimitate</option>
+</select>
+<button onclick="chkSel('f6','c','✓ Corretto! Il PAT usa la porta sorgente come identificatore univoco. Le porte TCP/UDP vanno da 1 a 65535 = ~65.000 connessioni simultanee per IP pubblico. In pratica un po meno perché alcune porte sono riservate, e il firewall usa risorse per ogni entry nella NAT state table. Per aziende grandi si usano pool di IP pubblici per moltiplicare.','✗ Le porte TCP/UDP vanno fino a 65535, quindi un singolo IP pubblico con PAT può teoricamente gestire ~65.000 connessioni simultanee (non host, connessioni — un singolo host ne apre decine o centinaia).')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex6',['f6'])">Reset</button>
+<div class="feedback" id="fb6"></div>
+</div></div>
+
+<!-- ═══ D. NAT E SICUREZZA ═══ -->
+<div class="section-title">D — NAT e sicurezza</div>
+
+<div class="exercise" id="ex7">
+<div class="ex-header"><h3>7. Il mito del NAT come protezione</h3><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Un collega ti dice: <em>"Non servono firewall complicati, il NAT del router nasconde gli IP interni e ci protegge dagli attacchi."</em></p>
+<p>Qual è la risposta TECNICAMENTE corretta?</p>
+<select id="f7">
+<option value="">— Seleziona —</option>
+<option value="a">Ha ragione, il NAT è sufficiente per la sicurezza domestica</option>
+<option value="b">Ha torto: il NAT è una funzionalità di traduzione indirizzi, non controlla il traffico. Un malware interno che "chiama casa" (C2) passa tranquillamente. Un port forward aperto senza regole è una porta spalancata. Servono entrambi (NAT + firewall).</option>
+<option value="c">Ha ragione parzialmente, solo per traffico TCP</option>
+<option value="d">Il NAT protegge da attacchi inbound ma non outbound</option>
+</select>
+<button onclick="chkSel('f7','b','✓ Corretto! Il NAT traduce indirizzi, non è una misura di sicurezza. Protezione inbound apparente = solo effetto collaterale del fatto che IP privati non sono raggiungibili da Internet. Malware outbound (es: beacon C2, ransomware che scarica payload) passa senza problemi. Con IPv6 (dove il NAT sparirà), il firewall sarà ancora più critico. La vera sicurezza perimetrale richiede firewall stateful + regole esplicite + logging + IDS/IPS.','✗ Il NAT NON è sicurezza. Traduce indirizzi. Un PC compromesso che apre connessioni verso l attaccante esce liberamente (è traffico outbound, NAT lo gestisce come qualsiasi navigazione web). La "protezione" inbound è un effetto collaterale, non un meccanismo intenzionale.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex7',['f7'])">Reset</button>
+<div class="feedback" id="fb7"></div>
+</div></div>
+
+<div class="exercise" id="ex8">
+<div class="ex-header"><h3>8. Esporre un servizio: best practice</h3><span class="diff medium">Medio</span></div>
+<div class="ex-body">
+<p>Devi esporre un server RDP (Windows remote desktop, porta 3389) su Internet per far lavorare da remoto un dipendente. Qual è l'approccio CORRETTO?</p>
+<select id="f8">
+<option value="">— Seleziona —</option>
+<option value="a">Port forward diretto: WAN:3389 → server interno 3389</option>
+<option value="b">Port forward su porta diversa: WAN:33890 → server interno 3389 (security by obscurity)</option>
+<option value="c">VPN aziendale per il dipendente, poi RDP dalla rete interna tramite il tunnel VPN</option>
+<option value="d">RDP + password complessa è sufficiente</option>
+</select>
+<button onclick="chkSel('f8','c','✓ Corretto! Mai esporre RDP su Internet (anche con porta cambiata). RDP esposto riceve centinaia di brute force al giorno, ed è un vettore principale di ransomware (Ryuk, Conti, LockBit sfruttavano RDP esposti). La soluzione è: VPN per autenticarsi e accedere alla rete interna, poi RDP dal tunnel VPN verso il server. Questo è un pattern enterprise standard.','✗ NEVER esporre RDP su Internet (stessa cosa per SSH). Anche cambiando porta, gli scanner automatici trovano comunque. L approccio corretto è VPN (OpenVPN su pfSense, o WireGuard, o soluzioni enterprise) + accesso RDP dalla rete interna solo dopo autenticazione VPN.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex8',['f8'])">Reset</button>
+<div class="feedback" id="fb8"></div>
+</div></div>
+
+<!-- ═══ E. SCENARI REALI ═══ -->
+<div class="section-title">E — Scenari reali</div>
+
+<div class="exercise" id="ex9">
+<div class="ex-header"><h3>9. Mail server aziendale — quanti flussi NAT?</h3><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Hai un mail server in DMZ (<code>10.0.2.20</code>) che deve:</p>
+<p>a) Ricevere email da Internet</p>
+<p>b) Inviare email verso altri server di posta su Internet</p>
+<p>c) Essere accessibile dai dipendenti in mobilità per leggere la posta</p>
+<p>Quali dei seguenti flussi sono necessari? Seleziona TUTTI quelli corretti:</p>
+<p><label><input type="checkbox" id="f9a" value="y"> Port Forward inbound: WAN:25 → 10.0.2.20:25 (SMTP ricezione)</label></p>
+<p><label><input type="checkbox" id="f9b" value="y"> Regola firewall DMZ→WAN porta 25 (SMTP outbound per invio email)</label></p>
+<p><label><input type="checkbox" id="f9c" value="y"> Port Forward inbound: WAN:993 → 10.0.2.20:993 (IMAPS per lettura posta)</label></p>
+<p><label><input type="checkbox" id="f9d" value="n"> Port Forward inbound: WAN:23 → 10.0.2.20:23 (Telnet per amministrazione)</label></p>
+<p><label><input type="checkbox" id="f9e" value="n"> PAT outbound sul web server per la navigazione dei dipendenti</label></p>
+<button onclick="chk9()">Verifica</button>
+<button class="reset-btn" onclick="resetEx9()">Reset</button>
+<div class="feedback" id="fb9"></div>
+</div></div>
+
+<div class="exercise" id="ex10">
+<div class="ex-header"><h3>10. NAT nel futuro (IPv6)</h3><span class="diff hard">Difficile</span></div>
+<div class="ex-body">
+<p>Con IPv6 (che offre 340 undecilioni di indirizzi — praticamente infiniti), cosa succede al NAT?</p>
+<select id="f10">
+<option value="">— Seleziona —</option>
+<option value="a">Il NAT diventa ancora più importante</option>
+<option value="b">Il NAT per motivi di esaurimento IP non serve più (ogni host può avere un IP pubblico), ma il firewall diventa ANCORA più critico per la sicurezza</option>
+<option value="c">Il NAT sparisce e non serve più nessuna protezione</option>
+<option value="d">IPv6 include il NAT nativamente nel protocollo</option>
+</select>
+<button onclick="chkSel('f10','b','✓ Corretto! IPv6 elimina la necessità del NAT per motivi di scarsità indirizzi — ogni host può avere il suo IP pubblico univoco. Questo però RIMUOVE l effetto collaterale di "nascondimento" che il NAT IPv4 offriva: ogni host IPv6 è potenzialmente raggiungibile da Internet. Per questo il firewall stateful con regole esplicite diventa obbligatorio, non opzionale. Chi pensava che il NAT fosse sicurezza si troverà brutte sorprese nella transizione IPv6.','✗ Con IPv6 il NAT per scarsità indirizzi non serve più (ce ne sono abbastanza per ogni grano di sabbia sulla Terra!). Ma questo espone TUTTI gli host a Internet per default, quindi il firewall diventa l unico vero baluardo. Il messaggio didattico è: il NAT non è mai stato sicurezza — con IPv6 questo diventa evidente a tutti.')">Verifica</button>
+<button class="reset-btn" onclick="resetEx('ex10',['f10'])">Reset</button>
+<div class="feedback" id="fb10"></div>
+</div></div>
+
+<footer>
+Corso Cybersecurity — Leonardo SpA | Modulo 1 — Esercizi di Riepilogo NAT<br>
+<a href="https://luiroman.github.io/leonardo-esercizi-interattivi/">Tutti gli esercizi</a>
+</footer>
+
+<script>
+let completed={},correct={};
+function updateStats(){
+  const d=Object.keys(completed).length, c=Object.values(correct).filter(Boolean).length;
+  document.getElementById('done').textContent=d;
+  document.getElementById('ok').textContent=c;
+  document.getElementById('pct').textContent=d>0?Math.round(c/d*100)+'%':'—';
+}
+function markEx(id,ok){
+  completed[id]=true; correct[id]=ok;
+  document.getElementById(id).classList.toggle('completed',ok);
+  updateStats();
+}
+function chk(fid,accept,msgOk){
+  const v=document.getElementById(fid).value.trim().toLowerCase().replace(/\s+/g,' ');
+  const num=fid.replace('f','');
+  const fb=document.getElementById('fb'+num);
+  const ok=accept.some(a=>v===a.toLowerCase());
+  fb.className='feedback '+(ok?'correct':'wrong');
+  fb.textContent=ok?msgOk:'✗ Non corretto. Riprova!';
+  fb.style.display='block';
+  markEx('ex'+num,ok);
+}
+function chkSel(fid,val,msgOk,msgNo){
+  const v=document.getElementById(fid).value;
+  const num=fid.replace('f','');
+  const fb=document.getElementById('fb'+num);
+  if(!v){fb.className='feedback wrong';fb.textContent='Seleziona una risposta.';fb.style.display='block';return;}
+  const ok=v===val;
+  fb.className='feedback '+(ok?'correct':'wrong');
+  fb.textContent=ok?msgOk:msgNo;
+  fb.style.display='block';
+  markEx('ex'+num,ok);
+}
+function chk9(){
+  // Le risposte corrette sono a, b, c (value="y") - SMTP in, SMTP out, IMAPS in
+  const correct_ids=['f9a','f9b','f9c'];
+  const wrong_ids=['f9d','f9e'];
+  const allCorrect=correct_ids.every(id=>document.getElementById(id).checked)
+                   && wrong_ids.every(id=>!document.getElementById(id).checked);
+  const fb=document.getElementById('fb9');
+  fb.className='feedback '+(allCorrect?'correct':'wrong');
+  fb.textContent=allCorrect
+    ?'✓ Corretto! Servono: (a) SMTP inbound per ricevere email da altri server, (b) SMTP outbound per inviare email, (c) IMAPS (993) per i dipendenti che leggono la posta da remoto. Telnet (d) è un protocollo in chiaro insicuro, mai esporre! PAT outbound sul web server (e) è completamente fuori contesto (quello è per la navigazione Internet dei client, non del mail server).'
+    :'✗ Le risposte corrette sono a, b, c. Il mail server ha 3 flussi: SMTP inbound (ricezione da altri MTA), SMTP outbound (invio), IMAPS inbound (lettura posta da remoto). Telnet è insicuro, non va esposto. Il PAT outbound non c entra con un mail server.';
+  fb.style.display='block';
+  markEx('ex9',allCorrect);
+}
+function resetEx(exId,fields){
+  fields.forEach(f=>{const el=document.getElementById(f);if(el.tagName==='SELECT')el.selectedIndex=0;else el.value='';});
+  const num=exId.replace('ex','');
+  const fb=document.getElementById('fb'+num);
+  if(fb){fb.style.display='none';fb.className='feedback';}
+  document.getElementById(exId).classList.remove('completed');
+  delete completed[exId];delete correct[exId];
+  updateStats();
+}
+function resetEx9(){
+  ['f9a','f9b','f9c','f9d','f9e'].forEach(id=>document.getElementById(id).checked=false);
+  const fb=document.getElementById('fb9');
+  fb.style.display='none';
+  document.getElementById('ex9').classList.remove('completed');
+  delete completed['ex9'];delete correct['ex9'];
+  updateStats();
+}
+function toggleHint(id){const h=document.getElementById(id);h.style.display=h.style.display==='block'?'none':'block';}
+</script>
+</body>
+</html>
