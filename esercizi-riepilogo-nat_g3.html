@@ -138,16 +138,15 @@ footer{text-align:center;padding:20px;color:var(--muted);font-size:.8em;margin-t
 <div class="ex-header"><h3>5. Traduzione outbound (PAT)</h3><span class="diff medium">Medio</span></div>
 <div class="ex-body">
 <p>Un PC con IP <code>10.0.1.50</code> e porta sorgente <code>49152</code> naviga su <code>142.250.180.14:443</code> (google.com). Il firewall ha IP pubblico <code>203.0.113.1</code>.</p>
-<p>Il pacchetto che ESCE verso Google su Internet ha:</p>
-<select id="f5">
-<option value="">— Seleziona —</option>
-<option value="a">src: 10.0.1.50:49152 → dst: 142.250.180.14:443</option>
-<option value="b">src: 203.0.113.1:30001 → dst: 142.250.180.14:443</option>
-<option value="c">src: 203.0.113.1:49152 → dst: 10.0.1.50:443</option>
-<option value="d">src: 10.0.1.50:443 → dst: 203.0.113.1:49152</option>
-</select>
-<button onclick="chkSel('f5','b','✓ Corretto! Il PAT traduce sia l IP sorgente (10.0.1.50 → 203.0.113.1) sia la porta sorgente (49152 → 30001, scelta dal firewall). La destinazione resta invariata. Il PC interno non sa che il suo IP viene riscritto — è trasparente. Quando Google risponde a 203.0.113.1:30001, il firewall consulta la NAT table e consegna il pacchetto a 10.0.1.50:49152.','✗ Il PAT modifica src IP e src PORT. La destinazione (IP+porta di Google) resta intatta. La porta sorgente cambia perché il firewall usa le porte come identificatori per distinguere connessioni di client diversi sullo stesso IP pubblico.')">Verifica</button>
-<button class="reset-btn" onclick="resetEx('ex5',['f5'])">Reset</button>
+<p>Quali delle seguenti traduzioni del pacchetto in uscita verso Google sono <strong>VALIDE</strong>? Seleziona TUTTE quelle corrette:</p>
+<p><label><input type="checkbox" id="f5a" value="y"> src: <code>203.0.113.1:49152</code> → dst: <code>142.250.180.14:443</code> (porta sorgente mantenuta)</label></p>
+<p><label><input type="checkbox" id="f5b" value="y"> src: <code>203.0.113.1:30001</code> → dst: <code>142.250.180.14:443</code> (porta sorgente riassegnata)</label></p>
+<p><label><input type="checkbox" id="f5c" value="n"> src: <code>10.0.1.50:49152</code> → dst: <code>142.250.180.14:443</code> (IP sorgente non tradotto)</label></p>
+<p><label><input type="checkbox" id="f5d" value="n"> src: <code>203.0.113.1:49152</code> → dst: <code>10.0.1.50:443</code> (destinazione modificata)</label></p>
+<button onclick="chk5()">Verifica</button>
+<button class="reset-btn" onclick="resetEx5()">Reset</button>
+<button class="hint-btn" onclick="toggleHint('h5')">Suggerimento</button>
+<div class="hint" id="h5">💡 Cosa modifica SEMPRE il PAT? Cosa modifica SOLO se necessario? Cosa NON modifica MAI?</div>
 <div class="feedback" id="fb5"></div>
 </div></div>
 
@@ -182,7 +181,7 @@ footer{text-align:center;padding:20px;color:var(--muted);font-size:.8em;margin-t
 <option value="c">Ha ragione parzialmente, solo per traffico TCP</option>
 <option value="d">Il NAT protegge da attacchi inbound ma non outbound</option>
 </select>
-<button onclick="chkSel('f7','b','✓ Corretto! Il NAT traduce indirizzi, non è una misura di sicurezza. Protezione inbound apparente = solo effetto collaterale del fatto che IP privati non sono raggiungibili da Internet. Malware outbound (es: beacon C2, ransomware che scarica payload) passa senza problemi. Con IPv6 (dove il NAT sparirà), il firewall sarà ancora più critico. La vera sicurezza perimetrale richiede firewall stateful + regole esplicite + logging + IDS/IPS.','✗ Il NAT NON è sicurezza. Traduce indirizzi. Un PC compromesso che apre connessioni verso l attaccante esce liberamente (è traffico outbound, NAT lo gestisce come qualsiasi navigazione web). La "protezione" inbound è un effetto collaterale, non un meccanismo intenzionale.')">Verifica</button>
+<button onclick="chkSel('f7','b','✓ Corretto! Il NAT traduce indirizzi, non è una misura di sicurezza. Protezione inbound apparente = solo effetto collaterale del fatto che IP privati non sono raggiungibili da Internet. Malware outbound (es: beacon C2, ransomware che scarica payload) passa senza problemi. Con IPv6 (dove il NAT sparirà), il firewall sarà ancora più critico. La vera sicurezza perimetrale richiede firewall stateful + regole esplicite + logging + IDS/IPS.','✗ Il NAT NON è sicurezza. Traduce indirizzi. Un PC compromesso che apre connessioni verso l attaccante esce liberamente (è traffico outbound, NAT lo gestisce come qualsiasi navigazione web). La «protezione» inbound è un effetto collaterale, non un meccanismo intenzionale.')">Verifica</button>
 <button class="reset-btn" onclick="resetEx('ex7',['f7'])">Reset</button>
 <div class="feedback" id="fb7"></div>
 </div></div>
@@ -235,7 +234,7 @@ footer{text-align:center;padding:20px;color:var(--muted);font-size:.8em;margin-t
 <option value="c">Il NAT sparisce e non serve più nessuna protezione</option>
 <option value="d">IPv6 include il NAT nativamente nel protocollo</option>
 </select>
-<button onclick="chkSel('f10','b','✓ Corretto! IPv6 elimina la necessità del NAT per motivi di scarsità indirizzi — ogni host può avere il suo IP pubblico univoco. Questo però RIMUOVE l effetto collaterale di "nascondimento" che il NAT IPv4 offriva: ogni host IPv6 è potenzialmente raggiungibile da Internet. Per questo il firewall stateful con regole esplicite diventa obbligatorio, non opzionale. Chi pensava che il NAT fosse sicurezza si troverà brutte sorprese nella transizione IPv6.','✗ Con IPv6 il NAT per scarsità indirizzi non serve più (ce ne sono abbastanza per ogni grano di sabbia sulla Terra!). Ma questo espone TUTTI gli host a Internet per default, quindi il firewall diventa l unico vero baluardo. Il messaggio didattico è: il NAT non è mai stato sicurezza — con IPv6 questo diventa evidente a tutti.')">Verifica</button>
+<button onclick="chkSel('f10','b','✓ Corretto! IPv6 elimina la necessità del NAT per motivi di scarsità indirizzi — ogni host può avere il suo IP pubblico univoco. Questo però RIMUOVE l effetto collaterale di «nascondimento» che il NAT IPv4 offriva: ogni host IPv6 è potenzialmente raggiungibile da Internet. Per questo il firewall stateful con regole esplicite diventa obbligatorio, non opzionale. Chi pensava che il NAT fosse sicurezza si troverà brutte sorprese nella transizione IPv6.','✗ Con IPv6 il NAT per scarsità indirizzi non serve più (ce ne sono abbastanza per ogni grano di sabbia sulla Terra!). Ma questo espone TUTTI gli host a Internet per default, quindi il firewall diventa l unico vero baluardo. Il messaggio didattico è: il NAT non è mai stato sicurezza — con IPv6 questo diventa evidente a tutti.')">Verifica</button>
 <button class="reset-btn" onclick="resetEx('ex10',['f10'])">Reset</button>
 <div class="feedback" id="fb10"></div>
 </div></div>
@@ -279,6 +278,20 @@ function chkSel(fid,val,msgOk,msgNo){
   fb.style.display='block';
   markEx('ex'+num,ok);
 }
+function chk5(){
+  // Le risposte corrette sono a, b (value="y") - entrambe le traduzioni outbound sono valide
+  const correct_ids=['f5a','f5b'];
+  const wrong_ids=['f5c','f5d'];
+  const allCorrect=correct_ids.every(id=>document.getElementById(id).checked)
+                   && wrong_ids.every(id=>!document.getElementById(id).checked);
+  const fb=document.getElementById('fb5');
+  fb.className='feedback '+(allCorrect?'correct':'wrong');
+  fb.textContent=allCorrect
+    ?'✓ Corretto! Entrambe (a) e (b) sono traduzioni VALIDE del PAT. L IP sorgente cambia SEMPRE (10.0.1.50 → 203.0.113.1). La porta sorgente viene mantenuta (49152) se nessun altra connessione la sta già usando, oppure viene riassegnata (es. 30001) in caso di conflitto. La destinazione (Google IP+porta) NON deve mai essere modificata. Le opzioni (c) e (d) sono errate: (c) non traduce affatto l IP sorgente; (d) modifica la destinazione (caratteristica del DNAT, non del PAT outbound).'
+    :'✗ Le risposte corrette sono a + b. Il PAT cambia SEMPRE l IP sorgente, ma la porta sorgente solo SE NECESSARIO (in caso di conflitto con altre connessioni attive). Quindi sia "porta mantenuta" che "porta riassegnata" sono valide. Le opzioni c e d sono errate: c non traduce l IP, d modifica la destinazione (sarebbe DNAT).';
+  fb.style.display='block';
+  markEx('ex5',allCorrect);
+}
 function chk9(){
   // Le risposte corrette sono a, b, c (value="y") - SMTP in, SMTP out, IMAPS in
   const correct_ids=['f9a','f9b','f9c'];
@@ -300,6 +313,14 @@ function resetEx(exId,fields){
   if(fb){fb.style.display='none';fb.className='feedback';}
   document.getElementById(exId).classList.remove('completed');
   delete completed[exId];delete correct[exId];
+  updateStats();
+}
+function resetEx5(){
+  ['f5a','f5b','f5c','f5d'].forEach(id=>document.getElementById(id).checked=false);
+  const fb=document.getElementById('fb5');
+  fb.style.display='none';
+  document.getElementById('ex5').classList.remove('completed');
+  delete completed['ex5'];delete correct['ex5'];
   updateStats();
 }
 function resetEx9(){
