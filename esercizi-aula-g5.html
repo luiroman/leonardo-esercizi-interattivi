@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>Esercizi Aula G5 - Zero Trust e Microsegmentazione</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.6;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F1B2D 0%,#1E293B 100%);color:#fff;padding:30px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:24px;margin-bottom:6px}
+header p{color:#CBD5E1;font-size:14px}
+.intro{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:20px;font-size:14px}
+.cat{background:#0EA5E9;color:#fff;padding:10px 16px;border-radius:8px;margin:24px 0 14px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.ex{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:20px;margin-bottom:14px}
+.ex-num{display:inline-block;background:#38BDF8;color:#fff;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;margin-bottom:10px}
+.ex h3{font-size:16px;margin-bottom:10px;color:#0F1B2D}
+.ex p{font-size:14px;margin-bottom:10px;color:#334155}
+.ex ul{margin:8px 0 10px 22px;font-size:13px;color:#475569}
+details{margin-top:12px;background:#F1F5F9;border-radius:6px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600;color:#0EA5E9;font-size:13px}
+details[open] summary{margin-bottom:8px}
+.sol{font-size:13px;color:#0F1B2D;line-height:1.7}
+.sol code{background:#1E293B;color:#38BDF8;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+</style></head><body><div class="container">
+<header><h1>📚 Esercizi Aula G5</h1><p>Zero Trust, microsegmentazione e identità · 10 esercizi · ~50 minuti</p></header>
+<div class="intro"><strong>Modalità di lavoro:</strong> esercizi da svolgere in aula in coppie. Discussione plenaria dopo ogni categoria. Le soluzioni sono nascoste — apritele solo dopo aver provato.</div>
+
+<div class="cat">Categoria A · Modello castello-fossato e suoi limiti</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 1</span><h3>Identifica l'assunto implicito</h3>
+<p>In un'azienda con firewall perimetrale + VLAN per reparto, un dipendente del marketing apre un allegato malevolo. Il malware ottiene credenziali di un account di sviluppo trovate in cache browser e accede al server Git interno.</p>
+<p><strong>Domanda:</strong> quale assunto del modello castello-fossato ha permesso l'attacco?</p>
+<details><summary>Mostra soluzione</summary><div class="sol">L'assunto implicito è che <strong>tutto ciò che si trova all'interno del perimetro è fidato</strong>. Una volta che il malware è "dentro", il firewall perimetrale non ispeziona più il traffico est-ovest. Il server Git si fida di chiunque abbia credenziali valide, indipendentemente dal contesto (dispositivo compromesso, comportamento anomalo). Zero Trust avrebbe richiesto verifica continua: device posture, MFA per accesso a Git, micropolicy che limitano marketing → Git.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 2</span><h3>Lateral movement: trova i salti</h3>
+<p>In una rete con 4 VLAN (Uffici, Sviluppo, Produzione, DMZ), un attaccante atterra su un PC della VLAN Uffici tramite phishing. L'obiettivo finale è il database in Produzione.</p>
+<p><strong>Domanda:</strong> elenca 3 possibili percorsi di lateral movement, considerando che le VLAN sono separate da firewall ma con regole "permissive" tra Uffici e Sviluppo per comodità degli sviluppatori.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">Tre percorsi tipici:<br>1. <strong>Uffici → Sviluppo via SMB</strong>: la regola permissiva permette accesso a file share di Sviluppo, dove trova credenziali in script o file di configurazione.<br>2. <strong>Uffici → AD → Sviluppo</strong>: compromissione di un account AD via Pass-the-Hash, escalation a service account che ha accessi anche a Sviluppo.<br>3. <strong>Uffici → Sviluppo → Produzione via deploy pipeline</strong>: trova credenziali della pipeline CI/CD che ha permessi su Produzione per i deploy.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 3</span><h3>Il perimetro è scomparso?</h3>
+<p>Elenca 5 scenari concreti, presi dalla tua esperienza di stage o studio, in cui il modello "tutto dentro è fidato, tutto fuori è ostile" non si applica più.</p>
+<details><summary>Mostra esempi tipici</summary><div class="sol">• Smart working: dipendente accede da rete domestica non controllata.<br>• SaaS aziendali (M365, Slack): dati aziendali vivono fuori dal perimetro per design.<br>• BYOD: dispositivo personale non gestito accede a dati aziendali.<br>• Cloud workload: VM su Azure parla con servizi on-prem via VPN - "dentro" o "fuori"?<br>• API B2B: fornitori esterni chiamano API aziendali con autenticazione, sono dentro o fuori?<br>• Microservizi cross-cloud: due servizi della stessa app girano su cloud diversi.</div></details></div>
+
+<div class="cat">Categoria B · Zero Trust e tenet NIST</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 4</span><h3>Mappa il tenet</h3>
+<p>Per ognuna delle seguenti misure di sicurezza, indica quale dei 7 tenet NIST SP 800-207 implementa:</p>
+<ul><li>A. MFA obbligatorio per ogni accesso ad applicazioni aziendali</li><li>B. Conditional Access che blocca login da paesi non autorizzati</li><li>C. Sessioni di VPN che scadono dopo 1 ora indipendentemente dall'attività</li><li>D. Tutte le comunicazioni interne cifrate via mTLS</li><li>E. Endpoint Detection and Response (EDR) su tutti i dispositivi</li></ul>
+<details><summary>Mostra soluzione</summary><div class="sol">A → Tenet 6 (autenticazione dinamica prima dell'accesso).<br>B → Tenet 4 (policy dinamica basata su contesto).<br>C → Tenet 3 (accesso per-sessione, non permanente).<br>D → Tenet 2 (comunicazioni protette indipendentemente dalla rete).<br>E → Tenet 5 (monitoring continuo della postura) e Tenet 7 (telemetria continua).</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 5</span><h3>ZTNA o VPN?</h3>
+<p>Per ognuno di questi scenari indica se è meglio una VPN tradizionale o una soluzione ZTNA, e spiega perché:</p>
+<ul><li>A. Un consulente esterno deve accedere SOLO a un'applicazione web interna per 2 settimane</li><li>B. Sviluppatori che devono accedere a server di sviluppo on-prem via SSH</li><li>C. Dipendenti che lavorano da casa e devono accedere a M365, Salesforce e GitHub</li></ul>
+<details><summary>Mostra soluzione</summary><div class="sol">A → <strong>ZTNA</strong>. Granularità: una sola app, nessun accesso al resto della rete. Provisioning rapido, deprovisioning automatico a scadenza.<br>B → <strong>Dipende</strong>. Se il numero di server è limitato e ben definito, ZTNA. Se è un ambiente esplorativo con molti host effimeri, VPN tradizionale + bastion host può essere più pragmatico.<br>C → <strong>Né uno né l'altro</strong>. M365/Salesforce/GitHub sono SaaS già accessibili da Internet. Serve un IdP federato (Entra ID, Okta) con SSO + MFA + Conditional Access. La VPN sarebbe inutile o dannosa.</div></details></div>
+
+<div class="cat">Categoria C · Microsegmentazione cloud-first</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 6</span><h3>Macro vs micro</h3>
+<p>Distingui macrosegmentazione e microsegmentazione in ognuno di questi esempi:</p>
+<ul><li>A. "La VLAN Uffici non può raggiungere la VLAN Produzione"</li><li>B. "Il workload con tag <code>web-frontend</code> può parlare con il workload con tag <code>api-backend</code> sulla porta 8080"</li><li>C. "Il subnet 10.10.20.0/24 è isolato dal resto della VPC"</li><li>D. "Il pod Kubernetes con label <code>app=checkout</code> può chiamare solo il servizio <code>payments</code>"</li></ul>
+<details><summary>Mostra soluzione</summary><div class="sol">A → <strong>Macro</strong> (segmentazione per rete).<br>B → <strong>Micro</strong> (segmentazione per identità del workload).<br>C → <strong>Macro</strong> (segmentazione per subnet).<br>D → <strong>Micro</strong> (segmentazione per identità del pod via label).<br><br>Il discriminante: la policy si riferisce a una RETE (macro) o a un'IDENTITÀ DI WORKLOAD (micro)?</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 7</span><h3>AWS Security Group · scrivi le regole</h3>
+<p>Hai 3 EC2: <code>web-1</code> (Apache, porta 80/443), <code>app-1</code> (porta 8080), <code>db-1</code> (PostgreSQL, porta 5432). Devi configurare i Security Group rispettando default deny.</p>
+<p><strong>Compito:</strong> scrivi i 3 Security Group con le regole inbound minime, usando riferimenti a SG-ID.</p>
+<details><summary>Mostra soluzione</summary><div class="sol"><strong>SG: sg-web</strong><br>Inbound: 80/tcp from 0.0.0.0/0; 443/tcp from 0.0.0.0/0<br><br><strong>SG: sg-app</strong><br>Inbound: 8080/tcp from sg-web<br><br><strong>SG: sg-db</strong><br>Inbound: 5432/tcp from sg-app<br><br>Note: nessun riferimento a IP. SSH per amministrazione → bastion host con SG dedicato. Outbound: lasciare open o restringere a destinazioni specifiche (es. yum/apt repo, monitoring).</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 8</span><h3>Trova l'errore</h3>
+<p>Un collega ti mostra una regola Security Group:</p>
+<p><code>Inbound: 0-65535/tcp from 0.0.0.0/0</code></p>
+<p>Lui dice: "è solo temporanea, mi serve per debug stamattina, poi la tolgo". Cosa rispondi?</p>
+<details><summary>Mostra risposta tipica</summary><div class="sol">Tre cose da dire:<br>1. <strong>"Temporanee" diventano permanenti</strong>: è un anti-pattern documentato, il rischio è che venga dimenticata.<br>2. <strong>Apre TUTTE le porte da TUTTO Internet</strong>: equivale a disabilitare il firewall sull'istanza. Per debug bastava aprire la porta specifica dal tuo IP.<br>3. <strong>Alternative pulite</strong>: SSM Session Manager (no porte aperte), bastion host, o regola limitata al singolo IP del collega con scadenza esplicita (Lambda di cleanup).</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 9</span><h3>Tradurre tra cloud</h3>
+<p>Hai questa policy concettuale: <em>"Il backend può chiamare il database, nessun altro"</em>.</p>
+<p><strong>Compito:</strong> spiega come la implementi su AWS, Azure e GCP, indicando i costrutti specifici.</p>
+<details><summary>Mostra soluzione</summary><div class="sol"><strong>AWS:</strong> SG <code>sg-db</code> con inbound 5432/tcp from <code>sg-backend</code>. Nessun altro SG referenziato.<br><br><strong>Azure:</strong> ASG <code>asg-backend</code> e <code>asg-db</code>. NSG con regola Allow 5432 from <code>asg-backend</code> to <code>asg-db</code>, e regola Deny 5432 from <code>*</code> to <code>asg-db</code> a priorità inferiore.<br><br><strong>GCP:</strong> network tag <code>backend</code> e <code>db</code>. Firewall rule <code>allow-backend-to-db</code> con direction INGRESS, source-tags=backend, target-tags=db, allow tcp:5432.<br><br>Tre sintassi diverse, stesso modello mentale: identità → identità, non IP → IP.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 10</span><h3>Progettazione completa · 3-tier</h3>
+<p>Sei l'architetto di sicurezza per una nuova app web e-commerce su AWS. Componenti:</p>
+<ul><li>2 web frontend (Nginx, dietro ALB)</li><li>3 API backend (Node.js, porta 3000)</li><li>1 database PostgreSQL (RDS, porta 5432)</li><li>1 cache Redis (ElastiCache, porta 6379)</li><li>1 bastion host per amministrazione SSH</li></ul>
+<p><strong>Compito:</strong> disegna l'elenco completo dei Security Group e per ognuno specifica le regole inbound minime. Considera sia il traffico applicativo sia l'amministrazione.</p>
+<details><summary>Mostra soluzione</summary><div class="sol"><strong>sg-alb:</strong> inbound 80,443/tcp from 0.0.0.0/0<br><strong>sg-web:</strong> inbound 80/tcp from sg-alb<br><strong>sg-api:</strong> inbound 3000/tcp from sg-web<br><strong>sg-db:</strong> inbound 5432/tcp from sg-api<br><strong>sg-cache:</strong> inbound 6379/tcp from sg-api<br><strong>sg-bastion:</strong> inbound 22/tcp from &lt;IP-aziendali&gt;<br><strong>sg-admin-target</strong> (assegnato a tutte le istanze): inbound 22/tcp from sg-bastion<br><br>Note: l'admin è separato dal flusso applicativo. Nessuna regola fa riferimento a IP delle istanze, solo a SG. Outbound: restringere a destinazioni necessarie (yum, monitoring, patch). Default deny implicito su tutto il resto.</div></details></div>
+
+</div></body></html>

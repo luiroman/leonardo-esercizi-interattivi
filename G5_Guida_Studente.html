@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>G5 - Guida Studente</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.7;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F1B2D 0%,#1E293B 100%);color:#fff;padding:32px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:26px;margin-bottom:6px}header p{color:#CBD5E1;font-size:14px}
+.toc{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:24px;font-size:14px}
+.toc h2{font-size:14px;color:#0EA5E9;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px}
+.toc ol{margin-left:22px;color:#334155}.toc a{color:#0F1B2D;text-decoration:none}.toc a:hover{color:#0EA5E9}
+section{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:24px;margin-bottom:18px}
+section h2{font-size:20px;color:#0EA5E9;margin-bottom:14px;border-bottom:2px solid #38BDF8;padding-bottom:6px}
+section h3{font-size:16px;color:#0F1B2D;margin:16px 0 8px}
+section p{font-size:14px;color:#334155;margin-bottom:10px}
+section ul{margin:8px 0 12px 22px;font-size:14px;color:#475569}
+section ul li{margin-bottom:4px}
+.box{background:#F1F5F9;border-left:4px solid #0EA5E9;padding:12px 16px;margin:12px 0;border-radius:4px;font-size:13px}
+.deep-dive{background:#EFF6FF;border:1px dashed #93C5FD;padding:12px 16px;margin:12px 0;border-radius:6px;font-size:13px}
+.deep-dive::before{content:"📖 APPROFONDIMENTO";display:block;font-size:11px;font-weight:700;color:#1D4ED8;margin-bottom:6px;letter-spacing:0.5px}
+.resource{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;padding:12px 14px;margin:8px 0;font-size:13px}
+.resource a{color:#0EA5E9;text-decoration:none;font-weight:600}.resource a:hover{text-decoration:underline}
+.resource-meta{color:#64748B;font-size:11px;margin-top:4px}
+code{background:#1E293B;color:#38BDF8;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+.warn{background:#FEF3C7;border-left:4px solid #F59E0B;padding:12px 16px;margin:12px 0;border-radius:4px;font-size:13px}
+</style></head><body><div class="container">
+
+<header><h1>📘 G5 · Guida Studente</h1><p>Lezione 5 · Zero Trust, Microsegmentazione, Identità · Modulo 1</p></header>
+
+<div class="toc"><h2>Indice</h2><ol>
+<li><a href="#obj">Obiettivi della lezione</a></li>
+<li><a href="#1">Il modello castello-fossato e i suoi limiti</a></li>
+<li><a href="#2">Zero Trust: i 7 tenet NIST</a></li>
+<li><a href="#3">ZTNA vs VPN tradizionale</a></li>
+<li><a href="#4">Microsegmentazione cloud-first</a></li>
+<li><a href="#5">L'identità come perimetro: IAM e MFA</a></li>
+<li><a href="#6">Identity Provider e federazione</a></li>
+<li><a href="#7">RBAC, ABAC e least privilege</a></li>
+<li><a href="#compiti">Compiti consolidamento</a></li>
+<li><a href="#prep">Risorse propedeutiche per G6</a></li>
+</ol></div>
+
+<section id="obj"><h2>🎯 Obiettivi della lezione</h2>
+<p>Al termine di questa lezione dovrai essere in grado di:</p>
+<ul>
+<li>Spiegare perché il modello "castello-fossato" è incompleto nei contesti moderni</li>
+<li>Elencare e applicare i 7 tenet di Zero Trust secondo NIST SP 800-207</li>
+<li>Distinguere ZTNA da VPN tradizionale e scegliere quale usare in scenari specifici</li>
+<li>Progettare regole di microsegmentazione su AWS, Azure e GCP</li>
+<li>Distinguere i fattori di autenticazione e scegliere MFA appropriato</li>
+<li>Confrontare RBAC e ABAC e applicare il principio del least privilege</li>
+<li>Leggere e scrivere policy IAM in formato JSON/YAML</li>
+</ul></section>
+
+<section id="1"><h2>1 · Il modello castello-fossato e i suoi limiti</h2>
+<p>Per decenni la sicurezza di rete si è basata su un modello implicito: <strong>tutto ciò che è dentro il perimetro è fidato, tutto ciò che è fuori è ostile</strong>. Gli strumenti tipici sono il firewall perimetrale stateful, le DMZ per i servizi pubblici, le VLAN per segmentare reparti, le VPN per l'accesso remoto. È un modello che ha funzionato finché il perimetro era fisicamente chiaro e stabile.</p>
+
+<p>Oggi ci sono due limiti strutturali che lo rendono insufficiente:</p>
+<p><strong>Limite 1 · Lateral movement.</strong> Una volta che un attaccante entra nel perimetro (phishing, supply chain, credenziali rubate), si muove liberamente. Il firewall perimetrale non vede il traffico est-ovest. Le VLAN segmentano per <em>funzione</em>, non per <em>fiducia</em>: una compromissione del PC di un dipendente marketing può portare in poche ore al server Git, all'AD, ai database di produzione. La maggior parte dei breach noti ha questa fase di lateral movement come passaggio chiave.</p>
+
+<p><strong>Limite 2 · Il perimetro è scomparso.</strong> Smart working, BYOD, SaaS (M365, Salesforce, GitHub), workload cloud, accesso fornitori, microservizi cross-cloud: il "dentro" e il "fuori" non sono più definibili in modo netto. Una VPN può estendere il perimetro, ma estende anche la superficie di attacco. Continuare ad aggrappare la sicurezza al concetto di rete-fidata è un combattimento perso.</p>
+
+<div class="deep-dive">Il caso <strong>SolarWinds 2020</strong> è il caso di scuola di entrambi i limiti. Gli attaccanti compromisero la build pipeline di SolarWinds e inserirono una backdoor (SUNBURST) in un update Orion firmato digitalmente. ~18.000 organizzazioni installarono la versione trojanizzata. Il software girava con privilegi alti dentro la rete delle vittime, comunicava con C2 mascherato da telemetria legittima, e si muoveva lateralmente per settimane senza detection. Il perimetro era intatto. La fiducia implicita ha aperto la porta. Riferimento: CISA Alert AA20-352A.</div>
+</section>
+
+<section id="2"><h2>2 · Zero Trust · i 7 tenet NIST</h2>
+<p>Zero Trust è un <strong>modello</strong>, non un prodotto. Il documento di riferimento è <strong>NIST SP 800-207</strong> (agosto 2020). Definisce 7 principi (tenet) che insieme costituiscono l'architettura:</p>
+<ul>
+<li><strong>1. Risorse</strong>: tutte le fonti di dati e i servizi sono considerati risorse da proteggere</li>
+<li><strong>2. Comunicazioni</strong>: tutte le comunicazioni sono protette indipendentemente dalla posizione di rete</li>
+<li><strong>3. Per-sessione</strong>: l'accesso è concesso per singola sessione, non in modo permanente</li>
+<li><strong>4. Policy dinamica</strong>: l'accesso si basa su una policy dinamica che valuta identità, device, contesto, comportamento</li>
+<li><strong>5. Monitoring</strong>: la postura di sicurezza di asset e comunicazioni è monitorata in continuo</li>
+<li><strong>6. Autenticazione dinamica</strong>: autenticazione e autorizzazione sono valutate dinamicamente prima di ogni accesso</li>
+<li><strong>7. Telemetria</strong>: si raccoglie continuamente telemetria per migliorare le policy</li>
+</ul>
+<p>Il salto rispetto al castello-fossato sono i tenet 3 e 4: niente sessioni persistenti, niente fiducia implicita basata sulla posizione di rete. Ogni accesso è valutato di nuovo, sulla base del contesto del momento.</p>
+<div class="warn">⚠ Errore frequente: pensare che Zero Trust significhi "non fidarsi dei dipendenti". In realtà significa "non assumere fiducia implicita basata sulla posizione". La fiducia si verifica continuamente, non si nega.</div>
+</section>
+
+<section id="3"><h2>3 · ZTNA vs VPN tradizionale</h2>
+<p>ZTNA (Zero Trust Network Access) è l'implementazione concreta di Zero Trust per l'accesso remoto a applicazioni. Differisce dalla VPN tradizionale su 5 dimensioni chiave:</p>
+<ul>
+<li><strong>Modello di fiducia</strong>: VPN = implicita (dentro = fidato); ZTNA = esplicita (verifica continua)</li>
+<li><strong>Granularità</strong>: VPN dà accesso a tutta la rete; ZTNA dà accesso alla singola applicazione</li>
+<li><strong>Superficie di attacco</strong>: VPN espone l'intera VLAN raggiungibile; ZTNA espone solo la risorsa autorizzata</li>
+<li><strong>Visibilità</strong>: VPN cifra il traffico in tunnel opaco; ZTNA logga ogni richiesta granulare</li>
+<li><strong>Cloud-native</strong>: VPN nasce on-prem; ZTNA è nativa SaaS e multi-cloud</li>
+</ul>
+<p>Esempi commerciali di ZTNA: Zscaler ZPA, Cloudflare Access, Microsoft Entra Private Access, Google BeyondCorp Enterprise. La migrazione tipica dura 2-3 anni e prevede convivenza.</p>
+</section>
+
+<section id="4"><h2>4 · Microsegmentazione cloud-first</h2>
+<p>Se l'identità è il nuovo perimetro, allora dobbiamo segmentare al livello della singola risorsa, non della rete. La <strong>microsegmentazione</strong> applica policy di sicurezza al livello del singolo workload, container o servizio, identificato tramite tag/label/identità logica. La policy non descrive reti, descrive <strong>relazioni tra carichi di lavoro identificati</strong>.</p>
+
+<h3>I tre cloud a confronto</h3>
+<p><strong>AWS · Security Group.</strong> Firewall stateful a livello di istanza EC2/ENI. Default deny in ingresso. Le regole referenziano altri SG (sg-id), non IP. Esempio: <code>sg-db</code> permette inbound 5432 da <code>sg-app</code> - non da una subnet o IP.</p>
+
+<p><strong>Azure · NSG e ASG.</strong> Network Security Group a livello di subnet o NIC, con regole basate su priorità (100-4096). Gli Application Security Group (ASG) raggruppano VM logicamente: la regola NSG referenzia <code>asg-web</code> e <code>asg-app</code>, non IP.</p>
+
+<p><strong>GCP · VPC Firewall.</strong> Regole a livello di VPC che usano network tag o service account come target/source. Default deny ingress, allow egress. Esempio: <code>--source-tags=web --target-tags=api --rules=tcp:8080</code>.</p>
+
+<div class="box">Tre cloud, sintassi diverse, <strong>stesso modello mentale</strong>: identità del workload come riferimento, non posizione di rete. Chi conosce uno dei tre, conosce gli altri.</div>
+
+<h3>Il pattern progettuale (6 step)</h3>
+<ul>
+<li><strong>1. Inventario</strong>: censire workload con tag/label coerenti (env, app, tier)</li>
+<li><strong>2. Mappa flussi</strong>: documentare quali workload comunicano e su quali porte</li>
+<li><strong>3. Default deny</strong>: bloccare tutto, aprire solo l'esplicitamente necessario</li>
+<li><strong>4. Policy as code</strong>: versionare le regole in Terraform/Bicep, no clic in console</li>
+<li><strong>5. Audit & log</strong>: abilitare flow logs, monitorare deny inattesi</li>
+<li><strong>6. Iterare</strong>: rivedere le policy a ogni release</li>
+</ul>
+
+<div class="warn">⚠ Anti-pattern frequenti: regole "temporanee" che restano per anni, riferimenti a IP invece che a SG-ID, default allow + blacklist (è castello-fossato travestito), modifiche manuali in console (drift, no audit, no rollback).</div>
+</section>
+
+<section id="5"><h2>5 · L'identità come perimetro · IAM e MFA</h2>
+<p>In Zero Trust il perimetro non è geografico ("sei nell'edificio") ma logico ("sei tu, su questo dispositivo, ora, e hai questo permesso"). Il sistema che orchestra questa verifica si chiama <strong>IAM</strong> (Identity and Access Management) ed è fatto di tre pilastri (le 3 A):</p>
+<ul>
+<li><strong>Authentication</strong>: chi sei? (password, token, biometria, certificato)</li>
+<li><strong>Authorization</strong>: cosa puoi fare? (ruoli, policy, attributi)</li>
+<li><strong>Accounting</strong>: cosa hai fatto? (log, audit trail, telemetria)</li>
+</ul>
+
+<h3>Fattori di autenticazione e MFA</h3>
+<p>L'autenticazione si basa su tre categorie di fattori: <strong>qualcosa che sai</strong> (password, PIN), <strong>qualcosa che hai</strong> (smartphone, token hardware), <strong>qualcosa che sei</strong> (impronta, viso). MFA significa combinare fattori di <strong>categorie diverse</strong>. Due password non sono MFA.</p>
+
+<p>Non tutti gli authenticator sono uguali (riferimento NIST SP 800-63B):</p>
+<ul>
+<li><strong>SMS OTP</strong> · forza BASSA (SIM swap, intercettazione SS7) - oggi sconsigliato per scenari ad alto rischio</li>
+<li><strong>TOTP</strong> (Google/MS Authenticator) · forza MEDIA (vulnerabile a phishing in tempo reale)</li>
+<li><strong>Push notification</strong> · forza MEDIA (MFA fatigue / prompt bombing)</li>
+<li><strong>FIDO2 / Passkey</strong> · forza ALTA, <strong>resistente al phishing per design</strong></li>
+</ul>
+
+<div class="deep-dive">FIDO2 è phishing-resistant non per attenzione dell'utente, ma per design crittografico. La chiave privata non lascia mai il dispositivo (TPM, secure enclave). L'autenticazione è challenge-response. Il browser verifica l'origine: se il dominio è <code>g00gle-login.com</code> invece di <code>google.com</code>, la chiave non firma. Anche se l'utente è distratto e clicca un phishing, l'attaccante non riceve nulla di utile. Passkey è FIDO2 sincronizzato cross-device via iCloud Keychain, Google Password Manager, 1Password.</div>
+</section>
+
+<section id="6"><h2>6 · Identity Provider e federazione</h2>
+<p>Un dipendente moderno usa M365, Salesforce, GitHub, Jira, ServiceNow, AWS Console. 6 password? 6 MFA? La soluzione è centralizzare l'autenticazione in un <strong>Identity Provider</strong> (IdP): Entra ID (ex Azure AD), Okta, Auth0, Keycloak. L'utente si autentica una sola volta presso l'IdP; le applicazioni (Service Provider) si fidano dell'IdP via protocollo standard. La password va solo all'IdP, mai ai Service Provider.</p>
+
+<p>I tre protocolli principali:</p>
+<ul>
+<li><strong>SAML 2.0</strong>: XML-based, enterprise classico, ancora dominante in scenari legacy</li>
+<li><strong>OAuth 2.0</strong>: <em>autorizzazione</em> - delega di accesso a risorse (es. una mobile app accede ai tuoi contatti Google con il tuo permesso)</li>
+<li><strong>OpenID Connect (OIDC)</strong>: <em>autenticazione</em> costruita su OAuth 2.0, JSON/JWT - lo standard moderno</li>
+</ul>
+<p>Confusione tipica: SAML/OIDC per AuthN (chi sei), OAuth per AuthZ (cosa puoi fare per conto di X). In molti casi reali coesistono.</p>
+</section>
+
+<section id="7"><h2>7 · RBAC, ABAC e least privilege</h2>
+<p><strong>RBAC (Role-Based Access Control)</strong>: i permessi sono assegnati a ruoli, i ruoli agli utenti. Esempio: ruolo "Developer-Backend" → permessi (read repo, write branch, deploy staging) → Alice è in Developer-Backend. Semplice, scala bene. Il limite è la "role explosion" (centinaia di ruoli per coprire casi specifici).</p>
+
+<p><strong>ABAC (Attribute-Based Access Control)</strong>: i permessi sono calcolati a runtime in base ad attributi di utente, risorsa, contesto. Esempio: "Allow se user.dept=Finance AND resource.classification ≤ user.clearance AND time ∈ working_hours". Granularità altissima, policy contestuali, ma complessità di scrittura e impatto sulle performance. Pattern reale: <strong>RBAC base + ABAC per casi sensibili</strong>.</p>
+
+<h3>Principio del privilegio minimo</h3>
+<p>Ogni utente, servizio o processo deve avere <strong>solo</strong> i permessi strettamente necessari. Implicazioni operative:</p>
+<ul>
+<li>Account separati per uso normale e amministrativo (no admin per leggere mail)</li>
+<li>Permessi temporanei (Just-in-Time) invece che permanenti</li>
+<li>Access review trimestrale</li>
+<li>Service account specifici per ogni applicazione, mai condivisi</li>
+<li>Rotazione regolare di credenziali e token</li>
+<li>Audit log su tutte le elevazioni di privilegio</li>
+</ul>
+
+<h3>IAM in cloud · Entra ID e AWS IAM</h3>
+<p><strong>Microsoft Entra ID</strong>: IdP cloud-native, integrato con M365 e Azure. Supporta SAML/OIDC/OAuth/WS-Fed. Il vero plus è il <strong>Conditional Access</strong>: policy if-then contestuali ("if user ∈ Finance and signing in to SAP and device not compliant then block"). PIM per Just-in-Time admin. Sincronizzazione con AD on-prem via Entra Connect.</p>
+
+<p><strong>AWS IAM</strong>: identità (Users, Groups, Roles), policy in formato JSON, Permission Boundaries, SCPs a livello di Organization. Verboso ma molto granulare. Saperlo leggere è competenza base.</p>
+</section>
+
+<section id="compiti"><h2>📚 Compiti consolidamento</h2>
+<p>Da svolgere entro G6:</p>
+<ul>
+<li><strong>Esercizi blocco 1 G5</strong> · 18 esercizi su Zero Trust e microsegmentazione</li>
+<li><strong>Esercizi blocco 2 G5</strong> · 16 esercizi su IAM/MFA + preparazione M2</li>
+<li><strong>Esercizi guidati delle slide</strong> · slide 18 J (3-tier microseg) e slide 16 K (IAM startup) - portarli completati a G6 per discussione plenaria</li>
+<li><strong>Lettura</strong>: NIST SP 800-207, capitoli 2-3 (~30 min)</li>
+<li><strong>Lettura</strong>: NIST SP 800-63B, sezione 5 sugli authenticator (~20 min)</li>
+</ul>
+</section>
+
+<section id="prep"><h2>🚀 Risorse propedeutiche per G6 · Modulo 2 · Compute & Database</h2>
+<p>G6 apre il Modulo 2. Per arrivare preparati, completare almeno le seguenti risorse:</p>
+
+<h3>Virtualizzazione e container (~45 min)</h3>
+<div class="resource">📖 <a href="https://www.redhat.com/en/topics/virtualization/what-is-virtualization">Red Hat · What is virtualization?</a><div class="resource-meta">Lettura overview con distinzione hypervisor type 1/2 (~20 min)</div></div>
+<div class="resource">📺 <a href="https://www.youtube.com/watch?v=cjXI-yxqGTI">YouTube · Containers vs VMs (TechWorld with Nana)</a><div class="resource-meta">Video introduttivo chiaro (~15 min)</div></div>
+<div class="resource">🔧 <a href="https://podman.io/docs/installation">Podman · Installation guide</a><div class="resource-meta">Installare Podman in locale e testare con <code>podman run hello-world</code> (~10 min)</div></div>
+<p><strong>Domande guida:</strong> Qual è la differenza fondamentale tra hypervisor type 1 e type 2? Perché un container è più leggero di una VM ma ha isolamento più debole?</p>
+
+<h3>Database SQL e NoSQL (~50 min)</h3>
+<div class="resource">📖 <a href="https://www.mongodb.com/resources/compare/mongodb-postgresql">MongoDB · SQL vs NoSQL comparison</a><div class="resource-meta">Confronto schematico tra modelli (~15 min, attenzione al bias commerciale)</div></div>
+<div class="resource">📖 <a href="https://www.postgresql.org/docs/current/tutorial-arch.html">PostgreSQL Documentation · Architectural Fundamentals</a><div class="resource-meta">Capitolo introduttivo dell'architettura PostgreSQL (~15 min)</div></div>
+<div class="resource">📖 <a href="https://www.crunchydata.com/blog/postgres-hardening-guide">Crunchy Data · PostgreSQL hardening guide</a><div class="resource-meta">Checklist di hardening (~20 min) - portare in aula 3 punti chiave</div></div>
+<p><strong>Domande guida:</strong> Quando preferiresti un database NoSQL a uno SQL? Quali sono le 3 misure di hardening più importanti per un PostgreSQL in produzione?</p>
+
+<h3>Bonus · Kubernetes (preview Modulo 3)</h3>
+<div class="resource">📺 <a href="https://www.youtube.com/watch?v=PziYflu8cB8">YouTube · Kubernetes in 5 minuti</a><div class="resource-meta">Solo per chi vuole portarsi avanti (~5 min)</div></div>
+
+<div class="warn">⚠ Per G6 servono almeno: installazione Podman riuscita + lettura overview virtualizzazione + 1 articolo SQL/NoSQL. Il resto è bonus. Annotare 3 dubbi/domande da portare in aula.</div>
+</section>
+
+</div></body></html>
