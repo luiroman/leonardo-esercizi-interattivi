@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>Compiti L7 Blocco 2 · Prepara L8</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.6;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F1B2D 0%,#059669 100%);color:#fff;padding:30px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:24px;margin-bottom:6px}header p{color:#D1FAE5;font-size:14px}
+.intro{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:20px;font-size:14px}
+.danger-box{background:#FEF2F2;border-left:4px solid #DC2626;padding:14px 18px;margin-bottom:20px;border-radius:4px;font-size:13px}
+.cat{background:#059669;color:#fff;padding:10px 16px;border-radius:8px;margin:24px 0 14px;font-size:14px;font-weight:600;text-transform:uppercase}
+.ex{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:12px}
+.ex-num{display:inline-block;background:#10B981;color:#fff;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;margin-bottom:8px}
+.ex h3{font-size:15px;margin-bottom:8px}.ex p{font-size:13px;margin-bottom:8px;color:#334155}
+.ex ul{margin:6px 0 8px 20px;font-size:12px;color:#475569}
+.ex ol{margin:6px 0 8px 20px;font-size:12px;color:#475569}
+details{margin-top:10px;background:#F1F5F9;border-radius:6px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600;color:#059669;font-size:12px}
+.sol{font-size:12px;color:#0F1B2D;line-height:1.7;margin-top:8px}
+.sol code{background:#1E293B;color:#6EE7B7;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:11px}
+.sol pre{background:#0F172A;color:#E2E8F0;padding:10px;border-radius:4px;font-family:Consolas,monospace;font-size:11px;margin:6px 0;line-height:1.5;overflow-x:auto}
+.sol pre code{background:transparent;color:#6EE7B7;padding:0}
+code{background:#1E293B;color:#6EE7B7;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:11px}
+</style></head><body><div class="container">
+<header><h1>🚀 Compiti L7 · Blocco 2</h1><p>Prepara L8: SQL injection, OWASP Top 10, setup lab · 16 esercizi</p></header>
+
+<div class="intro"><strong>Obiettivo:</strong> preparare L8 (SQL injection) con lettura propedeutica OWASP + PortSwigger + setup container <code>sqlmap</code> e DVWA. Soluzioni nascoste: aprire dopo aver risposto.</div>
+
+<div class="danger-box">⚖ <strong>REMINDER ETICO-LEGALE.</strong> <code>sqlmap</code>, <code>DVWA</code> e ogni strumento offensive si usa <strong>solo</strong> su target autorizzati (lab personale in container, bug bounty con programma attivo, CTF). Usarli su target di terzi senza autorizzazione scritta è <strong>reato penale</strong> (<strong>art. 615-ter c.p.</strong> accesso abusivo, <strong>art. 635-bis c.p.</strong> danneggiamento informatico, fino a diversi anni di reclusione). In questi esercizi e in L8 lavoreremo esclusivamente contro DVWA in container locale.</div>
+
+<div class="cat">A · Anatomia della SQL injection</div>
+
+<div class="ex"><span class="ex-num">1</span><h3>Definisci SQL injection in 3 frasi</h3>
+<p>Senza guardare risorse, definisci SQL injection spiegando le 3 condizioni necessarie perché avvenga.</p>
+<details><summary>Esempio soluzione</summary><div class="sol">SQL injection è una classe di vulnerabilità in cui un attaccante inietta codice SQL arbitrario in una query, sfruttando input utente non sanitizzato. Le 3 condizioni necessarie sono: (1) input controllato dall'utente, (2) flusso di quell'input verso una query SQL costruita dinamicamente, (3) assenza di parametrizzazione o validazione. Tutte e tre devono essere presenti perché l'attacco funzioni.</div></details></div>
+
+<div class="ex"><span class="ex-num">2</span><h3>Leggi il codice Python · trova la vulnerabilità</h3>
+<p>Questo endpoint Flask è vulnerabile a SQL injection. Spiega come.</p>
+<pre style="background:#0F172A;color:#E2E8F0;padding:10px;border-radius:4px;font-family:Consolas,monospace;font-size:11px;margin:8px 0">
+@app.post("/login")
+def login():
+    user = request.form["user"]
+    pwd = request.form["pwd"]
+    q = "SELECT * FROM users WHERE name='" + user + "' AND pwd='" + pwd + "'"
+    r = cursor.execute(q).fetchone()
+    if r: return "Benvenuto " + r["name"]
+    return "Login failed", 401
+</pre>
+<details><summary>Soluzione</summary><div class="sol">
+La query è costruita per <strong>concatenazione di stringhe</strong>: l'input dell'utente viene inserito direttamente nella query senza parametrizzazione. Un attaccante invia:
+<pre><code>user = admin' OR '1'='1' --
+pwd  = qualsiasi</code></pre>
+La query finale diventa:
+<pre><code>SELECT * FROM users WHERE name='admin' OR '1'='1' --' AND pwd='qualsiasi'</code></pre>
+Il <code>--</code> commenta il resto. La clausola <code>WHERE name='admin' OR '1'='1'</code> è sempre vera. Il <code>fetchone()</code> restituisce il primo record della tabella — tipicamente <code>admin</code> — e l'attaccante è loggato senza conoscere la password.<br><br>
+<strong>Fix:</strong> prepared statement con placeholder <code>%s</code> e tupla di parametri.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">3</span><h3>OWASP Top 10 · posizione Injection</h3>
+<p>Leggendo OWASP Top 10 2021: in che posizione è Injection? Quale era la posizione nel 2017? Cosa ha cambiato?</p>
+<details><summary>Soluzione</summary><div class="sol">
+<strong>OWASP Top 10 2021:</strong> Injection è <strong>A03</strong> (terza posizione).<br>
+<strong>OWASP Top 10 2017:</strong> Injection era <strong>A01</strong> (prima posizione).<br><br>
+Il cambiamento 2017→2021: Injection è scesa al 3° posto perché (a) prepared statement e ORM sono più diffusi, (b) i linguaggi moderni rendono la concatenazione meno idiomatica, (c) i WAF intercettano pattern noti. Al primo posto è salita <strong>Broken Access Control (A01:2021)</strong>, che copre vulnerabilità IDOR e misconfiguration di autorizzazione. Injection resta comunque una delle vulnerabilità più impattanti.
+</div></details></div>
+
+<div class="cat">B · Tipi di SQL injection</div>
+
+<div class="ex"><span class="ex-num">4</span><h3>Tassonomia SQLi · 4 tipi</h3>
+<p>Elenca i 4 tipi principali di SQL injection e spiega come l'attaccante recupera le informazioni in ognuno.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<strong>1. In-band error-based</strong>: l'attaccante sfrutta messaggi di errore del DB per estrarre dati. L'app mostra l'errore al client.<br><br>
+<strong>2. In-band UNION-based</strong>: l'attaccante appende una <code>UNION SELECT</code> che legge dati da altre tabelle. Richiede stessa column count e type compatibility.<br><br>
+<strong>3. Blind boolean-based</strong>: nessun output diretto. L'attaccante chiede condizioni vero/falso (<code>AND SUBSTR(password,1,1)='a'</code>) e inferisce dal fatto che la risposta cambia (200 OK o pagina diversa).<br><br>
+<strong>4. Blind time-based</strong>: nessun output, nessuna differenza visibile nella risposta. L'attaccante usa <code>AND SLEEP(5)</code> (MySQL) o <code>AND pg_sleep(5)</code> (PG) e misura se la risposta è istantanea (falso) o ritardata (vero). Estremamente lento ma funziona quasi sempre.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">5</span><h3>Payload time-based · scrivi uno</h3>
+<p>Scrivi un payload time-based per PostgreSQL che "pinga" il server se l'utente <code>admin</code> esiste nella tabella <code>users</code>. L'iniezione è in un parametro <code>?id=1</code> della URL, query presumibilmente <code>SELECT * FROM products WHERE id = '$id'</code>.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<pre><code>?id=1' AND (SELECT CASE WHEN (SELECT count(*) FROM users WHERE name='admin')&gt;0 THEN pg_sleep(5) ELSE pg_sleep(0) END)--</code></pre>
+URL-encoded:
+<pre><code>?id=1%27%20AND%20(SELECT%20CASE%20WHEN%20...)</code></pre>
+<strong>Logica:</strong> se l'utente admin esiste, la query fa <code>pg_sleep(5)</code> (5 secondi di ritardo). Se no, <code>pg_sleep(0)</code>, risposta istantanea. L'attaccante misura il tempo di risposta e inferisce.<br><br>
+<strong>Automazione:</strong> <code>sqlmap</code> fa questo automaticamente, migliaia di query per enumerare byte per byte.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">6</span><h3>UNION-based · quante colonne?</h3>
+<p>Spiega la tecnica "<code>ORDER BY</code>" usata dagli attaccanti per trovare il numero di colonne prima di scrivere una UNION-based injection. Perché è necessaria?</p>
+<details><summary>Soluzione</summary><div class="sol">
+Per fare una <code>UNION SELECT</code> valida, l'attaccante deve sapere <strong>quante colonne</strong> ha la query originale (e quali tipi sono compatibili). Senza corrispondenza, il DB restituisce errore.<br><br>
+<strong>Tecnica incrementale <code>ORDER BY N</code>:</strong>
+<pre><code>?id=1' ORDER BY 1--   # OK
+?id=1' ORDER BY 2--   # OK
+?id=1' ORDER BY 3--   # OK
+?id=1' ORDER BY 4--   # Errore: "ORDER BY position 4 is out of range"</code></pre>
+L'attaccante ha scoperto: 3 colonne.<br><br>
+<strong>Poi costruisce la UNION:</strong>
+<pre><code>?id=1' UNION SELECT null, null, null--   # test compatibilità types
+?id=1' UNION SELECT name, password, null FROM users--</code></pre>
+Senza questa calibrazione, l'injection UNION fallisce subito.
+</div></details></div>
+
+<div class="cat">C · sqlmap e DVWA</div>
+
+<div class="ex"><span class="ex-num">7</span><h3>Installare sqlmap · procedura</h3>
+<p>Scrivi la procedura per installare <code>sqlmap</code> su Ubuntu/Debian moderno e verificarne il funzionamento.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<pre><code># Opzione 1 — pip (aggiornato)
+pip install sqlmap --break-system-packages
+
+# Opzione 2 — apt (versione pacchettizzata, potrebbe essere vecchia)
+sudo apt install sqlmap
+
+# Verifica
+sqlmap --version
+# dovrebbe rispondere con qualcosa come "1.8.x" o simile
+
+# Test no-op (non attacca, mostra help)
+sqlmap --help | head -30</code></pre>
+<strong>Nota</strong>: <code>--break-system-packages</code> è necessario su sistemi PEP 668 (Ubuntu 24.04, Debian 12+) che rifiutano <code>pip install</code> globale senza virtualenv. Meglio usare un venv in produzione.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">8</span><h3>Deploy DVWA in container</h3>
+<p>Scrivi il comando Podman per lanciare DVWA in un container accessibile su <code>http://localhost:8080</code>, con nome <code>dvwa-lab</code>.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<pre><code>podman run -d \
+  --name dvwa-lab \
+  -p 8080:80 \
+  docker.io/vulnerables/web-dvwa
+
+# Verifica
+podman ps
+curl -I http://localhost:8080
+# Dovrebbe rispondere HTTP 200 o 302 (redirect al setup)</code></pre>
+<strong>Primo accesso:</strong> aprire <code>http://localhost:8080</code> nel browser, cliccare "Create / Reset Database", login con <code>admin</code> / <code>password</code>. Impostare security level a "low" per i primi test.<br><br>
+<strong>Cleanup alla fine:</strong>
+<pre><code>podman stop dvwa-lab
+podman rm dvwa-lab</code></pre>
+</div></details></div>
+
+<div class="ex"><span class="ex-num">9</span><h3>sqlmap · workflow 5 step</h3>
+<p>Descrivi il workflow tipico di sqlmap contro un target (ipotetico, autorizzato). 5 step dall'identificazione al dump.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<pre><code># 1. Detect: ha iniezione vulnerabile?
+sqlmap -u "http://target/page.php?id=1" --batch
+
+# 2. Enumerate databases
+sqlmap -u "http://target/page.php?id=1" --dbs
+
+# 3. Enumerate tables di un DB
+sqlmap -u "http://target/page.php?id=1" -D dvwa --tables
+
+# 4. Enumerate columns di una tabella
+sqlmap -u "http://target/page.php?id=1" -D dvwa -T users --columns
+
+# 5. Dump dei dati + tentativo crack password
+sqlmap -u "http://target/page.php?id=1" -D dvwa -T users --dump --passwords</code></pre>
+<strong>Flag utili:</strong><br>
+• <code>--cookie "PHPSESSID=..."</code> se l'app richiede sessione autenticata<br>
+• <code>--data "param=val"</code> per POST<br>
+• <code>--level 5 --risk 3</code> per test più aggressivi<br>
+• <code>--os-shell</code> se ottiene capabilities per shell sull'OS (scalare al sistema)<br><br>
+<strong>Etica:</strong> mai su target non autorizzati.
+</div></details></div>
+
+<div class="cat">D · Difese applicative</div>
+
+<div class="ex"><span class="ex-num">10</span><h3>Prepared statements · scrivi il fix Python</h3>
+<p>Riscrivi il codice vulnerabile dell'esercizio 2 usando prepared statement con la libreria <code>psycopg2</code> (o <code>psycopg3</code>).</p>
+<details><summary>Soluzione</summary><div class="sol">
+<pre><code>@app.post("/login")
+def login():
+    user = request.form["user"]
+    pwd = request.form["pwd"]
+    # Prepared statement con placeholder %s
+    q = "SELECT id, name FROM users WHERE name = %s AND pwd_hash = %s"
+    cursor.execute(q, (user, pwd_hash(pwd)))
+    r = cursor.fetchone()
+    if r: return f"Benvenuto {r['name']}"
+    return "Login failed", 401</code></pre>
+<strong>Perché funziona:</strong> <code>%s</code> è un placeholder che il driver DB tratta come parametro binario separato dalla query. L'input utente non viene <strong>interpretato</strong> come SQL, ma sempre come <strong>valore</strong>. Qualsiasi cosa contenga (quote, --, UNION, OR 1=1) viene trattato come stringa letterale.<br><br>
+<strong>Nota bonus:</strong> la password non va mai in chiaro nel DB, deve essere <code>hash</code> con bcrypt/argon2 e confrontata con <code>check_password()</code>. Qui è semplificato per focus SQLi.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">11</span><h3>Le 5 difese · descrivile</h3>
+<p>Le 5 difese principali contro SQL injection (difesa in profondità). Elencale con una frase di descrizione.</p>
+<details><summary>Soluzione</summary><div class="sol">
+1. <strong>Prepared statements / parametrized queries</strong>: LA difesa numero uno. I parametri sono separati dal template SQL. Usata con <code>psycopg2</code>, <code>pg</code> (Node), JDBC <code>PreparedStatement</code>.<br><br>
+2. <strong>ORM e query builder</strong>: libreries come SQLAlchemy, Django ORM, Prisma, Sequelize, JPA usano prepared statements automaticamente. Attenzione a <code>raw()</code>/<code>execute_raw()</code> che bypassano la protezione.<br><br>
+3. <strong>Input validation con allowlist</strong>: accetta <strong>solo</strong> valori noti buoni (regex, type check, whitelist enumerati). NON blocklist (attaccanti aggirano con encoding).<br><br>
+4. <strong>Least privilege al DB</strong>: il DB user dell'app non deve essere superuser. Solo <code>SELECT/INSERT/UPDATE/DELETE</code> sulle tabelle necessarie. Nessun <code>DROP</code>, nessun <code>GRANT</code>.<br><br>
+5. <strong>WAF (Web Application Firewall)</strong>: ispeziona HTTP e blocca pattern SQLi noti. Difesa <em>in profondità</em>, mai sostituto di 1-4. Esempi: AWS WAF, Cloudflare, ModSecurity, CoraZa.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">12</span><h3>Least privilege · crea user app PostgreSQL</h3>
+<p>Scrivi i comandi SQL per creare un DB user <code>appuser</code> con la password <code>AppPa$$2026</code> e permessi minimi: può solo <code>SELECT/INSERT/UPDATE/DELETE</code> sulla tabella <code>orders</code> del database <code>shop</code>. Niente DROP, niente CREATE, niente access ad altre tabelle.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<pre><code>-- Eseguire come superuser postgres
+CREATE USER appuser WITH PASSWORD 'AppPa$$2026'
+    NOSUPERUSER NOCREATEDB NOCREATEROLE;
+
+-- Connect al DB shop
+\c shop
+
+-- Revoke tutto su public schema (PG default è troppo permissivo)
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM appuser;
+REVOKE ALL ON SCHEMA public FROM appuser;
+
+-- Grant minimo sulla tabella orders
+GRANT USAGE ON SCHEMA public TO appuser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON orders TO appuser;
+
+-- Se la tabella usa sequenze (es. id SERIAL), servono anche:
+GRANT USAGE, SELECT ON SEQUENCE orders_id_seq TO appuser;
+
+-- Verifica
+\du appuser
+-- Non deve mostrare "Superuser" né "Create role"
+
+-- Test: connect come appuser, prova DROP TABLE
+-- Dovrebbe fallire: "permission denied"</code></pre>
+<strong>Callback M1</strong>: principio del minimo privilegio. Un'eventuale SQLi con questo user non può nemmeno cancellare la tabella, figuriamoci ottenere shell.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">13</span><h3>Input validation · allowlist vs blocklist</h3>
+<p>Perché la difesa "allowlist" è preferita a "blocklist" contro SQL injection? Scrivi un esempio concreto di ognuna per validare un parametro <code>sort_by</code> che può valere <code>name</code>, <code>date</code>, o <code>price</code>.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<strong>Blocklist (pattern sbagliato):</strong>
+<pre><code>if "'" in sort_by or "--" in sort_by or ";" in sort_by:
+    raise ValueError("SQL injection attempt")
+# L'attaccante può aggirare con encoding, commenti /**/, altri payload</code></pre>
+<strong>Allowlist (pattern giusto):</strong>
+<pre><code>ALLOWED = {"name", "date", "price"}
+if sort_by not in ALLOWED:
+    raise ValueError("Invalid sort_by")
+# Qualsiasi input diverso dai 3 valori noti → rifiutato</code></pre>
+<strong>Perché allowlist vince:</strong> richiede di conoscere l'intera classe di input <em>buoni</em>, che è piccola e definita. La blocklist richiede di conoscere tutti gli input <em>cattivi</em>, classe infinita che include encoding, Unicode tricks, double-encoding, payload mai visti prima. <strong>Deny by default</strong> è sempre più sicuro di <strong>allow by default con eccezioni</strong>.
+</div></details></div>
+
+<div class="cat">E · OWASP DB Top 10</div>
+
+<div class="ex"><span class="ex-num">14</span><h3>OWASP Top 10 2021 · le 10 voci</h3>
+<p>Leggendo <a href="https://owasp.org/Top10/" target="_blank">owasp.org/Top10</a>, elenca le 10 voci del 2021 nell'ordine ufficiale. Indica quali sono più rilevanti per un database.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<strong>OWASP Top 10 · 2021:</strong>
+<ol>
+<li>A01 · Broken Access Control ← <strong>rilevante DB</strong> (IDOR su query, Row-Level Security)</li>
+<li>A02 · Cryptographic Failures ← <strong>rilevante DB</strong> (encryption at rest, TLS, password hash)</li>
+<li>A03 · Injection ← <strong>rilevantissimo DB</strong> (SQL injection)</li>
+<li>A04 · Insecure Design</li>
+<li>A05 · Security Misconfiguration ← <strong>rilevante DB</strong> (pg_hba.conf sbagliato)</li>
+<li>A06 · Vulnerable and Outdated Components</li>
+<li>A07 · Identification and Authentication Failures ← <strong>rilevante DB</strong> (auth debole, md5)</li>
+<li>A08 · Software and Data Integrity Failures</li>
+<li>A09 · Security Logging and Monitoring Failures ← <strong>rilevante DB</strong> (pgAudit non configurato)</li>
+<li>A10 · Server-Side Request Forgery (SSRF)</li>
+</ol>
+6 su 10 hanno applicabilità diretta ai DB. Conoscerle è competenza base.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">15</span><h3>Second-order SQLi · riconosci il pattern</h3>
+<p>Un attaccante registra un nuovo utente con username <code>'; DROP TABLE users; --</code> (la registrazione usa prepared statements correttamente, nessun problema). Una funzione "welcome email" poi prende il nome dell'utente e lo mette in una query per cercare template email: <code>query = "SELECT tpl FROM email_templates WHERE user = '" + nome_utente + "'"</code>. Cosa succede?</p>
+<details><summary>Soluzione</summary><div class="sol">
+Questo è un <strong>second-order SQL injection</strong> (o "stored SQLi"). Il payload malicioso è stato <em>salvato pulito</em> (grazie al prepared statement della registrazione) ma <em>eseguito sporco</em> dalla seconda funzione che concatena il valore senza parametrizzare.<br><br>
+La query finale:
+<pre><code>SELECT tpl FROM email_templates WHERE user = ''; DROP TABLE users; --'</code></pre>
+Il <code>DROP TABLE users</code> viene eseguito. Disastro.<br><br>
+<strong>Lesson learned:</strong> prepared statements vanno usati <strong>ovunque</strong> i dati vengono messi in una query, anche quando provengono dal DB stesso. Trust nessun input, anche quelli "interni". La sanitizzazione all'input NON è sufficiente: il valore salvato è una bomba dormiente.
+</div></details></div>
+
+<div class="cat">F · Sintesi e applicazione</div>
+
+<div class="ex"><span class="ex-num">16</span><h3>Scenario completo · code review</h3>
+<p>Ti passano questo endpoint Node.js Express (con libreria <code>pg</code>). Identifica tutti i problemi e riscrivilo sicuro.</p>
+<pre style="background:#0F172A;color:#E2E8F0;padding:10px;border-radius:4px;font-family:Consolas,monospace;font-size:11px;margin:8px 0">
+app.get("/api/search", (req, res) =&gt; {
+  const q = req.query.q;
+  const sort = req.query.sort || "name";
+  const sql = `SELECT * FROM products
+               WHERE name LIKE '%${q}%'
+               ORDER BY ${sort}`;
+  pool.query(sql, (err, result) =&gt; {
+    if (err) res.status(500).send(err.message);  // mostra errore al client
+    else res.json(result.rows);
+  });
+});
+</pre>
+<details><summary>Soluzione</summary><div class="sol">
+<strong>Problemi identificati:</strong>
+<ol>
+<li><code>q</code> concatenato nella <code>LIKE</code>: SQL injection diretta.</li>
+<li><code>sort</code> concatenato nell'<code>ORDER BY</code>: SQL injection tramite sort (second vector).</li>
+<li><code>err.message</code> inviato al client: info disclosure (schema, tabelle, errori DB interni).</li>
+<li><code>SELECT *</code>: esfiltrazione di colonne sensibili se ce ne sono.</li>
+</ol>
+<strong>Versione corretta:</strong>
+<pre><code>app.get("/api/search", async (req, res) =&gt; {
+  const q = req.query.q || "";
+  const sort = req.query.sort || "name";
+  
+  // Allowlist per sort (non si può parametrizzare ORDER BY)
+  const ALLOWED_SORT = { name: "name", price: "price", date: "created_at" };
+  const sortCol = ALLOWED_SORT[sort] || "name";
+  
+  try {
+    const result = await pool.query(
+      `SELECT id, name, price FROM products
+       WHERE name ILIKE $1
+       ORDER BY ${sortCol}
+       LIMIT 100`,
+      [`%${q}%`]  // parametro separato
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);  // log server-side, non al client
+    res.status(500).json({ error: "Internal error" });
+  }
+});</code></pre>
+<strong>Modifiche fatte:</strong>
+<ul>
+<li>Parametrizzazione di <code>q</code> con <code>$1</code> e array <code>[`%${q}%`]</code> — LIKE escape resta lato SQL.</li>
+<li>Allowlist per <code>sort</code> (ORDER BY non è parametrizzabile in SQL, va validato).</li>
+<li><code>SELECT id, name, price</code> invece di <code>*</code> — principio del minimo privilegio sui dati.</li>
+<li><code>LIMIT 100</code> previene dump massivi.</li>
+<li>Errore generico al client, dettagli solo nei log server-side.</li>
+<li><code>async/await</code> per codice più pulito.</li>
+</ul>
+<strong>Callback M1</strong>: defense in depth, least privilege, log è tutto, trust nobody.
+</div></details></div>
+
+</div></body></html>

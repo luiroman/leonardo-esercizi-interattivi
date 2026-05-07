@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>Compiti L7 Blocco 1 · Consolida</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.6;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F1B2D 0%,#059669 100%);color:#fff;padding:30px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:24px;margin-bottom:6px}header p{color:#D1FAE5;font-size:14px}
+.intro{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:20px;font-size:14px}
+.cat{background:#059669;color:#fff;padding:10px 16px;border-radius:8px;margin:24px 0 14px;font-size:14px;font-weight:600;text-transform:uppercase}
+.ex{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:12px}
+.ex-num{display:inline-block;background:#10B981;color:#fff;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;margin-bottom:8px}
+.ex h3{font-size:15px;margin-bottom:8px}.ex p{font-size:13px;margin-bottom:8px;color:#334155}
+.ex ul{margin:6px 0 8px 20px;font-size:12px;color:#475569}
+.ex ol{margin:6px 0 8px 20px;font-size:12px;color:#475569}
+details{margin-top:10px;background:#F1F5F9;border-radius:6px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600;color:#059669;font-size:12px}
+.sol{font-size:12px;color:#0F1B2D;line-height:1.7;margin-top:8px}
+.sol code{background:#1E293B;color:#6EE7B7;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:11px}
+.sol pre{background:#0F172A;color:#E2E8F0;padding:10px;border-radius:4px;font-family:Consolas,monospace;font-size:11px;margin:6px 0;line-height:1.5;overflow-x:auto}
+.sol pre code{background:transparent;color:#6EE7B7;padding:0}
+code{background:#1E293B;color:#6EE7B7;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:11px}
+</style></head><body><div class="container">
+<header><h1>📚 Compiti L7 · Blocco 1</h1><p>Consolida: virtualizzazione, container, Podman, DB fundamentals · 18 esercizi</p></header>
+<div class="intro"><strong>Obiettivo:</strong> consolidare mattina e pomeriggio di L7. Da svolgere entro L8 (giovedì 30 aprile). Soluzioni nascoste: aprire dopo aver risposto.</div>
+
+<div class="cat">A · Virtualizzazione</div>
+
+<div class="ex"><span class="ex-num">1</span><h3>Definisci un hypervisor in 2 frasi</h3>
+<p>Senza guardare le slide, spiega cos'è un hypervisor e le sue 3 proprietà chiave.</p>
+<details><summary>Esempio soluzione</summary><div class="sol">Un hypervisor è uno strato software (o firmware) che astrae l'hardware fisico e permette di eseguire più sistemi operativi completi in isolamento reciproco sullo stesso host. Le 3 proprietà chiave sono isolation (kernel/memoria/device separati per VM), resource pooling (scheduler che divide CPU/RAM/storage tra VM) e portability (la VM è un file trasportabile tra server).</div></details></div>
+
+<div class="ex"><span class="ex-num">2</span><h3>Stack a confronto</h3>
+<p>Disegna (o descrivi) lo stack completo di un hypervisor Type 1 e uno Type 2, dal basso verso l'alto.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<strong>Type 1 (bare-metal):</strong><br>Hardware fisico → Hypervisor (ESXi/KVM/Hyper-V) → Guest OS 1, 2, 3, ...<br><br>
+<strong>Type 2 (hosted):</strong><br>Hardware fisico → Host OS (Windows/macOS/Linux) → Hypervisor (VirtualBox/VMware WS) → Guest OS 1, 2, ...<br><br>
+Il type 2 ha un layer in più (l'host OS) che introduce overhead ma semplifica installazione.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">3</span><h3>3 CVE hypervisor</h3>
+<p>Cerca online (o ricorda dalla lezione) 3 CVE o classi di attacchi noti contro hypervisor. Per ognuno spiega cosa permetteva.</p>
+<details><summary>Soluzione tipica</summary><div class="sol">
+<strong>VENOM (CVE-2015-3456):</strong> heap overflow nel floppy controller QEMU. Permetteva escape da VM a host, eseguendo codice nel processo QEMU.<br><br>
+<strong>CVE-2022-31705 (VMware ESXi):</strong> heap overflow nel device USB emulato. Permetteva a un guest di eseguire codice sull'host.<br><br>
+<strong>Spectre/Meltdown/L1TF (2018):</strong> side-channel attacks via cache CPU. Un guest può leggere memoria di altri guest sulla stessa CPU fisica. Mitigazione: patch microcode + kernel.<br><br>
+<strong>Mitigazioni standard:</strong> patching hypervisor tempestivo, rimozione device virtuali non necessari (floppy!), trust zone segmentation.
+</div></details></div>
+
+<div class="cat">B · Container e Podman</div>
+
+<div class="ex"><span class="ex-num">4</span><h3>7 namespace a memoria</h3>
+<p>Elenca i 7 namespace Linux e cosa isola ciascuno. Va bene una versione sintetica.</p>
+<details><summary>Soluzione</summary><div class="sol">
+1. <strong>PID</strong> — process ID (container vede i propri PID da 1)<br>
+2. <strong>NET</strong> — interfacce di rete, routing, firewall<br>
+3. <strong>MNT</strong> — mount / filesystem separato<br>
+4. <strong>IPC</strong> — shared memory, semafori, queues<br>
+5. <strong>UTS</strong> — hostname + domain<br>
+6. <strong>USER</strong> — UID/GID mapping (base rootless)<br>
+7. <strong>CGROUP</strong> — vista limitata della gerarchia cgroup
+</div></details></div>
+
+<div class="ex"><span class="ex-num">5</span><h3>cgroups · scrivi i comandi</h3>
+<p>Scrivi il comando <code>podman run</code> per lanciare un container Alpine con i seguenti limiti: max 1 CPU, 256 MB di RAM, max 50 processi, read bandwidth massima 10 MB/s sul disco <code>/dev/sda</code>.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<pre><code>podman run -it \
+  --cpus=1 \
+  --memory=256m \
+  --pids-limit=50 \
+  --device-read-bps=/dev/sda:10mb \
+  alpine sh</code></pre>
+Note: <code>--cpus</code> accetta anche valori frazionari (es. <code>0.5</code>). <code>--memory</code> suffissi: <code>b</code>, <code>k</code>, <code>m</code>, <code>g</code>. Su Linux ci vogliono i privilegi di accesso al device.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">6</span><h3>VM vs container · 5 differenze</h3>
+<p>Elenca 5 differenze principali tra VM e container, con una breve spiegazione.</p>
+<details><summary>Soluzione</summary><div class="sol">
+1. <strong>Isolamento</strong>: VM forte (kernel separato), container medio (kernel condiviso).<br>
+2. <strong>Peso immagine</strong>: VM GB (OS completo), container MB (solo userland).<br>
+3. <strong>Tempo avvio</strong>: VM secondi/minuti, container millisecondi.<br>
+4. <strong>Densità</strong>: VM decine per host, container centinaia.<br>
+5. <strong>Portabilità</strong>: VM = file OVA/VMDK, container = immagine OCI da registry.<br>
+6. <strong>Uniformità host-guest</strong> (bonus): VM supporta OS diversi, container richiede stesso kernel dell'host.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">7</span><h3>Perché Podman e non Docker Desktop</h3>
+<p>Spiega in 3 punti le differenze architetturali che favoriscono Podman in contesto enterprise.</p>
+<details><summary>Soluzione</summary><div class="sol">
+1. <strong>FOSS, no license</strong>. Apache 2.0, nessuna licenza commerciale richiesta. Docker Desktop dal 2022 richiede licenza per aziende &gt;250 dipendenti o &gt;$10M revenue.<br>
+2. <strong>Daemonless</strong>. No demone root permanente. Podman è una CLI che forka direttamente. Meno attack surface, meno complessità operativa.<br>
+3. <strong>Rootless by default</strong>. I container girano come utente normale dell'host. Un'evasione lascia l'attaccante con privilegi utente, non root. Difesa strutturale importante.<br><br>
+Nota: Docker Engine (il motore senza GUI) continua a essere gratuito su Linux server. La licenza tocca solo Docker Desktop (la GUI su Mac/Windows).
+</div></details></div>
+
+<div class="ex"><span class="ex-num">8</span><h3>10 comandi Podman a memoria</h3>
+<p>Scrivi i 10 comandi Podman che userai ogni giorno, con una frase di descrizione per ciascuno.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<pre><code>podman pull &lt;img&gt;          # scarica immagine da registry
+podman run &lt;img&gt;           # crea + avvia container
+podman ps [-a]             # lista container attivi (-a anche stopped)
+podman exec -it &lt;c&gt; bash   # shell dentro container
+podman logs -f &lt;c&gt;         # log del container (-f = tail)
+podman stop &lt;c&gt;            # ferma container graceful
+podman rm [-f] &lt;c&gt;         # rimuove container (-f se running)
+podman images              # lista immagini locali
+podman rmi &lt;img&gt;           # rimuove immagine
+podman inspect &lt;c&gt;         # dettagli JSON (usa con | jq)</code></pre>
+</div></details></div>
+
+<div class="ex"><span class="ex-num">9</span><h3>Lab pratico · PostgreSQL in container</h3>
+<p>Scrivi la sequenza di comandi per:<br>
+1. Avviare un container PostgreSQL 16 Alpine con password <code>secret</code>, esposto sulla porta 5432, chiamato <code>pg-lab</code><br>
+2. Verificare che è running<br>
+3. Entrare con <code>psql</code> come user <code>postgres</code><br>
+4. Controllare lo stato (dentro psql)<br>
+5. Uscire e fermarlo
+</p>
+<details><summary>Soluzione</summary><div class="sol">
+<pre><code># 1. Avvio
+podman run -d \
+  --name pg-lab \
+  -e POSTGRES_PASSWORD=secret \
+  -p 5432:5432 \
+  postgres:16-alpine
+
+# 2. Verifica
+podman ps
+# deve mostrare pg-lab running, status Up
+
+# 3. Entra con psql
+podman exec -it pg-lab psql -U postgres
+
+# 4. Dentro psql
+\conninfo       -- info connessione
+\l              -- lista database
+\du             -- lista user/ruoli
+SELECT version();
+
+# 5. Esci e ferma
+\q
+podman stop pg-lab</code></pre>
+</div></details></div>
+
+<div class="cat">C · Database fundamentals</div>
+
+<div class="ex"><span class="ex-num">10</span><h3>ACID a memoria</h3>
+<p>Elenca le 4 proprietà ACID e una spiegazione da 1 frase ciascuna.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<strong>A · Atomicity</strong>: la transazione è un blocco indivisibile, o tutto o niente (rollback al crash).<br>
+<strong>C · Consistency</strong>: il DB resta in stato valido, i constraint sono sempre rispettati.<br>
+<strong>I · Isolation</strong>: transazioni concorrenti non si vedono fino al commit (4 livelli SQL standard).<br>
+<strong>D · Durability</strong>: dopo il commit, i dati sono persistiti sul disco (WAL + fsync).
+</div></details></div>
+
+<div class="ex"><span class="ex-num">11</span><h3>Livelli di isolation</h3>
+<p>Elenca i 4 livelli di isolation ANSI SQL dal più permissivo al più stretto e indica quale problema ciascun livello previene.</p>
+<details><summary>Soluzione</summary><div class="sol">
+1. <strong>READ UNCOMMITTED</strong> — permette letture sporche, phantom, non-repeatable. Raramente usato.<br>
+2. <strong>READ COMMITTED</strong> (default PostgreSQL) — previene letture sporche. Phantom e non-repeatable ancora possibili.<br>
+3. <strong>REPEATABLE READ</strong> — previene letture sporche + non-repeatable. Phantom possibili (in alcuni DB).<br>
+4. <strong>SERIALIZABLE</strong> — previene tutto. Transazioni come se serializzate.<br><br>
+Trade-off: più alto = più sicuro ma meno concorrenza (più lock/blocchi).
+</div></details></div>
+
+<div class="ex"><span class="ex-num">12</span><h3>CAP theorem · casi limite</h3>
+<p>Vero o falso, motiva ogni risposta:</p>
+<ul>
+<li>A. "Un sistema distribuito può essere CA senza sacrificare nulla"</li>
+<li>B. "MongoDB è AP per default"</li>
+<li>C. "PostgreSQL single-instance è CP"</li>
+<li>D. "Durante una partizione di rete, un sistema CP smette di rispondere alle scritture"</li>
+</ul>
+<details><summary>Soluzione</summary><div class="sol">
+A → <strong>Falso</strong>. CA è possibile solo in sistemi non-distribuiti (single node). In un sistema distribuito reale P è un vincolo, non una scelta: le reti cadono.<br>
+B → <strong>Falso</strong>. MongoDB default è CP (replica set con primary-secondary): se il primary è isolato, elezione, downtime scrittura.<br>
+C → <strong>Falso</strong>. Non è distribuito → è CA (consistency + availability). Non ha senso parlare di P.<br>
+D → <strong>Vero</strong>. CP sacrifica A quando c'è partizione: nodi fuori dal quorum smettono di accettare scritture per preservare consistency.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">13</span><h3>PostgreSQL · architettura e connection pool</h3>
+<p>Un'app ha 200 web worker concorrenti che aprono connessioni dirette a PostgreSQL. Dopo poche ore il DB è lento e risponde con errore "too many connections". Cosa sta succedendo e qual è la soluzione?</p>
+<details><summary>Soluzione</summary><div class="sol">
+<strong>Cosa sta succedendo:</strong> PostgreSQL forka un processo backend dedicato per ogni connessione. 200 backend × 5 MB ciascuno = 1 GB di RAM solo per i backend, più il costo di context switching. Il parametro <code>max_connections</code> (default 100) protegge da esaurimento risorse: oltre il limite restituisce "too many connections".<br><br>
+<strong>Soluzione:</strong> <strong>connection pool</strong>. Installare <strong>PgBouncer</strong> davanti al DB. L'app apre 200 connessioni a PgBouncer; PgBouncer riusa solo 20-50 connessioni vere verso il DB (pool mode: transaction). L'app non se ne accorge, il DB respira.<br><br>
+Alternative cloud: <strong>RDS Proxy</strong> (AWS), pool integrato in Azure Database for PostgreSQL.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">14</span><h3>PostgreSQL vs MySQL · quando scegli cosa</h3>
+<p>Per ognuno di questi scenari, scegli PostgreSQL o MySQL e motiva:</p>
+<ul>
+<li>A. App Django nuova con componente GIS (mappe)</li>
+<li>B. WordPress per il blog aziendale</li>
+<li>C. Core transactional per un e-commerce con requisiti ACID stretti</li>
+<li>D. Log aggregation con 50k insert/sec, query analitiche sporadiche</li>
+<li>E. Startup fintech con analytics pesanti e time-series</li>
+</ul>
+<details><summary>Soluzione</summary><div class="sol">
+A → <strong>PostgreSQL</strong>. PostGIS è standard de facto per dati geografici, nessuna alternativa FOSS comparabile.<br>
+B → <strong>MySQL</strong>. Ecosistema LAMP, WordPress è nato MySQL-first, molti plugin lo assumono.<br>
+C → <strong>PostgreSQL</strong>. ACID più forte di default, constraint più ricchi, maggiore serietà enterprise.<br>
+D → Nessuno dei due in modo "pulito". <strong>ClickHouse</strong> o <strong>TimescaleDB</strong> (estensione PostgreSQL) per time-series. Se devi scegliere tra i due: PostgreSQL + TimescaleDB.<br>
+E → <strong>PostgreSQL</strong> + TimescaleDB. Stessa motivazione: time-series + SQL + window functions ricche per analytics.
+</div></details></div>
+
+<div class="cat">D · Sicurezza DB baseline</div>
+
+<div class="ex"><span class="ex-num">15</span><h3>pg_hba.conf · riscrivi la configurazione</h3>
+<p>Parti da questo <code>pg_hba.conf</code> sbagliato e scrivi la versione corretta, motivando ogni modifica:</p>
+<pre style="background:#0F172A;color:#E2E8F0;padding:10px;border-radius:4px;font-family:Consolas,monospace;font-size:11px;margin:8px 0">
+# TYPE   DATABASE   USER    ADDRESS      METHOD
+local    all        all                  trust
+host     all        all     0.0.0.0/0    md5
+host     all        admin   0.0.0.0/0    scram-sha-256
+</pre>
+<details><summary>Soluzione</summary><div class="sol">
+<strong>Versione corretta:</strong>
+<pre><code># TYPE     DATABASE   USER       ADDRESS           METHOD
+local      all        postgres                     peer
+host       all        all        127.0.0.1/32      scram-sha-256
+hostssl    appdb      appuser    10.0.1.0/24       scram-sha-256
+hostssl    all        admin      10.0.99.0/24      cert
+# deny by default implicito</code></pre>
+<strong>Motivazioni:</strong><br>
+• Riga 1: <code>trust</code> → <code>peer</code> + limitare a user <code>postgres</code>. Evita che chiunque sul server diventi superuser DB.<br>
+• Riga 2: <code>0.0.0.0/0 md5</code> → <code>127.0.0.1/32 scram-sha-256</code> + <code>hostssl</code> per subnet app specifica. md5 è deprecato, 0.0.0.0/0 = mondo intero.<br>
+• Riga 3: admin da 0.0.0.0/0 → <code>hostssl + cert</code> da subnet bastion. Admin remoto deve essere protettissimo.<br>
+• Nessuna regola =&gt; deny implicito (PostgreSQL respinge se nessuna regola matcha).
+</div></details></div>
+
+<div class="ex"><span class="ex-num">16</span><h3>TLS · connection string</h3>
+<p>Scrivi la connection string PostgreSQL (formato URI) per una produzione, assumendo:</p>
+<ul>
+<li>DB su <code>prod-db.azienda.local</code> porta 5432</li>
+<li>User <code>reports</code> password <code>S3cur3!</code></li>
+<li>Database <code>analytics</code></li>
+<li>CA aziendale in <code>/etc/ssl/ca-azienda.crt</code></li>
+<li>Richiesta massima sicurezza TLS</li>
+</ul>
+<details><summary>Soluzione</summary><div class="sol">
+<pre><code>postgresql://reports:S3cur3%21@prod-db.azienda.local:5432/analytics?sslmode=verify-full&sslrootcert=/etc/ssl/ca-azienda.crt</code></pre>
+Note:<br>
+• <code>sslmode=verify-full</code>: TLS obbligatorio + cert valido + hostname match. Standard produzione.<br>
+• <code>sslrootcert</code>: punta al cert della CA aziendale per la validazione.<br>
+• <code>!</code> nella password è url-encoded come <code>%21</code>.<br>
+• Se la CA è nel truststore di sistema, <code>sslrootcert</code> può essere omesso.<br>
+• Alternativa: separa credenziali in file <code>.pgpass</code> (<code>0600 chmod</code>).
+</div></details></div>
+
+<div class="ex"><span class="ex-num">17</span><h3>Encryption at rest · confronta i 4 layer</h3>
+<p>Elenca i 4 layer di encryption at rest e per ciascuno: (a) cosa protegge, (b) cosa non protegge, (c) quando sceglierlo.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<strong>Layer 1 · Filesystem (LUKS/BitLocker)</strong><br>
+Protegge: furto fisico del disco spento. Non protegge: sistema acceso con disco montato (chiave in RAM). Quando: on-prem server + offline backup.<br><br>
+<strong>Layer 2 · Volume cloud (EBS/Azure Disk/GCP PD)</strong><br>
+Protegge: furto snapshot, leak di backup. Non protegge: attaccante con credenziali IAM legittime. Quando: <strong>sempre in cloud</strong>, default on.<br><br>
+<strong>Layer 3 · Column-level (pgcrypto)</strong><br>
+Protegge: insider con <code>SELECT</code> su tabella. Non protegge: chi ha chiave + logica app. Quando: dati ultra-sensibili (SSN, carte, documenti), con chiavi in HSM/KMS.<br><br>
+<strong>Layer 4 · TDE (Transparent Data Encryption)</strong><br>
+Protegge: furto data file, trasparente all'app. Non protegge: da chi ha accesso al DB con privilegi. Quando: disponibile e compliance lo richiede. Non nativo in PG community.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">18</span><h3>Ripetizione rapida · flashcard</h3>
+<p>Risposte in 1 frase ciascuna:</p>
+<ol>
+<li>Che differenza c'è tra hypervisor Type 1 e Type 2?</li>
+<li>Cos'è un Linux namespace?</li>
+<li>Qual è il metodo auth deprecato di pg_hba.conf e cosa usare al suo posto?</li>
+<li>Cos'è il WAL e a cosa serve?</li>
+<li>Quale sslmode è lo standard produzione?</li>
+<li>Cosa distingue BASE da ACID in una frase?</li>
+<li>Quale extension PostgreSQL gestisce l'encryption at column-level?</li>
+</ol>
+<details><summary>Risposte</summary><div class="sol">
+1. Type 1 gira sull'hardware (bare-metal); Type 2 gira sopra un host OS.<br>
+2. Meccanismo kernel Linux che dà a un processo una vista separata di una classe di risorse (PID, NET, MNT, IPC, UTS, USER, CGROUP).<br>
+3. <code>md5</code> (deprecato perché vulnerabile a offline cracking); usare <code>scram-sha-256</code>.<br>
+4. Write-Ahead Log: il log di tutte le modifiche, scritto prima dei data file; serve per durability e crash recovery.<br>
+5. <code>verify-full</code> (TLS obbligatorio + CA valida + hostname match).<br>
+6. ACID privilegia consistency immediata, BASE privilegia availability ed eventual consistency.<br>
+7. <code>pgcrypto</code> (con funzioni <code>PGP_SYM_ENCRYPT</code>/<code>DECRYPT</code>).
+</div></details></div>
+
+</div></body></html>

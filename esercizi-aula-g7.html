@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>Esercizi Aula L7 · Virtualizzazione, Container, DB</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.6;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F1B2D 0%,#059669 100%);color:#fff;padding:30px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:24px;margin-bottom:6px}
+header p{color:#D1FAE5;font-size:14px}
+.intro{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:20px;font-size:14px}
+.cat{background:#059669;color:#fff;padding:10px 16px;border-radius:8px;margin:24px 0 14px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.ex{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:20px;margin-bottom:14px}
+.ex-num{display:inline-block;background:#10B981;color:#fff;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;margin-bottom:10px}
+.ex h3{font-size:16px;margin-bottom:10px;color:#0F1B2D}
+.ex p{font-size:14px;margin-bottom:10px;color:#334155}
+.ex ul{margin:8px 0 10px 22px;font-size:13px;color:#475569}
+.ex ul li{margin-bottom:4px}
+details{margin-top:12px;background:#F1F5F9;border-radius:6px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600;color:#059669;font-size:13px}
+details[open] summary{margin-bottom:8px}
+.sol{font-size:13px;color:#0F1B2D;line-height:1.7}
+.sol code{background:#1E293B;color:#6EE7B7;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+.sol pre{background:#0F172A;color:#E2E8F0;padding:10px;border-radius:4px;overflow-x:auto;font-family:Consolas,monospace;font-size:12px;margin:8px 0;line-height:1.5}
+.sol pre code{background:transparent;color:#6EE7B7;padding:0}
+code{background:#1E293B;color:#6EE7B7;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+</style></head><body><div class="container">
+<header><h1>🎯 Esercizi Aula L7</h1><p>Virtualizzazione, Container, DB Fundamentals, Sicurezza · 10 esercizi · ~50 minuti</p></header>
+
+<div class="intro"><strong>Modalità di lavoro:</strong> esercizi da svolgere in aula in coppie. Discussione plenaria dopo ogni categoria. Le soluzioni sono nascoste — apritele solo dopo aver provato.</div>
+
+<div class="cat">A · Virtualizzazione e container</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 1</span><h3>Type 1, Type 2 o container?</h3>
+<p>Classifica ognuno di questi scenari come Type 1, Type 2 o Container:</p>
+<ul>
+<li>A. Il tuo portatile con VirtualBox che esegue Ubuntu per un lab</li>
+<li>B. AWS EC2 che esegue le istanze dei clienti su hardware Nitro</li>
+<li>C. Docker Desktop sul tuo Mac con MySQL girante</li>
+<li>D. <code>podman run nginx:alpine</code> sul tuo laptop Linux</li>
+<li>E. Proxmox che ospita le VM di una PMI</li>
+</ul>
+<details><summary>Mostra soluzione</summary><div class="sol">A → <strong>Type 2</strong>. VirtualBox gira come applicazione sopra il tuo OS.<br>B → <strong>Type 1</strong>. Nitro (basato su KVM custom) gira direttamente sull'hardware. Le istanze EC2 sono VM.<br>C → <strong>Container</strong>. Docker Desktop è un container engine; MySQL è un container, non una VM. (Docker Desktop internamente usa una VM Linux leggera su Mac/Windows, ma MySQL è eseguito come container dentro di essa.)<br>D → <strong>Container</strong>. Podman fa girare nginx come processo isolato con namespace+cgroups.<br>E → <strong>Type 1</strong>. Proxmox è bare-metal (KVM+LXC), gira direttamente sull'hardware.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 2</span><h3>Mappa il namespace</h3>
+<p>Per ognuna di queste osservazioni dentro un container, indica quale namespace Linux è responsabile dell'effetto:</p>
+<ul>
+<li>A. "<code>ps aux</code> dentro il container mostra solo 3 processi, ma l'host ne ha 200"</li>
+<li>B. "Il container si chiama <code>webapp-01</code>, l'host si chiama <code>prod-srv-12</code>"</li>
+<li>C. "Il container non vede l'interfaccia <code>eth0</code> dell'host, ha il suo <code>eth0</code> virtuale"</li>
+<li>D. "Dentro il container sono root (UID 0), ma dall'esterno <code>ps</code> mostra il processo come UID 1000"</li>
+<li>E. "Il container ha una sua <code>/etc/passwd</code> completamente diversa da quella dell'host"</li>
+</ul>
+<details><summary>Mostra soluzione</summary><div class="sol">A → <strong>PID namespace</strong> (vista separata degli ID di processo).<br>B → <strong>UTS namespace</strong> (hostname + domain separati).<br>C → <strong>NET namespace</strong> (stack TCP/IP separato).<br>D → <strong>USER namespace</strong> (UID mapping tra container e host). Questa è la base dei container rootless.<br>E → <strong>MNT namespace</strong> (filesystem separato, il container ha la sua <code>/</code>).</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 3</span><h3>VM, container o bare-metal?</h3>
+<p>Per 3 workload aziendali, scegli VM, container o bare-metal e motiva:</p>
+<ul>
+<li>A. API Python stateless (FastAPI), 20-30 req/s, deploy 5-10 volte al giorno via CI/CD</li>
+<li>B. Database Oracle 12c legacy, 500 GB dati, usato 24/7 da 200 utenti, performance 10k IOPS, nessun appetito per migrazioni</li>
+<li>C. Training ML notturno, 4 GPU per 6 ore, Python+PyTorch+CUDA, dataset 2 TB, una tantum gira-produce-spegne</li>
+</ul>
+<details><summary>Mostra soluzione</summary><div class="sol">A → <strong>Container</strong>. Stateless + deploy frequenti + horizontal scaling = cloud-native. Immagine piccola, rebuild fast in CI/CD, scaling in pochi secondi. Esempio concreto: Kubernetes deployment con autoscaler.<br><br>B → <strong>VM</strong>. Legacy monolitico, performance critica, licenze già sostenute, dipendenze OS-level complesse. VM dedicata con risorse riservate. Isolamento forte perché una compromissione sarebbe devastante.<br><br>C → <strong>VM o bare-metal</strong>. Dipende: VM con GPU-passthrough funziona ma ha overhead. Bare-metal se servono massime performance (training di giorni). Container con <code>nvidia-runtime</code> è accettabile ma meno comune in produzione ML training.<br><br><strong>Regola pratica:</strong> stateless + cambia spesso → container. Stateful + legacy + critical → VM. Bare-metal solo per edge case performance.</div></details></div>
+
+<div class="cat">B · Database fundamentals</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 4</span><h3>SQL o NoSQL?</h3>
+<p>Per ognuno di questi casi, scegli la famiglia più adatta e spiega perché in una frase:</p>
+<ul>
+<li>A. Core banking di una banca italiana: conti correnti, bonifici, estratti conto</li>
+<li>B. Catalogo prodotti e-commerce con attributi molto variabili per categoria</li>
+<li>C. Real-time leaderboard di un gioco mobile con 10M utenti attivi</li>
+<li>D. Dati di fatturazione telefonica (CDR) con retention di 7 anni e query analitiche rare</li>
+<li>E. Sessioni utente di un'app web con TTL di 30 minuti</li>
+</ul>
+<details><summary>Mostra soluzione</summary><div class="sol">A → <strong>SQL</strong>. Transazioni ACID, integrità forte, constraint stretti (saldo mai negativo). PostgreSQL o Oracle.<br>B → <strong>NoSQL document store</strong> (MongoDB). Schema flessibile per attributi variabili (un laptop ha CPU/RAM, un vestito ha taglia/colore). Anche PostgreSQL con JSONB funziona bene.<br>C → <strong>NoSQL in-memory</strong> (Redis sorted set). Massime performance per operazioni ZADD/ZRANGE, AP consistency accettabile.<br>D → <strong>SQL</strong> con partitioning, o data warehouse analitico. Volume grande ma query strutturate. PostgreSQL + TimescaleDB se time-series.<br>E → <strong>NoSQL key-value</strong> (Redis). TTL nativo, zero sovrastruttura, AP perfetto per dati ephemeral.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 5</span><h3>ACID a prova di viaggio</h3>
+<p>Un bonifico di 1000€ da conto A a conto B richiede 2 query: <code>UPDATE conti SET saldo = saldo - 1000 WHERE id = 'A';</code> poi <code>UPDATE conti SET saldo = saldo + 1000 WHERE id = 'B';</code>. Descrivi quale proprietà ACID è violata (e cosa succede) se:</p>
+<ul>
+<li>A. Il server si spegne tra le due UPDATE</li>
+<li>B. A ha saldo iniziale 500€ e il constraint <code>CHECK (saldo &gt;= 0)</code> esiste</li>
+<li>C. Un altro utente prova a fare un bonifico simile in parallelo e legge il saldo di A mentre la prima transazione è a metà</li>
+<li>D. Il commit è andato a buon fine ma il disco fallisce prima di persistere</li>
+</ul>
+<details><summary>Mostra soluzione</summary><div class="sol">A → <strong>Atomicity</strong>. Senza, A ha perso 1000€ e B non li ha ricevuti: 1000€ svaniti. Con atomicity, al restart il WAL rollback dello step 1.<br>B → <strong>Consistency</strong>. Il constraint viene violato (500 - 1000 = -500). La transazione fallisce e rollback atomico. Il DB resta in stato valido.<br>C → <strong>Isolation</strong>. L'altro utente potrebbe vedere il saldo sporco (read uncommitted) o un phantom read. I livelli di isolation (SERIALIZABLE) bloccano la concorrenza.<br>D → <strong>Durability</strong>. Violata se il commit è confermato al client ma non ancora fsync-ato. In produzione si usa <code>synchronous_commit = on</code> per attendere fsync prima del "OK commit".</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 6</span><h3>CAP theorem · posizionamento</h3>
+<p>Per ognuno di questi sistemi distribuiti, indica se è CA, CP o AP e spiega in una frase:</p>
+<ul>
+<li>A. PostgreSQL single-instance</li>
+<li>B. MongoDB replica set con primary-secondary, default settings</li>
+<li>C. Cassandra con consistency level ONE</li>
+<li>D. DynamoDB con "eventually consistent reads"</li>
+<li>E. ZooKeeper (coordination service)</li>
+</ul>
+<details><summary>Mostra soluzione</summary><div class="sol">A → <strong>CA</strong>. Non è distribuito, non c'è partizione possibile. Consistency e availability garantiti finché l'unico nodo è up.<br>B → <strong>CP</strong>. Se il primary è isolato dai secondary, si ferma (elezione di nuovo primary). Sacrifica availability per consistency.<br>C → <strong>AP</strong>. Consistency level ONE accetta la scrittura da un singolo nodo; replica successiva. Alta availability, consistency eventuale.<br>D → <strong>AP</strong>. Letture da qualsiasi replica, dato possibile obsoleto. Alta disponibilità.<br>E → <strong>CP</strong>. ZooKeeper usa Zab (Paxos-like) per consistency forte. Se il quorum non è raggiunto, smette di accettare scritture (fail-stop).<br><br><strong>Nota:</strong> in pratica P è sempre richiesta (le reti cadono), quindi la vera scelta è tra C e A durante una partizione.</div></details></div>
+
+<div class="cat">C · PostgreSQL e sicurezza DB</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 7</span><h3>Lettura pg_hba.conf · trova i problemi</h3>
+<p>Guarda questo <code>pg_hba.conf</code> proposto per produzione. Identifica i problemi riga per riga:</p>
+<pre style="background:#0F172A;color:#E2E8F0;padding:12px;border-radius:4px;font-family:Consolas,monospace;font-size:12px;margin:10px 0">
+# TYPE    DATABASE   USER       ADDRESS         METHOD
+local     all        postgres                   trust
+host      all        all        0.0.0.0/0       md5
+host      production webapp     10.0.0.0/8      password
+host      all        admin      0.0.0.0/0       scram-sha-256
+hostssl   finance    finance    10.0.5.0/24     scram-sha-256
+</pre>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Riga 1</strong> — <code>local all postgres trust</code>: <strong>CORREGGI</strong>. In dev va bene, in produzione pericoloso (qualsiasi utente OS con <code>sudo -u postgres psql</code> diventa root DB). Preferire <code>peer</code>.<br>
+<strong>Riga 2</strong> — <code>host all all 0.0.0.0/0 md5</code>: <strong>MAI</strong>. Due errori: 0.0.0.0/0 = mondo intero, md5 = deprecato.<br>
+<strong>Riga 3</strong> — <code>host ... password</code>: <strong>MAI</strong>. Il metodo <code>password</code> invia la password <strong>in chiaro</strong> sul wire. Sostituire con <code>scram-sha-256</code> o <code>hostssl + scram-sha-256</code>.<br>
+<strong>Riga 4</strong> — admin da 0.0.0.0/0: <strong>MAI</strong>. Anche con scram-sha-256 forte, un admin accessibile dal mondo intero è un attack vector enorme. Restringere a subnet bastion o VPN.<br>
+<strong>Riga 5</strong> — <code>hostssl finance finance_app 10.0.5.0/24 scram-sha-256</code>: <strong>OK</strong>. TLS obbligatorio, subnet specifica, user+DB mirati.<br><br>
+<strong>Red flag universali da ricordare:</strong> <code>0.0.0.0/0</code>, <code>trust</code>, <code>md5</code>, <code>password</code>.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 8</span><h3>sslmode · scegli il valore giusto</h3>
+<p>Per ognuno di questi scenari, scegli il valore di <code>sslmode</code> appropriato tra <code>disable</code>, <code>allow</code>, <code>prefer</code>, <code>require</code>, <code>verify-ca</code>, <code>verify-full</code>:</p>
+<ul>
+<li>A. App Python in produzione che si connette a RDS PostgreSQL con certificato AWS</li>
+<li>B. Script locale che si connette a un PostgreSQL sul tuo stesso laptop via <code>127.0.0.1</code></li>
+<li>C. Tool di backup che si connette al DB produzione via VPN</li>
+<li>D. Configurazione di default che un collega ha messo in un client: "usa TLS se il server lo offre, altrimenti vai in chiaro"</li>
+</ul>
+<details><summary>Mostra soluzione</summary><div class="sol">A → <strong><code>verify-full</code></strong>. Standard produzione. TLS obbligatorio + CA + hostname match. Previene MITM.<br>B → <strong><code>disable</code></strong> o <code>require</code>. Loopback locale, TLS overhead inutile se il server è sullo stesso host. Se il server accetta TLS, <code>require</code> va bene.<br>C → <strong><code>verify-full</code></strong>. Anche via VPN, TLS è difesa in profondità. Se il certificato è firmato da CA interna, il <code>sslrootcert</code> punta alla CA aziendale.<br>D → Il collega ha usato <code>prefer</code> (default di libpq). <strong>Pericoloso</strong>: vulnerabile a downgrade attack. Un attaccante MITM può strippare TLS e il client accetta plaintext. Correggere in <code>require</code> minimo, <code>verify-full</code> idealmente.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 9</span><h3>Encryption at rest · disegna la difesa in profondità</h3>
+<p>Sei l'architetto di un DB PostgreSQL su AWS che contiene dati clienti sensibili (nome, SSN, numero carta di credito). Proponi una strategia di encryption at rest usando più layer. Per ogni layer spiega cosa protegge e cosa no.</p>
+<details><summary>Esempio di soluzione</summary><div class="sol">
+<strong>Layer 1 · EBS encryption (volume cloud)</strong>: attivato di default (customer-managed key via KMS). Protegge se qualcuno riesce a scaricare snapshot o volumi. <strong>Non</strong> protegge da attaccante con credenziali IAM legittime.<br><br>
+<strong>Layer 2 · pgcrypto column-level</strong> su SSN e numero carta. <code>PGP_SYM_ENCRYPT(value, key)</code> con chiave in <strong>AWS KMS</strong>. Protegge i dati anche se qualcuno ha <code>SELECT</code> sulla tabella. <strong>Non</strong> protegge da chi ha accesso alla chiave KMS.<br><br>
+<strong>Layer 3 · Access control</strong>: DB role per l'app ha <code>SELECT</code> solo sulle colonne non cifrate; solo il servizio di decrypt (lambda con IAM role specifico) ha accesso alla chiave KMS.<br><br>
+<strong>Layer 4 · pgAudit</strong> attivo su tabella clienti (<code>SET (audit='read, write')</code>). Qualsiasi accesso viene loggato e forwardato a CloudWatch + Splunk. Retention 7 anni (GDPR).<br><br>
+<strong>Cosa questa pila NON protegge</strong>: SQL injection nell'app (prossima lezione!), memory dump del server DB quando è acceso, rubare il disco fisico mentre è in uso e sbloccato, insider con accesso root al server. La sicurezza è sempre a layer, niente è bulletproof.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 10</span><h3>Configurare pgAudit — compliance GDPR</h3>
+<p>Il CISO chiede: "tutti gli accessi in lettura ai dati anagrafici clienti devono essere loggati e conservati 7 anni, secondo GDPR". Come configureresti pgAudit e l'infrastruttura di log?</p>
+<details><summary>Soluzione</summary><div class="sol">
+<strong>1. Configurazione PostgreSQL</strong>:
+<pre><code>shared_preload_libraries = 'pgaudit'
+pgaudit.log = 'write, role, ddl'
+log_connections = on
+log_disconnections = on
+log_line_prefix = '%m [%p] %q%u@%d '
+log_destination = 'jsonlog'   # PG 15+</code></pre>
+<strong>2. Abilitare READ logging solo sulla tabella sensibile</strong> (per non esplodere il volume log):
+<pre><code>ALTER TABLE clienti SET (audit='read, write');</code></pre>
+<strong>3. Forward dei log a SIEM</strong>:
+<ul>
+<li>Filebeat/Fluentd legge <code>/var/log/postgresql/*.log</code></li>
+<li>Spedisce a Elasticsearch / Splunk / Datadog</li>
+<li>Integrazione con SIEM per alert su pattern sospetti (es. SELECT * senza WHERE)</li>
+</ul>
+<strong>4. Retention 7 anni</strong>:
+<ul>
+<li>S3 Glacier Deep Archive per log oltre 1 anno</li>
+<li>Lifecycle policy che sposta da S3 Standard → Glacier → Deep Archive</li>
+<li>Costo ~$1/TB/mese su Deep Archive</li>
+</ul>
+<strong>5. Proteggere i log stessi</strong>:
+<ul>
+<li>Bucket S3 con <strong>object lock</strong> in compliance mode (no-delete)</li>
+<li>Accesso ai log solo per auditor con approval workflow</li>
+<li>Log dell'accesso ai log (meta-audit)</li>
+</ul>
+<strong>Callback M1</strong>: defense in depth + log è tutto + immutabilità degli audit.
+</div></details></div>
+
+</div></body></html>
