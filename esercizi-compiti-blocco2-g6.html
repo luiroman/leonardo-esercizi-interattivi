@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>Compiti G6 Blocco 2 - Prepara Modulo 2</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.6;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F1B2D 0%,#1E293B 100%);color:#fff;padding:30px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:24px;margin-bottom:6px}header p{color:#CBD5E1;font-size:14px}
+.intro{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:20px;font-size:14px}
+.cat{background:#0EA5E9;color:#fff;padding:10px 16px;border-radius:8px;margin:24px 0 14px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.cat.prep{background:#10B981}
+.ex{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:12px}
+.ex-num{display:inline-block;background:#38BDF8;color:#fff;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;margin-bottom:8px}
+.ex-num.prep{background:#10B981}
+.ex h3{font-size:15px;margin-bottom:8px}.ex p{font-size:13px;margin-bottom:8px;color:#334155}
+.ex ul{margin:6px 0 8px 20px;font-size:12px;color:#475569}
+details{margin-top:10px;background:#F1F5F9;border-radius:6px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600;color:#0EA5E9;font-size:12px}
+.sol{font-size:12px;color:#0F1B2D;line-height:1.7;margin-top:8px}
+.sol code{background:#1E293B;color:#38BDF8;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:11px}
+</style></head><body><div class="container">
+<header><h1>📝 Compiti G6 · Blocco 2</h1><p>Prepara Modulo 2 · Compute & Database · 16 esercizi</p></header>
+<div class="intro"><strong>Obiettivo:</strong> preparare il Modulo 2 (Compute & Database, inizio L7 · 29 aprile). I primi 6 esercizi sono di attivazione (mini-ricerche), poi 10 di preparazione con installazione e hands-on. <strong>Deliverable obbligatori:</strong> Podman installato + 3 container attivi + screenshot.<br><br><strong>Nota strumento:</strong> usiamo <strong>Podman</strong> (non Docker Desktop). Motivo: Docker Desktop richiede licenza a pagamento per uso aziendale (&gt;250 dipendenti o &gt;10M$ fatturato), Podman è FOSS senza vincoli di licenza. I comandi CLI sono quasi identici (<code>podman run</code> = <code>docker run</code>), quindi la sintassi che imparerete funziona ovunque. Alternative accettabili: Docker Engine su Linux nativo (no Docker Desktop).</div>
+
+<div class="cat prep">A · Virtualizzazione (richiami e ricerca)</div>
+
+<div class="ex"><span class="ex-num prep">1</span><h3>Hypervisor type 1 vs type 2</h3><p>Cerca e spiega la differenza fondamentale tra hypervisor type 1 (bare-metal) e type 2 (hosted). Fai 2 esempi per ciascuno e indica quando usare l'uno e quando l'altro.</p>
+<details><summary>Cosa cercare</summary><div class="sol"><strong>Type 1 (bare-metal):</strong> gira direttamente sull'hardware senza OS sottostante. Esempi: VMware ESXi, Microsoft Hyper-V (Server), KVM (in modalità native), Xen, Proxmox VE. Uso: datacenter, cloud provider, produzione enterprise.<br>
+<strong>Type 2 (hosted):</strong> gira come applicazione sopra un OS host. Esempi: VirtualBox, VMware Workstation, Parallels Desktop, UTM (Mac). Uso: sviluppo, testing, lab personali, corso di cybersecurity come il nostro.<br>
+<strong>Differenza fondamentale:</strong> overhead e isolamento. Type 1 accede direttamente ad hardware (performance vicine al bare-metal), type 2 passa attraverso OS host (più overhead, più superficie di attacco).<br>Noi abbiamo usato VirtualBox (type 2) in tutto il corso perché è pratico su laptop personale.</div></details></div>
+
+<div class="ex"><span class="ex-num prep">2</span><h3>Container vs VM</h3><p>In max 5 righe: che differenza strutturale c'è tra una VM e un container Docker? Perché i container sono più "leggeri"?</p>
+<details><summary>Cosa cercare</summary><div class="sol">Una <strong>VM</strong> virtualizza l'intero stack hardware: CPU, RAM, disco, rete, e ospita un OS completo con kernel proprio. Un <strong>container</strong> condivide il kernel dell'host e virtualizza solo lo spazio utente (processi, filesystem, network namespace) isolato tramite cgroups e namespaces Linux. Risultato: una VM pesa GB e parte in decine di secondi (deve bootare OS), un container pesa MB e parte in millisecondi (nessun boot). Trade-off: VM hanno isolamento più forte (kernel separato = surface di attacco ridotta), container condividono kernel (un kernel exploit può impattare tutti i container).</div></details></div>
+
+<div class="ex"><span class="ex-num prep">3</span><h3>Security implications dei container</h3><p>Elenca 3 differenze di sicurezza tra container e VM, con implicazioni per la difesa.</p>
+<details><summary>Cosa cercare</summary><div class="sol">
+<strong>1. Kernel condiviso:</strong> se l'attaccante rompe l'isolamento del container (escape via CVE kernel o container runtime), ottiene accesso all'host e a tutti gli altri container. VM: un escape richiede hypervisor CVE (molto più rare).<br>
+<strong>2. Superficie ridotta ma immutabile:</strong> container (best practice) sono distroless o minimal = meno tool, meno CVE. Ma sono anche immutabili, quindi patch = rebuild image + redeploy (non live patch).<br>
+<strong>3. Trust chain dell'immagine:</strong> container è l'image. Se pulla da Docker Hub un'immagine malevola (typosquatting, supply chain attack), sei dentro. Servono image signing (Docker Content Trust, Sigstore) e registry privati con scanning (Trivy, Clair).<br>
+<strong>Difesa container-specific:</strong> run as non-root, read-only filesystem, drop capabilities, seccomp/AppArmor profile, network policy K8s, image scanning in CI.</div></details></div>
+
+<div class="cat prep">B · Database (ricerca e basics)</div>
+
+<div class="ex"><span class="ex-num prep">4</span><h3>SQL vs NoSQL</h3><p>Quando si sceglie un database SQL (RDBMS) e quando uno NoSQL? Fai un esempio per ciascuno.</p>
+<details><summary>Cosa cercare</summary><div class="sol"><strong>SQL (RDBMS: PostgreSQL, MySQL, MS SQL, Oracle):</strong><br>
+• Quando: dati con schema rigido e relazioni, transazioni ACID (banche, ecommerce, ERP), reportistica complessa (JOIN multipli).<br>
+• Esempio: ordini ecommerce con righe, pagamenti, clienti, prodotti → tabelle con foreign key, transazioni che garantiscono coerenza.<br>
+<strong>NoSQL (MongoDB, DynamoDB, Redis, Cassandra):</strong><br>
+• Quando: schema flessibile, alta scalabilità orizzontale, dati document-based o key-value, eventuale consistency accettabile.<br>
+• Esempio: catalogo prodotti marketplace con schemi variabili, cache sessioni utente, log/event storage ad alto volume.<br>
+<strong>Regola pratica:</strong> se non sai cosa scegliere, parti con SQL. È maturo, standard, la maggior parte dei casi business rientra lì. NoSQL è giustificato quando hai un vincolo specifico (scala, schema dinamico).</div></details></div>
+
+<div class="ex"><span class="ex-num prep">5</span><h3>ACID in breve</h3><p>Che significano A, C, I, D in ACID? Perché sono importanti per un database bancario?</p>
+<details><summary>Cosa cercare</summary><div class="sol"><strong>Atomicity:</strong> la transazione è tutto-o-niente. Bonifico da A a B = addebito A + accredito B, entrambi o nessuno.<br>
+<strong>Consistency:</strong> la transazione porta il DB da uno stato valido a un altro stato valido (rispetta vincoli: saldi non negativi, integrità referenziale).<br>
+<strong>Isolation:</strong> transazioni concorrenti non si vedono tra loro (dipende dal isolation level: READ COMMITTED, REPEATABLE READ, SERIALIZABLE).<br>
+<strong>Durability:</strong> una volta commit, i dati sopravvivono a crash (scritti su disco, write-ahead log).<br>
+<strong>Per la banca:</strong> senza Atomicity, un crash durante bonifico lascia un cliente con soldi in meno e l'altro senza accredito. Senza Isolation, due bonifici simultanei dallo stesso conto potrebbero entrambi vedere saldo sufficiente e scoperto impossibile diventa possibile. ACID è il motivo per cui i sistemi bancari storicamente sono SQL.</div></details></div>
+
+<div class="ex"><span class="ex-num prep">6</span><h3>SQL Injection: anatomia</h3><p>Cerca la definizione di SQL Injection (SQLi) e fai un esempio minimo di query vulnerabile in qualunque linguaggio. Indica 2 difese concrete.</p>
+<details><summary>Cosa cercare</summary><div class="sol"><strong>SQLi:</strong> vulnerabilità in cui input utente non sanitizzato viene concatenato in una query SQL, permettendo all'attaccante di modificare la logica della query.<br>
+<strong>Esempio vulnerabile (Python, anti-pattern):</strong><br>
+<code>query = f"SELECT * FROM users WHERE name='{user_input}'"</code><br>
+Se user_input = <code>' OR '1'='1</code>, la query diventa <code>SELECT * FROM users WHERE name='' OR '1'='1'</code> — sempre vera, restituisce tutti gli utenti.<br>
+<strong>Difese:</strong><br>
+1. <strong>Prepared statements / parametrized queries:</strong> il driver SQL separa query e parametri, l'input non può alterare la struttura. <code>cursor.execute("SELECT * FROM users WHERE name=%s", (user_input,))</code><br>
+2. <strong>ORM</strong> (SQLAlchemy, Django ORM, Hibernate): genera prepared statements sotto il cofano, le query nativamente safe.<br>
+3. <strong>WAF</strong> (L3 ricordi?) in aggiunta come difesa esterna.<br>
+4. <strong>Principio least privilege DB:</strong> l'utente applicativo NON ha DROP TABLE o admin.</div></details></div>
+
+<div class="cat prep">C · Setup Podman (hands-on obbligatorio)</div>
+
+<div class="ex"><span class="ex-num prep">7</span><h3>Installa Podman</h3><p>Installa Podman sul tuo sistema operativo. Verifica con <code>podman --version</code> e <code>podman run hello-world</code>. <strong>Deliverable:</strong> screenshot del comando <code>podman ps</code> funzionante.</p>
+<details><summary>Link guida</summary><div class="sol">
+<strong>Windows:</strong> <a href="https://podman.io/docs/installation">Podman Desktop</a> via installer (richiede WSL2). Abilitazione WSL2: <code>wsl --install</code> da PowerShell admin.<br>
+<strong>macOS:</strong> <code>brew install podman</code> poi <code>podman machine init &amp;&amp; podman machine start</code>.<br>
+<strong>Linux (Ubuntu):</strong> <code>sudo apt install podman</code> — pronto all'uso senza machine/daemon.<br>
+<strong>Perché non Docker Desktop:</strong> licenza commerciale richiesta per uso aziendale. Podman è FOSS, rootless by default (più sicuro), e la CLI è quasi identica a Docker.<br>
+<strong>Alternative accettabili:</strong> Docker Engine su Linux nativo (comandi <code>docker</code> invece di <code>podman</code>, sintassi identica).<br>
+<strong>Verifica funzionamento:</strong><br>
+<code>podman --version</code> → versione Podman<br>
+<code>podman run hello-world</code> → scarica e esegue container di test<br>
+<code>podman ps</code> → lista container running (inizialmente vuota)<br>
+<strong>Screenshot richiesto:</strong> terminale con output di <code>podman ps</code>.</div></details></div>
+
+<div class="ex"><span class="ex-num prep">8</span><h3>Pull delle immagini base M2</h3><p>Pull le 3 immagini che useremo nel Modulo 2: postgres, mysql, nginx. <strong>Deliverable:</strong> screenshot di <code>podman images</code> che le mostra.</p>
+<details><summary>Comandi</summary><div class="sol">
+<code>podman pull postgres:16</code>   (≈140 MB)<br>
+<code>podman pull mysql:8</code>        (≈580 MB)<br>
+<code>podman pull nginx:alpine</code>   (≈45 MB, volutamente piccola - Alpine)<br><br>
+Dopo il pull:<br>
+<code>podman images</code> → dovrebbe mostrare 3 righe.<br><br>
+<strong>Note:</strong> se la banda è lenta, si può fare uno alla volta. Le immagini restano cached nel sistema, non serve ri-pullare ogni volta. Lo storage pesa circa 800 MB totale, gestibile.<br>
+Podman di default pulla da <code>docker.io</code> se non specificato diverso registry (come Docker).</div></details></div>
+
+<div class="ex"><span class="ex-num prep">9</span><h3>Esegui 3 container attivi</h3><p>Avvia simultaneamente un container per ognuna delle 3 immagini. Usa porte diverse per evitare conflitti. <strong>Deliverable:</strong> screenshot di <code>podman ps</code> con 3 container STATUS=Up.</p>
+<details><summary>Comandi</summary><div class="sol">
+<code>podman run -d --name pg -e POSTGRES_PASSWORD=demo -p 5432:5432 postgres:16</code><br>
+<code>podman run -d --name mysql -e MYSQL_ROOT_PASSWORD=demo -p 3306:3306 mysql:8</code><br>
+<code>podman run -d --name web -p 8080:80 nginx:alpine</code><br><br>
+Verifica:<br>
+<code>podman ps</code> → 3 righe "Up ... seconds"<br>
+<code>curl http://localhost:8080</code> → pagina default nginx<br><br>
+<strong>Problema tipico:</strong> "port already in use" se qualche servizio locale usa già la porta. Soluzione: cambiare porta host (es. <code>-p 15432:5432</code> invece di 5432:5432).<br>
+Quando hai finito il test: <code>podman stop pg mysql web</code> e se vuoi rimuovere <code>podman rm pg mysql web</code>.</div></details></div>
+
+<div class="ex"><span class="ex-num prep">10</span><h3>Entra dentro un container</h3><p>Usa <code>podman exec -it</code> per aprire una shell nel container nginx e mostra il contenuto di <code>/etc/os-release</code>. Che distribuzione Linux gira dentro?</p>
+<details><summary>Soluzione</summary><div class="sol">
+<code>podman exec -it web sh</code>  (nginx:alpine usa sh, non bash)<br>
+Dentro il container:<br>
+<code>cat /etc/os-release</code><br>
+Output tipico:<br>
+<code>NAME="Alpine Linux"</code><br>
+<code>VERSION_ID=3.20.x</code>...<br>
+<br>
+Poi: <code>ps</code> → vedi solo i processi del container (nginx master + worker), NON i processi dell'host. Questo è il network/pid namespace in azione.<br>
+<code>exit</code> per tornare all'host.<br>
+Curiosità: <code>whoami</code> dentro nginx:alpine risponde "root" — nginx gira come root di default, ANTI-PATTERN per sicurezza (vedremo in L8 come cambiarlo).</div></details></div>
+
+<div class="cat prep">D · Lettura propedeutica + scenari</div>
+
+<div class="ex"><span class="ex-num prep">11</span><h3>OWASP SQLi Cheat Sheet</h3><p>Leggi (30 min) <a href="https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html">OWASP SQL Injection Prevention Cheat Sheet</a>. Rispondi: quali sono le 4 "Primary Defenses" elencate?</p>
+<details><summary>Soluzione</summary><div class="sol">
+<strong>Defense 1:</strong> Use of Prepared Statements (with Parameterized Queries).<br>
+<strong>Defense 2:</strong> Use of Stored Procedures (con parametri).<br>
+<strong>Defense 3:</strong> Allow-list Input Validation (whitelisting, mai blacklisting).<br>
+<strong>Defense 4:</strong> Escaping All User-Supplied Input (ultima spiaggia, framework-specific).<br><br>
+<strong>Additional defenses:</strong> Least Privilege (DB user con permessi minimi), White List Input Validation.<br>
+<strong>Takeaway:</strong> la prima difesa (prepared statements) copre il 99% dei casi. Le altre sono complementari o per casi legacy.</div></details></div>
+
+<div class="ex"><span class="ex-num prep">12</span><h3>Docker Security Cheat Sheet</h3><p>Leggi (20 min) <a href="https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html">OWASP Docker Security Cheat Sheet</a>. Elenca 5 best practice.</p>
+<details><summary>Soluzione</summary><div class="sol">
+1. <strong>Keep Host and Docker up to date</strong> (CVE del runtime).<br>
+2. <strong>Do NOT expose Docker daemon socket</strong> (<code>/var/run/docker.sock</code>) — chi lo ha = root sull'host.<br>
+3. <strong>Set user in Dockerfile</strong> (<code>USER 1000</code>) — no container as root.<br>
+4. <strong>Limit capabilities</strong> (<code>--cap-drop=ALL --cap-add=NET_BIND_SERVICE</code>).<br>
+5. <strong>Read-only filesystem</strong> (<code>--read-only</code>) e volumi temporanei specifici.<br>
+6. <strong>No privileged mode</strong> (<code>--privileged</code>) salvo casi eccezionali e giustificati.<br>
+7. <strong>Use trusted base images</strong> (ufficiali, firmate, scansionate).<br>
+8. <strong>Scan images</strong> (Trivy, Snyk, Docker Scout).<br>
+9. <strong>Use multi-stage builds</strong> per ridurre superficie.<br>
+10. <strong>Don't store secrets in images</strong> — usa secret manager / env vars runtime.</div></details></div>
+
+<div class="ex"><span class="ex-num prep">13</span><h3>Encryption at rest</h3><p>Cerca "Transparent Data Encryption" (TDE): che problema risolve e come si integra tipicamente con PostgreSQL/MySQL/SQL Server?</p>
+<details><summary>Cosa cercare</summary><div class="sol"><strong>Problema:</strong> i file del database (data files su disco) sono in chiaro. Se l'attaccante ruba fisicamente il disco, o ha accesso al filesystem senza passare dal DB engine, legge tutto. Encryption at rest cifra i file.<br>
+<strong>TDE (Transparent Data Encryption):</strong> il DB engine cifra/decifra trasparentemente tra RAM e disco, chiave custodita in key management system esterno. L'applicazione non sa niente, query normali.<br>
+<strong>Implementazioni:</strong><br>
+• <strong>SQL Server:</strong> TDE nativo Enterprise edition, chiavi in Service Master Key o Azure Key Vault.<br>
+• <strong>PostgreSQL:</strong> no TDE nativo (!), alternative: crittografia filesystem (LUKS, dm-crypt), oppure pgcrypto per campi specifici.<br>
+• <strong>MySQL:</strong> InnoDB tablespace encryption da 5.7+, con keyring plugin.<br>
+<strong>Cloud managed:</strong> tutti i DBaaS (RDS, Azure SQL) hanno encryption at rest di default via KMS/Key Vault.<br>
+<strong>Limiti:</strong> encryption at rest NON protegge da SQL injection o query leciti — quando il DB è acceso, i dati sono accessibili via query.</div></details></div>
+
+<div class="ex"><span class="ex-num prep">14</span><h3>Backup 3-2-1</h3><p>Cerca la regola "3-2-1" per backup. Applicala a un database PostgreSQL aziendale.</p>
+<details><summary>Soluzione</summary><div class="sol"><strong>Regola 3-2-1:</strong><br>
+<strong>3</strong> copie totali dei dati (originale + 2 backup).<br>
+<strong>2</strong> media di storage diversi (disco + nastro, o disco locale + cloud).<br>
+<strong>1</strong> copia offsite (fuori dal datacenter/ufficio).<br><br>
+<strong>Applicazione a PostgreSQL aziendale:</strong><br>
+1. <strong>Dati live</strong> sul server DB primario (copia 1, media disco locale).<br>
+2. <strong>Backup incrementale giornaliero</strong> con pgBackRest o Barman su storage dedicato on-premise (copia 2, media diverso/NAS).<br>
+3. <strong>Backup settimanale</strong> copiato su cloud storage (S3/Azure Blob) con encryption + lifecycle policy (copia 3, offsite).<br>
+<strong>Test di restore:</strong> almeno mensile (il backup non testato non esiste).<br>
+<strong>Evolution moderna:</strong> 3-2-1-1-0 (aggiunge copia offline/air-gapped + 0 errori durante restore test). Serve contro ransomware che cerca e cripta anche i backup online.</div></details></div>
+
+<div class="ex"><span class="ex-num prep">15</span><h3>GDPR minimi</h3><p>In 4-5 frasi: cosa richiede il GDPR (GDPR = Regolamento UE 2016/679) a chi gestisce database con dati personali di cittadini EU?</p>
+<details><summary>Cosa cercare</summary><div class="sol">
+Il GDPR impone principi di <strong>data protection by design and by default</strong>: le misure di sicurezza devono essere progettate nel sistema fin dall'inizio (non aggiunte dopo). Richiede: (1) <strong>minimizzazione</strong> — raccogliere solo i dati necessari per lo scopo dichiarato; (2) <strong>encryption at rest e in transit</strong> come misura tecnica di protezione; (3) <strong>pseudonimizzazione</strong> dove possibile (sostituire dati identificativi con pseudonimi); (4) <strong>right to erasure</strong> ("diritto all'oblio") — l'utente può chiedere la cancellazione; (5) <strong>data breach notification</strong> entro 72 ore a Garante Privacy; (6) <strong>access control</strong> con least privilege e audit log. Le sanzioni arrivano a 20M€ o 4% del fatturato mondiale. La GDPR compliance è un driver tecnico fortissimo per architetture database moderne.</div></details></div>
+
+<div class="ex"><span class="ex-num prep">16</span><h3>Scenario integrato M1 → M2</h3><p>Connetti M1 con M2: progetta (in 5-6 punti) come metteresti in sicurezza il container PostgreSQL dell'esercizio 9, usando i principi del Modulo 1.</p>
+<details><summary>Soluzione tipica</summary><div class="sol">
+1. <strong>Microsegmentazione (L5):</strong> il container DB deve essere raggiungibile SOLO dal container applicativo, non da altri pod. In K8s = NetworkPolicy con selector per-pod. In Docker Compose = user-defined network con policy.<br>
+2. <strong>Hardening (L6):</strong> il container NON gira come root (<code>USER postgres</code> nel Dockerfile, o <code>--user</code> a runtime). Filesystem read-only dove possibile.<br>
+3. <strong>Defense in depth:</strong> TLS per connessione client-DB (non in chiaro), password non in env vars in chiaro ma in secret manager, encryption at rest a livello storage.<br>
+4. <strong>Identità &gt; IP:</strong> DB user separati per ogni applicazione con permessi specifici (least privilege), non un singolo superuser.<br>
+5. <strong>Log è tutto:</strong> audit log delle query critiche (DELETE, UPDATE su tabelle sensibili), log inviati a SIEM esterno (non solo nel container ephemeral).<br>
+6. <strong>Automazione:</strong> deploy via Helm/Terraform con policy-as-code (OPA che blocca container DB esposti pubblicamente), scanning immagine in CI.<br>
+Questo è il <strong>ponte pratico</strong> tra M1 e M2: stessi principi, nuovo dominio di applicazione.</div></details></div>
+
+<div class="intro" style="margin-top:30px; background:#FEE2E2; border-color:#DC2626"><strong>📌 DELIVERABLE per 29 aprile:</strong><br>
+1. Screenshot lab G6 completato (shell root su Ubuntu via Kali)<br>
+2. Screenshot <code>docker ps</code> con 3 container attivi (postgres, mysql, nginx)<br>
+3. Mini-report "controlli mancanti" (esercizio 17 del Blocco 1)<br>
+Consegnare via email o caricare su cartella condivisa prima della Lezione 7.</div>
+
+</div></body></html>

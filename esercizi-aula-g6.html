@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>Esercizi Aula G6 - Quiz Chiusura Modulo 1</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.6;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F1B2D 0%,#1E293B 100%);color:#fff;padding:30px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:24px;margin-bottom:6px}
+header p{color:#CBD5E1;font-size:14px}
+.intro{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:20px;font-size:14px}
+.cat{background:#0EA5E9;color:#fff;padding:10px 16px;border-radius:8px;margin:24px 0 14px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.cat.hrd{background:#0891B2}
+.cat.lab{background:#DC2626}
+.ex{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:20px;margin-bottom:14px}
+.ex-num{display:inline-block;background:#38BDF8;color:#fff;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;margin-bottom:10px}
+.ex h3{font-size:16px;margin-bottom:10px;color:#0F1B2D}
+.ex p{font-size:14px;margin-bottom:10px;color:#334155}
+.ex ul{margin:8px 0 10px 22px;font-size:13px;color:#475569}
+details{margin-top:12px;background:#F1F5F9;border-radius:6px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600;color:#0EA5E9;font-size:13px}
+details[open] summary{margin-bottom:8px}
+.sol{font-size:13px;color:#0F1B2D;line-height:1.7}
+.sol code{background:#1E293B;color:#38BDF8;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+</style></head><body><div class="container">
+
+<header><h1>📚 Esercizi Aula G6 — Quiz Chiusura Modulo 1</h1><p>12 esercizi cross-modulo · ~25 min · Individuale poi plenaria</p></header>
+
+<div class="intro"><strong>Modalità:</strong> 15 min individuali, poi 10 min di discussione plenaria. Le domande coprono tutti e 6 i temi del Modulo 1: reti e subnetting, routing e DNS, firewall/NAT/WAF, VPN e perimetrale, Zero Trust e microsegmentazione, hardening e attacchi laterali. Segnati le domande sbagliate: sono le aree da ripassare.</div>
+
+<div class="cat">Categoria A · Reti e protocolli (L1–L2)</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 1</span><h3>Subnetting rapido</h3>
+<p>La rete <code>172.20.48.0/22</code> viene divisa in 4 subnet di uguale dimensione. Qual è il network ID della terza subnet?</p>
+<details><summary>Mostra soluzione</summary><div class="sol">/22 ha 1024 indirizzi (2^10). Dividendo in 4 → /24 con 256 indirizzi ciascuna.<br>Le 4 subnet sono: <code>172.20.48.0/24</code>, <code>172.20.49.0/24</code>, <code>172.20.50.0/24</code>, <code>172.20.51.0/24</code>.<br>La <strong>terza subnet è 172.20.50.0/24</strong>.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 2</span><h3>Longest prefix match</h3>
+<p>La tabella di routing contiene: <code>0.0.0.0/0 → gw1</code>, <code>10.0.0.0/8 → gw2</code>, <code>10.1.0.0/16 → gw3</code>, <code>10.1.2.0/24 → gw4</code>. Un pacchetto destinato a <code>10.1.2.50</code> esce da quale gateway? E uno destinato a <code>10.1.5.10</code>?</p>
+<details><summary>Mostra soluzione</summary><div class="sol"><code>10.1.2.50</code> matcha tutte e 4 le rotte, vince la più specifica <code>/24</code> → <strong>gw4</strong>.<br><code>10.1.5.10</code> matcha <code>/0</code>, <code>/8</code>, <code>/16</code> (non <code>/24</code> perché il terzo ottetto è 5 non 2) → vince <code>/16</code> → <strong>gw3</strong>.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 3</span><h3>DNS record type</h3>
+<p>Per ognuno degli scenari, indica il tipo di record DNS da configurare:</p>
+<ul><li>A. Puntare <code>www.esempio.it</code> a un server con IP <code>203.0.113.10</code></li>
+<li>B. Far sì che <code>shop.esempio.it</code> punti sempre dove punta <code>www.esempio.it</code></li>
+<li>C. Indicare che le email per <code>@esempio.it</code> vanno al server mail1.esempio.it</li>
+<li>D. Autorizzare solo il server con IP <code>198.51.100.5</code> a spedire email per esempio.it</li></ul>
+<details><summary>Mostra soluzione</summary><div class="sol">A → <strong>A record</strong> (hostname → IPv4).<br>B → <strong>CNAME</strong> (alias verso altro nome).<br>C → <strong>MX record</strong> (mail exchanger, con priorità).<br>D → <strong>TXT con SPF</strong>: <code>"v=spf1 ip4:198.51.100.5 -all"</code>.</div></details></div>
+
+<div class="cat">Categoria B · Firewall, NAT, VPN (L3–L4)</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 4</span><h3>Regola firewall corretta</h3>
+<p>Un webserver in DMZ ha IP <code>10.1.1.50</code> e deve essere raggiungibile via HTTPS dall'esterno. La rete LAN interna è <code>10.0.0.0/24</code>. Scrivi le regole firewall minime necessarie in ordine corretto (first match wins), includendo una regola di default.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<code>1. ALLOW  src:any            dst:10.1.1.50   port:443/tcp  (inbound HTTPS)</code><br>
+<code>2. ALLOW  src:10.0.0.0/24    dst:10.1.1.50   port:22/tcp   (admin SSH da LAN)</code><br>
+<code>3. DENY   src:any            dst:any         port:any      (default deny)</code><br><br>
+Note: ordine importante (specifiche prima di generali). Mancata la regola 3 = fail aperto. Accesso admin solo da LAN per minimizzare superficie.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 5</span><h3>NAT non è sicurezza</h3>
+<p>Vero o falso, motivando: "Avere un router NAT davanti ai PC di casa è sufficiente a proteggerli dai malware".</p>
+<details><summary>Mostra soluzione</summary><div class="sol"><strong>Falso.</strong> NAT blocca connessioni inbound non richieste, quindi offre una protezione <em>parziale</em> paragonabile a un firewall stateful semplice. Ma non protegge affatto dalle connessioni outbound: un malware già eseguito sul PC stabilisce una connessione verso il server C2, e NAT la permette tranquillamente (è outbound). NAT protegge dalla scansione inbound, non dall'esfiltrazione o dal C2. Difese vere: AV, DNS filtering, browser sicuro, patch, MFA su account critici.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 6</span><h3>VPN vs ZTNA</h3>
+<p>Per ognuno degli scenari, scegli VPN tradizionale o ZTNA e motiva in una riga:</p>
+<ul><li>A. Fornitore esterno che deve accedere a un unico sistema gestionale per 3 mesi</li>
+<li>B. Dipendente in smart working che deve accedere a 15 applicazioni interne diverse</li>
+<li>C. Filiale remota che deve essere connessa stabilmente alla sede</li></ul>
+<details><summary>Mostra soluzione</summary><div class="sol">A → <strong>ZTNA</strong>: accesso per-app granular, revoca immediata a fine contratto, zero lateral movement.<br>B → <strong>ZTNA</strong> preferibile: niente client VPN pesante, policy per-app, migliore UX. VPN tradizionale accettabile se legacy.<br>C → <strong>VPN site-to-site (IPSec)</strong>: caso classico, tunnel stabile tra due reti, ZTNA non è ancora pensato per interconnessioni stabili a livello rete.</div></details></div>
+
+<div class="cat">Categoria C · Microsegmentazione e Zero Trust (L5)</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 7</span><h3>Blast radius</h3>
+<p>In un datacenter con 200 server, tutti nella stessa VLAN flat, uno viene compromesso. Stimi il blast radius. Quale controllo ridurrebbe drasticamente il blast radius senza dover re-architettare tutta la rete?</p>
+<details><summary>Mostra soluzione</summary><div class="sol"><strong>Blast radius = 200 server</strong>: senza segmentazione east-west, l'attaccante può scansionare e muoversi su tutti.<br><strong>Controllo:</strong> <strong>microsegmentazione identity-based</strong> (host-based firewall con policy centralizzate, oppure NSX/ACI). Si applica senza cambi fisici alla rete: ogni host ottiene policy "parla solo con chi ha identità X". Blast radius dopo microseg: 1 host.<br>Alternativa parziale: VLAN splitting (ma richiede cambi rete) o EDR + network detection (riduce il tempo di rilevamento, non il blast radius).</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 8</span><h3>Tenet NIST sul campo</h3>
+<p>L'azienda adotta questa policy: "Un utente che si autentica con MFA + device managed ottiene accesso a un'app per 4 ore; se cambia IP o il device esce dalla compliance, la sessione termina". Quali tenet NIST SP 800-207 implementa?</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Tenet 3</strong> (accesso per-sessione, 4h limit).<br>
+<strong>Tenet 4</strong> (policy dinamica su contesto: IP, device posture).<br>
+<strong>Tenet 5</strong> (monitoring continuo: controlla compliance durante sessione).<br>
+<strong>Tenet 6</strong> (auth dinamica: MFA prima dell'accesso).<br>
+Tenet 1 e 7 non sono implementati esplicitamente da questa singola policy.</div></details></div>
+
+<div class="cat hrd">Categoria D · Hardening (L6 mattina)</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 9</span><h3>CIS: cosa è L1, cosa è L2</h3>
+<p>Per ognuno dei controlli, indica se è tipicamente CIS Level 1 (essenziale, basso impatto) o Level 2 (defense-in-depth, richiede analisi):</p>
+<ul><li>A. PermitRootLogin no in SSH</li>
+<li>B. Disabilitare IPv6 completamente</li>
+<li>C. PasswordAuthentication no (solo key-based)</li>
+<li>D. Mount di /tmp con nosuid, noexec, nodev</li>
+<li>E. Disabilitare USB storage a livello kernel</li></ul>
+<details><summary>Mostra soluzione</summary><div class="sol">A → <strong>L1</strong> (sicurezza base, zero breaking).<br>B → <strong>L2</strong> (alto impatto: molte app moderne assumono IPv6).<br>C → <strong>L1</strong> (best practice, gestibile con setup SSH key).<br>D → <strong>L1</strong> (installazione pulita lo fa, retrofittare è invasivo ma concettualmente è L1).<br>E → <strong>L2</strong> (rompe scenari legittimi come tastiere USB speciali, stampanti, badge reader).</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 10</span><h3>Hardening Windows · cosa manca</h3>
+<p>Una policy di hardening per un parco di 500 PC Windows aziendali include: UAC al massimo, BitLocker con TPM, Defender attivo con ASR rules, PowerShell script block logging, GPO da Security Baseline Microsoft. <strong>Cosa manca di critico?</strong></p>
+<details><summary>Mostra soluzione</summary><div class="sol"><strong>LAPS (Local Administrator Password Solution)</strong>. Senza LAPS, la password admin locale è tipicamente uguale su tutti i 500 PC (imaging standard) — un singolo PC compromesso via Mimikatz espone admin locale che funziona ovunque = <strong>Pass-the-Hash a catena</strong>. LAPS genera password random per ogni PC, custodita in AD, rotata periodicamente.<br>Secondari ma importanti: Credential Guard (su Win10+ Enterprise), WDAC/AppLocker, Controlled Folder Access (anti-ransomware).</div></details></div>
+
+<div class="cat lab">Categoria E · Attacchi e lab (L6 pomeriggio)</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 11</span><h3>Dall'attacco al controllo</h3>
+<p>Un attaccante esegue questa catena: (1) <code>nmap -sV</code> scopre FTP vsftpd 2.3.4, (2) Metasploit exploita la backdoor e ottiene shell root, (3) scarica hash di altre macchine Windows con Mimikatz (lateral), (4) Pass-the-Hash su un file server. <strong>Per ogni fase 1–4, indica almeno un controllo che l'avrebbe bloccata o rilevata.</strong></p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Fase 1 · nmap scan:</strong> host-based firewall (ufw default deny), IDS (Suricata/Snort con scan detection), disabilitazione vsftpd (servizio inutile = attack surface).<br>
+<strong>Fase 2 · exploit vsftpd:</strong> patching disciplinato (vsftpd 2.3.4 ha CVE noto dal 2011), minimal footprint (rimozione pacchetti inutili), auditd che logga execve anomali.<br>
+<strong>Fase 3 · Mimikatz lateral:</strong> LAPS (password admin locale diversa per macchina → hash diverso), Credential Guard, EDR che rileva accesso a LSASS, microsegmentazione (PC workstation non dovrebbero parlare con server admin).<br>
+<strong>Fase 4 · Pass-the-Hash su file server:</strong> microsegmentazione identity-based (policy deny by default), disabilitazione NTLM (solo Kerberos), Protected Users group, SIEM correlation su login anomali.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 12</span><h3>I 4 pattern trasversali</h3>
+<p>Senza riguardare le slide, scrivi con parole tue i 4 pattern trasversali del Modulo 1 e per ciascuno fai un esempio concreto diverso da quelli della lezione.</p>
+<details><summary>Mostra soluzione tipica</summary><div class="sol">
+<strong>1. Defense in depth.</strong> Più strati diversi, nessuno "la soluzione". <em>Esempio:</em> un laptop aziendale protetto da perimetro (VPN), identità (MFA), host (BitLocker), applicazione (app sandboxata), dato (file encryption).<br>
+<strong>2. Identità &gt; IP.</strong> Policy su chi sei, non su dove sei. <em>Esempio:</em> service account con permessi specifici su API Kubernetes indipendente dal nodo fisico su cui gira il pod.<br>
+<strong>3. Log è tutto.</strong> Senza telemetria non c'è rilevazione. <em>Esempio:</em> Script Block Logging di PowerShell ha rivelato migliaia di attacchi fileless che AV signature-based non vedeva.<br>
+<strong>4. Automazione.</strong> A mano non scala. <em>Esempio:</em> pipeline Ansible che applica baseline CIS + Inspec che verifica compliance, fallisce il deploy se hardening index &lt; 75.</div></details></div>
+
+<div class="intro" style="margin-top:30px"><strong>✅ Fine quiz.</strong> Conta quante ne hai sbagliate:<br>
+• 0–2 errori: ottimo controllo del Modulo 1, pronto per M2.<br>
+• 3–5 errori: rivedi la guida studente per le aree sbagliate.<br>
+• 6+ errori: pianifica un ripasso più sistematico prima di iniziare il Modulo 2.</div>
+
+</div></body></html>

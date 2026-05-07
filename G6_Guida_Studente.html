@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>G6 - Guida Studente</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.7;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F1B2D 0%,#1E293B 100%);color:#fff;padding:32px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:26px;margin-bottom:6px}header p{color:#CBD5E1;font-size:14px}
+.toc{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:24px;font-size:14px}
+.toc h2{font-size:14px;color:#0891B2;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px}
+.toc ol{margin-left:22px;color:#334155}.toc a{color:#0F1B2D;text-decoration:none}.toc a:hover{color:#0891B2}
+section{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:24px;margin-bottom:18px}
+section h2{font-size:20px;color:#0891B2;margin-bottom:14px;border-bottom:2px solid #38BDF8;padding-bottom:6px}
+section h3{font-size:16px;color:#0F1B2D;margin:16px 0 8px}
+section p{font-size:14px;color:#334155;margin-bottom:10px}
+section ul{margin:8px 0 12px 22px;font-size:14px;color:#475569}
+section ul li{margin-bottom:4px}
+.box{background:#F1F5F9;border-left:4px solid #0891B2;padding:12px 16px;margin:12px 0;border-radius:4px;font-size:13px}
+.deep-dive{background:#EFF6FF;border:1px dashed #93C5FD;padding:12px 16px;margin:12px 0;border-radius:6px;font-size:13px}
+.deep-dive::before{content:"📖 APPROFONDIMENTO";display:block;font-size:11px;font-weight:700;color:#1D4ED8;margin-bottom:6px;letter-spacing:0.5px}
+.resource{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;padding:12px 14px;margin:8px 0;font-size:13px}
+.resource a{color:#0891B2;text-decoration:none;font-weight:600}.resource a:hover{text-decoration:underline}
+.resource-meta{color:#64748B;font-size:11px;margin-top:4px}
+code{background:#1E293B;color:#38BDF8;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+.warn{background:#FEF3C7;border-left:4px solid #F59E0B;padding:12px 16px;margin:12px 0;border-radius:4px;font-size:13px}
+.lab{background:#FEE2E2;border-left:4px solid #DC2626;padding:12px 16px;margin:12px 0;border-radius:4px;font-size:13px}
+.celebr{background:linear-gradient(135deg,#0891B2 0%,#0F4C75 100%);color:#fff;padding:20px;border-radius:10px;margin:16px 0;text-align:center}
+.celebr h3{color:#fff;margin:0 0 8px}
+</style></head><body><div class="container">
+
+<header><h1>📘 G6 · Guida Studente</h1><p>Lezione 6 · Hardening, Attacchi Laterali, Chiusura Modulo 1 · 24 aprile 2026</p></header>
+
+<div class="toc"><h2>Indice</h2><ol>
+<li><a href="#obj">Obiettivi della lezione</a></li>
+<li><a href="#1">Cos'è l'hardening</a></li>
+<li><a href="#2">Defense in depth e framework di riferimento</a></li>
+<li><a href="#3">Hardening Linux</a></li>
+<li><a href="#4">Hardening Windows</a></li>
+<li><a href="#5">Automazione e scala enterprise</a></li>
+<li><a href="#6">Kali Linux e Metasploit</a></li>
+<li><a href="#7">Privilege escalation Linux e Windows</a></li>
+<li><a href="#8">Pass-the-Hash e lateral movement</a></li>
+<li><a href="#9">Il lab guidato: cosa abbiamo fatto</a></li>
+<li><a href="#10">Chiusura Modulo 1 · i 4 pattern trasversali</a></li>
+<li><a href="#compiti">Compiti consolidamento</a></li>
+<li><a href="#prep">Risorse propedeutiche per G7 (Modulo 2)</a></li>
+</ol></div>
+
+<section id="obj"><h2>🎯 Obiettivi della lezione</h2>
+<p>Al termine di G6 dovrai essere in grado di:</p>
+<ul>
+<li>Spiegare cos'è l'hardening e in cosa differisce dal patching</li>
+<li>Leggere un controllo CIS Benchmark e tradurlo in comandi operativi su Linux e Windows</li>
+<li>Configurare SSH, sudo, firewall host, auditd su Ubuntu secondo baseline CIS L1</li>
+<li>Usare GPO, Security Baseline Microsoft, LAPS, Defender ASR per hardenare Windows</li>
+<li>Eseguire un flusso end-to-end di penetration test: recon (nmap) → exploit (Metasploit) → reverse shell → privilege escalation</li>
+<li>Spiegare Pass-the-Hash e Kerberoasting e come la microsegmentazione li blocca</li>
+<li>Mappare fasi di attacco su controlli difensivi specifici (mindset Purple team)</li>
+<li>Descrivere i 4 pattern trasversali del Modulo 1: Defense in depth, Identità &gt; IP, Log è tutto, Automazione</li>
+</ul></section>
+
+<section id="1"><h2>1 · Cos'è l'hardening</h2>
+<p>L'<strong>hardening</strong> è la disciplina di <strong>ridurre la superficie di attacco</strong> di un sistema tramite configurazioni sicure, rimozione di componenti non necessari e applicazione di principi di minimo privilegio — <strong>prima</strong> che il sistema entri in produzione e mantenute per tutto il suo ciclo di vita.</p>
+
+<p>Quattro principi cardine guidano ogni operazione di hardening:</p>
+<ul>
+<li><strong>Least privilege:</strong> ogni account, servizio, processo ha solo i permessi strettamente necessari. È il principio più citato e il meno applicato: nelle aziende reali, il 70-80% degli account utente ha più permessi del necessario perché concedere è facile e revocare è doloroso.</li>
+<li><strong>Minimal footprint:</strong> disinstallare ciò che non serve. Ogni pacchetto in più è codice attaccabile, CVE potenziali, processo che consuma RAM, log da analizzare. È il motivo per cui i container di produzione partono spesso da immagini Alpine o distroless.</li>
+<li><strong>Secure defaults:</strong> configurazioni sicure di default. Storicamente trascurato: nessuno legge manuali, e i default permissivi hanno generato milioni di compromissioni (MongoDB senza password esposti su Internet, S3 bucket pubblici, telecamere IP con admin/admin).</li>
+<li><strong>Disciplined patching:</strong> patch rapide e ripetibili, con finestre di manutenzione, piano di rollback, test in staging, tracking delle CVE.</li>
+</ul>
+
+<div class="warn">⚠ <strong>Hardening ≠ patching.</strong> Un sistema completamente patchato con configurazione permissiva resta vulnerabile. Una VM Ubuntu 22.04 aggiornata all'ultimo kernel ma con SSH aperto a 0.0.0.0/0 e root login abilitato è più vulnerabile di una Ubuntu 20.04 non aggiornata ma hardenata. Patching e hardening sono <em>complementari</em>, non alternativi.</div>
+</section>
+
+<section id="2"><h2>2 · Defense in depth e framework di riferimento</h2>
+<p>L'hardening è <strong>uno strato</strong> nella defense in depth, non la muraglia unica. I 6 strati canonici, dal più esterno al più profondo:</p>
+<ul>
+<li><strong>Perimetro:</strong> Firewall, IDS/IPS, WAF</li>
+<li><strong>Segmentazione:</strong> VLAN, microsegmentazione, Zero Trust</li>
+<li><strong>Host:</strong> Hardening OS ← <em>cuore di L6</em></li>
+<li><strong>Applicazione:</strong> Secure coding, input validation, SAST/DAST</li>
+<li><strong>Dato:</strong> Encryption at rest/in transit, DLP</li>
+<li><strong>Identità:</strong> IAM, MFA, least privilege, access review</li>
+</ul>
+<p>Un singolo strato buca. La defense in depth accetta il fallimento e prepara il livello successivo. L'hardening agisce principalmente su tattiche MITRE ATT&amp;CK di Defense Evasion, Privilege Escalation, Lateral Movement, Persistence.</p>
+
+<h3>I tre framework di hardening principali</h3>
+<p>Esistono tre famiglie di standard che guidano operativamente l'hardening:</p>
+<ul>
+<li><strong>CIS Benchmarks</strong> (Center for Internet Security): standard de-facto del mondo enterprise. Copre 100+ tecnologie (OS, DB, cloud, container). Due livelli: <strong>L1</strong> (baseline essenziale, basso impatto) e <strong>L2</strong> (defense-in-depth, richiede analisi di impatto). Ubuntu 22.04 ha ~700 controlli. Gratuito per uso personale, formato PDF.</li>
+<li><strong>DISA STIG</strong> (US Dept. of Defense): standard militare/governativo USA. Più stringente di CIS. 3 severity (CAT I/II/III). Obbligatorio in ambienti federali DoD e NATO. Template Ansible/Puppet ufficiali disponibili.</li>
+<li><strong>NIST SP 800-series</strong> (National Institute of Standards): meno prescrittivo, più "architetturale". SP 800-53 Rev.5 è il catalogo di ~1000 controlli che si mappa su FedRAMP, HIPAA, FISMA, e indirettamente su NIS2, DORA (EU).</li>
+</ul>
+
+<div class="box"><strong>In Italia / EU:</strong> CIS è la scelta prevalente nel privato, NIST è il riferimento per compliance normativa (NIS2, DORA, Cyber Resilience Act). Per Leonardo SpA, contractor defense, il pattern è ibrido: baseline CIS sui sistemi generali, STIG o equivalenti per progetti governativi/defense, allineamento NIST per reportistica compliance.</div>
+
+<h3>Come si legge un controllo CIS</h3>
+<p>Ogni controllo CIS ha formato standard. Esempio <code>5.2.8 · Ensure SSH root login is disabled</code>:</p>
+<ul>
+<li><strong>Profile:</strong> Level 1 - Server (applicabile senza breaking change)</li>
+<li><strong>Severity:</strong> Medium</li>
+<li><strong>Description:</strong> cosa fa il controllo</li>
+<li><strong>Rationale:</strong> perché farlo (accountability nei log)</li>
+<li><strong>Audit:</strong> <code>grep -E '^\s*PermitRootLogin' /etc/ssh/sshd_config</code></li>
+<li><strong>Remediation:</strong> <code>sudo sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config &amp;&amp; sudo systemctl reload sshd</code></li>
+</ul>
+<p>Il formato standard permette <strong>tracciabilità</strong> (auditor cita "sezione 5.2 fallita" senza ambiguità) e <strong>automazione</strong> (audit command e remediation sono lanciabili da script o da tool come Ansible, OpenSCAP, Inspec).</p>
+</section>
+
+<section id="3"><h2>3 · Hardening Linux</h2>
+<p>In sei aree — account, SSH, filesystem, servizi, firewall host, audit — sta il 90% del CIS Ubuntu. Gli altri controlli sono spesso variazioni sui temi.</p>
+
+<h3>Account, sudo, PAM</h3>
+<p>I controlli chiave: root login disabilitato, password aging (<code>PASS_MAX_DAYS 90</code>), account inattivi lockati automaticamente, sudoers senza NOPASSWD wildcards, PAM con <code>pam_pwquality</code> (complessità) e <code>pam_faillock</code> (lockout dopo N tentativi), UID 0 unico (solo root).</p>
+
+<p>PAM (Pluggable Authentication Modules) è il meccanismo di autenticazione Linux: <code>/etc/pam.d/</code> contiene file per ogni servizio (sshd, sudo, login). Ogni file ha stack di moduli con 4 tipi (auth, account, password, session). La configurazione corretta di PAM blocca il 99% degli attacchi SSH brute-force automatizzati.</p>
+
+<div class="deep-dive">L'anti-pattern più comune nelle aziende: accumulo di account dormienti. "Nuovo dipendente → creo account. Dipendente esce → poi lo cancello" e il "poi" non arriva mai. Risultato: decine di account con credenziali valide di ex-dipendenti. Il controllo è semplice: cronjob che lockia account senza login da &gt;30 giorni (<code>lastlog</code> + <code>usermod -L</code>), access review trimestrale formalizzata.</div>
+
+<h3>SSH hardening</h3>
+<p>Il servizio di accesso remoto più sfruttato. Un IP pubblico nuovo su porta 22 riceve il primo tentativo di login in meno di 60 secondi e migliaia al giorno. Le direttive minime in <code>/etc/ssh/sshd_config</code>:</p>
+<ul>
+<li><code>PermitRootLogin no</code> — il più importante</li>
+<li><code>PasswordAuthentication no</code> + <code>PubkeyAuthentication yes</code> — solo chiavi</li>
+<li><code>MaxAuthTries 3</code> — meno fallimenti prima del disconnect</li>
+<li><code>ClientAliveInterval 300</code> + <code>ClientAliveCountMax 2</code> — kick sessione dopo 10 min idle</li>
+<li><code>AllowUsers admin@10.0.0.0/24</code> — whitelist utenti + subnet sorgente</li>
+</ul>
+
+<div class="warn">⚠ <strong>Regola operativa cruciale:</strong> mai modificare <code>sshd_config</code> senza una seconda sessione SSH già aperta come paracadute. Quasi ogni sysadmin senior ha perso l'accesso a un server remoto per questo. Testa la config prima del reload: <code>sudo sshd -t &amp;&amp; sudo systemctl reload sshd</code>.</div>
+
+<h3>Filesystem, servizi, firewall host</h3>
+<p><strong>Filesystem layout:</strong> /tmp, /var, /home su partizioni separate con mount options <code>nosuid, noexec, nodev</code> su /tmp. Bloccano exploit che scaricano payload in /tmp e li eseguono.</p>
+<p><strong>Gestione servizi:</strong> <code>systemctl list-unit-files --state=enabled</code> mostra spesso 30-40 servizi, realisticamente ne servono 10. Ogni servizio in più = porta potenzialmente aperta + codice potenzialmente vulnerabile + log da analizzare.</p>
+<p><strong>Firewall host (UFW/nftables):</strong> <code>ufw default deny incoming</code> + <code>ufw default allow outgoing</code> + apertura esplicita delle porte necessarie. È la seconda linea dopo il firewall di rete.</p>
+
+<h3>Audit e tool automatici</h3>
+<p><strong>auditd</strong> registra chiamate di sistema selezionate: modifiche a file critici (/etc/passwd, /etc/shadow), esecuzione di comandi privilegiati (sudo, su), cambi di ownership, login falliti via PAM hooks.</p>
+<p>I tool di assessment automatici che vedrai in ambiente reale:</p>
+<ul>
+<li><strong>Lynis</strong> — audit rapido (~2 min), output "hardening index" 0-100 tracciabile nel tempo. <code>sudo lynis audit system</code>.</li>
+<li><strong>OpenSCAP</strong> — scanner di compliance che consuma profili XCCDF standard (CIS, STIG). Report HTML con evidence e remediation.</li>
+<li><strong>Chef Inspec</strong> — "compliance as code": profili Ruby versionati in Git, integrazione CI/CD.</li>
+</ul>
+
+<div class="deep-dive"><strong>Pattern moderno "Compliance as Code":</strong> infrastructure-as-code (Terraform) + configuration-as-code (Ansible) + compliance-as-code (Inspec) + policy-as-code (OPA). Tutto versionato in Git, tutto peer-reviewed, tutto testato, tutto automaticamente applicato. Lo vedremo in dettaglio nel Modulo 4 (DevSecOps & Automation).</div>
+</section>
+
+<section id="4"><h2>4 · Hardening Windows</h2>
+<p>Windows offre infrastrutture native più ricche di Linux per il governo della configurazione: Group Policy per enforcement centralizzato, Microsoft Security Baseline come baseline pronti, LAPS per password locali, Defender come EDR integrato.</p>
+
+<h3>Microsoft Security Baseline e GPO</h3>
+<p>La <strong>Microsoft Security Baseline</strong> è un set ufficiale di impostazioni GPO raccomandate da Microsoft per Windows 11 / Server 2022. Scaricabile dal Security Compliance Toolkit, contiene ~2000 impostazioni GPO pre-configurate (autenticazione, lockout, firewall, audit, Defender, AppLocker).</p>
+<p>Le <strong>Group Policy Objects (GPO)</strong> sono il meccanismo di enforcement distribuito via Active Directory. Ordine di applicazione <strong>LSDOU</strong>: Local → Site → Domain → OU. In caso di conflitto vince l'ultima applicata (salvo flag <em>Enforced</em> che inverte la logica). Verifica delle GPO attive: <code>gpresult /h report.html</code>.</p>
+
+<div class="warn">⚠ Applicare Security Baseline direttamente all'OU "Computers" può causare breaking change massive. Il workflow corretto è: scarica Baseline → importa in GPMC → applica a OU di test → verifica con PolicyAnalyzer → rollout graduale su ondate.</div>
+
+<h3>LAPS, UAC, Defender, BitLocker</h3>
+<p><strong>LAPS (Local Administrator Password Solution)</strong> risolve un problema endemico: pre-2015 la password admin locale era identica su tutti i PC aziendali. Un singolo PC compromesso dava credenziali che funzionavano ovunque via Pass-the-Hash. LAPS genera password random per macchina, custodita in AD, rotata ogni 30 giorni. Oggi è integrato nativamente in Windows 11/Server 2022 (Windows LAPS).</p>
+
+<p><strong>UAC (User Account Control):</strong> separa utente standard da token elevato. Richiede elevazione esplicita per operazioni privilegiate. Mai disabilitarlo su endpoint. Il pattern "sempre lavora come utente non-admin, eleva solo quando serve" è una delle misure più efficaci.</p>
+
+<p><strong>Microsoft Defender for Endpoint:</strong> AV + EDR integrato. Le <strong>ASR Rules</strong> sono il pezzo pregiato — 16 regole che bloccano tecniche d'attacco specifiche: "Block all Office applications from creating child processes" (macro weaponizzate), "Block execution of potentially obfuscated scripts", "Block credential stealing from LSASS". In ambienti enterprise, attivarle in audit mode per 30 giorni, misurare falsi positivi, poi switch a block mode.</p>
+
+<p><strong>BitLocker:</strong> full disk encryption con TPM 2.0 + PIN. Protegge da furto fisico del dispositivo spento. Non protegge da malware in OS running (dati in RAM/disco in chiaro quando PC è acceso e loggato). Obbligatorio su laptop aziendali.</p>
+
+<h3>PowerShell hardening</h3>
+<p>PowerShell è amato dagli attaccanti "fileless": sempre presente, firmato, pieno accesso a .NET, LotL (Living-off-the-Land). Statistica: ~38% degli incidenti SOC moderni coinvolgono PS come tecnica post-exploitation.</p>
+<p>La risposta difensiva ha tre livelli:</p>
+<ul>
+<li><strong>Visibilità:</strong> <strong>Script Block Logging</strong> (Event ID 4104) registra ogni script eseguito dopo decodifica. L'offuscamento base64 è inutile contro questo log.</li>
+<li><strong>Restrizione:</strong> <strong>Constrained Language Mode</strong> limita PS alle operazioni essenziali (no .NET arbitrary, no COM, no Add-Type).</li>
+<li><strong>Delega granulare:</strong> <strong>JEA (Just Enough Administration)</strong> permette di creare endpoint PowerShell con capability limitate (un operatore IT esegue solo "Restart-Service SQLSERVER" e niente altro).</li>
+</ul>
+
+<div class="deep-dive"><strong>Mimikatz</strong> è lo strumento di riferimento per credential harvesting. Dump password in chiaro, hash NTLM, Kerberos ticket dalla memoria LSASS. La versione PowerShell (Invoke-Mimikatz) gira in-memory, non tocca disco, bypassa AV signature-based. Le contromisure moderne: <strong>Credential Guard</strong> (Windows 10 Enterprise+) isola LSASS in VM Hyper-V separata, inaccessibile anche a SYSTEM.</div>
+</section>
+
+<section id="5"><h2>5 · Automazione e scala enterprise</h2>
+<p>10 server li fai a mano. 1000 server no. 10000 server sono un problema di ingegneria.</p>
+<p>I tre tool principali del panorama EU/Italia:</p>
+<ul>
+<li><strong>Ansible</strong> — standard de-facto in EU. Agentless (bastano SSH/WinRM), playbook YAML. Il ruolo <code>ansible-lockdown.ubuntu_22_cis</code> applica CIS L1 su 500 host in parallelo in 30-60 minuti.</li>
+<li><strong>Chef Inspec</strong> — testing framework. Non applica, verifica. Perfetto per integrazione CI/CD: ogni commit che modifica configurazione scatena test Inspec, deploy bloccato se fallisce.</li>
+<li><strong>Puppet / Salt</strong> — state-based, agent-based. Enforcing continuo contro drift. Puppet Enterprise ha compliance reporting integrato.</li>
+</ul>
+
+<h3>Le sfide enterprise reali</h3>
+<p>Il gap tra hardening "da manuale" e hardening "nel mondo reale" è sostanziale:</p>
+<ul>
+<li><strong>Legacy:</strong> Windows Server 2008 ancora in produzione con app non aggiornabili</li>
+<li><strong>Third-party vendor:</strong> "non modificare la config, SLA garantito solo con default"</li>
+<li><strong>Falsi positivi:</strong> applicazioni che si rompono su controlli L1</li>
+<li><strong>Cicli di approvazione:</strong> modificare GPO richiede CAB (Change Advisory Board)</li>
+<li><strong>Ambienti eterogenei:</strong> RHEL + Ubuntu + Windows + Solaris tutti insieme</li>
+<li><strong>Drift:</strong> config applicata e poi modificata nel tempo</li>
+</ul>
+
+<p>Le risposte operative: <strong>compensating controls</strong> (se non posso hardenare, isolo in VLAN → microseg L5), <strong>tiered baseline</strong> (must/should/could), ambiente di test identico alla produzione, <strong>single source of truth</strong> (Ansible + Git), <strong>risk register</strong> per eccezioni, <strong>drift detection</strong> continua con alert SIEM.</p>
+</section>
+
+<section id="6"><h2>6 · Kali Linux e Metasploit</h2>
+<p><strong>Kali Linux</strong> è la distribuzione di riferimento per attività offensive. Debian-based, mantenuta da Offensive Security, ~600 strumenti preinstallati organizzati in 13 categorie (Information Gathering, Vulnerability Analysis, Web Application, Exploitation, Post-Exploitation, Forensics...).</p>
+
+<div class="lab">🚨 <strong>Disclaimer etico-legale fondamentale.</strong> In Italia, l'art. 615-ter c.p. punisce l'accesso abusivo a sistema informatico con reclusione fino a 3 anni (fino a 8 se aggravato). Gli strumenti Kali sono legali in Italia, ma il loro uso fuori da contesti autorizzati è reato. Per Leonardo SpA, contractor defense, ogni attività offensiva richiede autorizzazione scritta, scope definito e ROE (Rules of Engagement) precise.</div>
+
+<h3>Nmap: information gathering</h3>
+<p>Nmap è il primo strumento di ogni attacco. Modalità principali:</p>
+<ul>
+<li><code>nmap -sn 192.168.56.0/24</code> — host discovery (ping scan)</li>
+<li><code>nmap -sS 192.168.56.50</code> — SYN scan (richiede root, stealth)</li>
+<li><code>nmap -sV -O 192.168.56.50</code> — versione servizi + OS fingerprinting</li>
+<li><code>nmap -A -T4 192.168.56.50</code> — aggressive (rumoroso, informativo)</li>
+<li><code>nmap --script vuln 192.168.56.50</code> — NSE scripts per vulnerabilità note</li>
+</ul>
+<p>L'output di nmap è l'input per le fasi successive: la versione precisa del servizio rivelata da <code>-sV</code> permette di cercare exploit noti (searchsploit, ExploitDB), le porte aperte guidano la scelta dei moduli Metasploit.</p>
+
+<h3>Metasploit Framework</h3>
+<p>Framework modulare di exploitation, ~2300 exploit, ~1200 payload, ~1000 moduli ausiliari. Cinque tipi di moduli:</p>
+<ul>
+<li><strong>Exploits:</strong> codice che sfrutta una vulnerabilità per ottenere esecuzione</li>
+<li><strong>Payloads:</strong> codice eseguito post-exploit (shell, meterpreter, reverse/bind)</li>
+<li><strong>Auxiliary:</strong> scanner, fuzzer, DoS, brute-force</li>
+<li><strong>Post:</strong> enumeration, pivoting, persistence post-compromissione</li>
+<li><strong>Encoders:</strong> codifica payload per evadere AV/IDS</li>
+</ul>
+<p>Il payload più usato è <strong>Meterpreter</strong>: staged, ~300KB, gira interamente in memoria (DLL injection), ~100 comandi built-in (screenshot, keyscan, hashdump, migrate process).</p>
+
+<p>Syntax msfconsole fondamentale: <code>search &lt;keyword&gt;</code>, <code>use &lt;path&gt;</code>, <code>show options</code>, <code>set RHOSTS ...</code>, <code>exploit</code>.</p>
+</section>
+
+<section id="7"><h2>7 · Privilege escalation Linux e Windows</h2>
+<p>L'accesso iniziale (foothold) di solito arriva come utente a basso privilegio (www-data, apache, nobody). Il <em>vero</em> lavoro post-exploitation è il <strong>privilege escalation</strong>: diventare root o SYSTEM.</p>
+
+<h3>Privilege escalation Linux</h3>
+<p>Quattro vettori dominano:</p>
+<ul>
+<li><strong>SUID abuse:</strong> binari con flag SUID (eseguiti come owner, spesso root). <code>find / -perm -4000 -type f 2>/dev/null</code>. Se un SUID binary ha capacità shell-escape (find con -exec, vim con :!, awk con system), escalation immediata.</li>
+<li><strong>sudo misconfig:</strong> il vettore più sfruttato realmente. <code>sudo -l</code> mostra cosa puoi fare. Se vedi <code>NOPASSWD: /usr/bin/vim /etc/hosts</code> sei root: <code>sudo vim /etc/hosts</code> poi <code>:!/bin/bash</code>.</li>
+<li><strong>Cron jobs:</strong> script di root scrivibili da utente normale → attaccante modifica script, aspetta il cron, root shell.</li>
+<li><strong>Kernel exploits:</strong> Dirty COW (CVE-2016-5195), Dirty Pipe (CVE-2022-0847), PwnKit (CVE-2021-4034). Ultima risorsa, rumorosi, rischio crash.</li>
+</ul>
+
+<div class="deep-dive"><strong>GTFOBins</strong> (<a href="https://gtfobins.github.io">gtfobins.github.io</a>) è il database di riferimento per privilege escalation Linux. Per ogni binario, elenca i modi in cui può essere abusato per shell escape, SUID abuse, sudo abuse. Diventa il primo riferimento durante il lab: hai sudo senza password su X? Vai su GTFOBins, cerca X, copia-incolla. È il motivo per cui i sudoers devono essere estremamente restrittivi.</div>
+
+<h3>Privilege escalation Windows</h3>
+<p>Pattern diversi per via dell'architettura di sicurezza Microsoft:</p>
+<ul>
+<li><strong>Unquoted Service Paths:</strong> servizi con path non quotato contenente spazi → DLL injection. Vestigia di installer legacy.</li>
+<li><strong>Token Impersonation:</strong> SeImpersonatePrivilege (account IIS, MSSQL) → attack chain "Potato" (PrintSpoofer, RoguePotato, GodPotato) che forza autenticazione NTLM relay per ottenere SYSTEM.</li>
+<li><strong>Credential Harvesting:</strong> Mimikatz dump LSASS → password/hash utenti loggati. Contromisura moderna: Credential Guard.</li>
+<li><strong>AlwaysInstallElevated:</strong> GPO che permette MSI eseguiti come SYSTEM da utente non-admin. Raro nei default moderni ma ancora presente in deployment mal-configurati.</li>
+</ul>
+
+<p><strong>LOLBAS</strong> (<a href="https://lolbas-project.github.io">lolbas-project.github.io</a>) è il corrispondente Windows di GTFOBins: ~200 binari Windows firmati Microsoft abusabili (certutil per download, regsvr32 per exec, mshta, wmic, bitsadmin).</p>
+</section>
+
+<section id="8"><h2>8 · Pass-the-Hash e lateral movement</h2>
+<p>In Active Directory, il furto di credenziali da una macchina permette di muoversi sulle altre. <strong>Pass-the-Hash</strong> e <strong>Kerberoasting</strong> sono le due tecniche iconiche del lateral movement.</p>
+
+<h3>Pass-the-Hash (PtH)</h3>
+<p>Difetto architetturale di NTLM: il protocollo usa l'hash NTLM della password (non la password stessa) come challenge-response. L'hash è funzionalmente equivalente alla password — chi ha l'hash si autentica ovunque NTLM è accettato senza conoscere la password originale.</p>
+<p>Pattern classico: compromesso PC1 come admin locale → Mimikatz dump hash → stesso hash funziona su PC2, PC3... (pre-LAPS) → trova PC con admin dominio loggato → Mimikatz dump credenziali dominio → Domain Admin → Golden Ticket → controllo totale.</p>
+<p><strong>Difesa chiave:</strong> LAPS. Password admin locale random per macchina = hash diverso per macchina = PtH si ferma al primo PC.</p>
+
+<h3>Kerberoasting</h3>
+<p>Sfrutta una feature by-design di Kerberos: qualunque utente autenticato nel dominio può richiedere Service Ticket (TGS) per qualsiasi servizio. Il TGS è cifrato con la chiave derivata dalla password dell'account di servizio → brute-force offline con hashcat o john.</p>
+<p>Gli account di servizio legacy con password scelte manualmente ("Password123!") cadono in secondi. Un dominio AD medio ha 5-20 account Kerberoastable, il 30% cede al crack.</p>
+<p><strong>Difese:</strong> Managed Service Accounts (password random &gt;100 char gestite da Windows), Protected Users group (no NTLM), AES-only encryption, Tier Model (admin di Tier 0 non si loggano mai su Tier 2).</p>
+
+<h3>Come la microsegmentazione spezza il lateral</h3>
+<p>In reti flat, il blast radius di un singolo endpoint compromesso è potenzialmente l'intera rete. Con microsegmentazione identity-based, il blast radius è 1 host. Il ransomware moderno (Conti, LockBit, Akira) ha fase di lateral movement di giorni/settimane: senza lateral, il ransomware non può mappare la rete, quindi il deployment massivo simultaneo (fase finale) non avviene.</p>
+</section>
+
+<section id="9"><h2>9 · Il lab guidato: cosa abbiamo fatto</h2>
+<p>Il lab ha coperto il workflow minimale di un pentest interno in 6 step, riproducendo un attacco end-to-end:</p>
+<ol>
+<li><strong>Recon network:</strong> <code>nmap -sn 192.168.56.0/24</code> — scopri host attivi</li>
+<li><strong>Recon host:</strong> <code>nmap -sV -p- 192.168.56.50</code> — versione servizi</li>
+<li><strong>Exploit vsftpd:</strong> Metasploit, <code>use exploit/unix/ftp/vsftpd_234_backdoor</code>, <code>set RHOSTS</code>, <code>exploit</code></li>
+<li><strong>Recon locale:</strong> <code>id</code>, <code>uname -a</code>, <code>sudo -l</code></li>
+<li><strong>Privilege escalation:</strong> <code>sudo find . -exec /bin/sh \; -quit</code> (GTFOBins pattern)</li>
+<li><strong>Verifica e exit:</strong> <code>id</code> → <code>uid=0(root)</code>, <code>exit</code></li>
+</ol>
+
+<p>Il CVE di vsftpd 2.3.4 (CVE-2011-2523, "smiley face backdoor") è stato scelto didatticamente: è deterministico (sempre funziona, nessuna dipendenza da offset memoria), memorabile (il trigger è username che termina con ':)'), dà shell root direttamente. Ha 15 anni, è patchato in ogni sistema decente — la sua presenza nel lab simula un sistema legacy non aggiornato, scenario comune nel mondo reale.</p>
+
+<div class="deep-dive"><strong>Mappatura attacco → controlli (esercizio chiave):</strong><br>
+• Fase 1 (nmap scan): host firewall + IDS + rimozione servizi inutili<br>
+• Fase 2 (exploit vsftpd): patching disciplinato + minimal footprint + auditd<br>
+• Fase 3 (reverse shell): EDR + network segmentation (outbound policy)<br>
+• Fase 4 (SUID → root): sudoers restrittivi + no NOPASSWD su binari shell-escape<br>
+Questo è il cuore del mindset Purple team: capire l'attacco per costruire la difesa.</div>
+</section>
+
+<section id="10"><h2>10 · Chiusura Modulo 1 · i 4 pattern trasversali</h2>
+<p>Il Modulo 1 in 6 lezioni:</p>
+<ul>
+<li><strong>L1:</strong> Fondamenti di rete e segmentazione (8 apr)</li>
+<li><strong>L2:</strong> Routing, DNS, TLS, VPN (10 apr)</li>
+<li><strong>L3:</strong> Firewall, NAT, WAF (15 apr)</li>
+<li><strong>L4:</strong> VPN pratica e sicurezza perimetrale (17 apr)</li>
+<li><strong>L5:</strong> Microsegmentazione, Zero Trust, SDN (22 apr)</li>
+<li><strong>L6:</strong> Hardening, attacchi laterali, chiusura (24 apr)</li>
+</ul>
+
+<p>Dietro le 6 lezioni, <strong>4 pattern trasversali</strong> che ricorreranno in tutti i moduli successivi:</p>
+
+<h3>Pattern 1 · Defense in depth</h3>
+<p>Strati multipli e diversi. Un singolo controllo buca; la catena no. Esempio: un laptop aziendale protetto da perimetro (VPN), identità (MFA), host (BitLocker), applicazione (app sandboxata), dato (file encryption).</p>
+
+<h3>Pattern 2 · Identità &gt; IP</h3>
+<p>Le policy basate su identità (utente, workload, service account) sono più robuste di quelle basate su IP/subnet. L'era del "firewall by IP" è finita nel cloud/BYOD/container. Esempio: service principal con permessi specifici su API Kubernetes, indipendente dal nodo fisico del pod.</p>
+
+<h3>Pattern 3 · Log è tutto</h3>
+<p>Senza telemetria non c'è security. Raccogli, correla, alerta. Esempio: Script Block Logging di PowerShell ha rivelato migliaia di attacchi fileless che AV signature-based non vedeva. Lo approfondiremo nel Modulo 5 (SOC & Incident Response).</p>
+
+<h3>Pattern 4 · Automazione</h3>
+<p>A mano non scala. Infrastructure-as-Code + Compliance-as-Code. Esempio: pipeline Ansible applica baseline CIS + Inspec verifica compliance + pipeline fallisce se hardening index &lt; 75. Lo approfondiremo nel Modulo 4 (DevSecOps).</p>
+
+<div class="celebr"><h3>🎉 Modulo 1 completato</h3>
+4 settimane · 6 lezioni · 4 pattern trasversali<br>
+Reti, segmentazione, protocolli, firewall, VPN, Zero Trust, hardening, attacchi laterali — tutto padroneggiato.</div>
+</section>
+
+<section id="compiti"><h2>📝 Compiti di consolidamento (Blocco 1, 18 esercizi)</h2>
+<p>Da svolgere entro il 29 aprile. Tempo stimato: 3-4 ore.</p>
+<div class="resource">
+<a href="esercizi-compiti-blocco1-g6.html">📘 Compiti G6 Blocco 1 - Consolida Modulo 1</a>
+<div class="resource-meta">18 esercizi · hardening Linux/Windows, attacchi laterali, pattern trasversali · soluzioni incluse</div>
+</div>
+
+<div class="lab">🚨 <strong>Deliverable obbligatori per il 29 aprile:</strong><br>
+1. Screenshot del lab G6 completato (shell root su Ubuntu via Kali/Metasploit)<br>
+2. Mini-report "controlli mancanti" (esercizio 17 del Blocco 1) — 1 pagina A4, PDF<br>
+3. Screenshot Podman + 3 container attivi (vedi Blocco 2)<br>
+Consegnare via email o cartella condivisa prima della L7.</div>
+</section>
+
+<section id="prep"><h2>🚀 Risorse propedeutiche per G7 (Modulo 2)</h2>
+<p>La Lezione 7 (<strong>29 aprile, online</strong>) apre il Modulo 2 · Compute & Database. Gli argomenti centrali: virtualizzazione (hypervisor type 1/2, container vs VM), sicurezza database (SQL/NoSQL, ACID, SQLi, encryption at rest), GDPR applicata ai dati.</p>
+
+<h3>Virtualizzazione e container (~45 min)</h3>
+<div class="resource">
+<a href="https://www.redhat.com/en/topics/virtualization/what-is-a-hypervisor">📖 Red Hat · What is a hypervisor?</a>
+<div class="resource-meta">Introduzione a hypervisor type 1/2 · lettura ~15 min</div>
+</div>
+<div class="resource">
+<a href="https://www.docker.com/resources/what-container/">📖 Docker · What is a container?</a>
+<div class="resource-meta">Concetti base container, differenze con VM · ~10 min</div>
+</div>
+<div class="resource">
+<a href="https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html">🔧 OWASP Docker Security Cheat Sheet</a>
+<div class="resource-meta">Le 10 best practice di Docker hardening · ~20 min · obbligatoria</div>
+</div>
+
+<p><strong>Domande guida:</strong></p>
+<ol>
+<li>Che differenza fondamentale c'è tra hypervisor type 1 e type 2?</li>
+<li>Perché un container è più "leggero" di una VM?</li>
+<li>Quali sono le 3 principali differenze di sicurezza tra container e VM?</li>
+</ol>
+
+<h3>Database: SQL, NoSQL, ACID (~30 min)</h3>
+<div class="resource">
+<a href="https://www.mongodb.com/nosql-explained/nosql-vs-sql">📖 MongoDB · NoSQL vs SQL</a>
+<div class="resource-meta">Confronto strutturale e scenari d'uso · ~10 min</div>
+</div>
+<div class="resource">
+<a href="https://www.postgresql.org/docs/current/tutorial-transactions.html">📖 PostgreSQL · Transactions (tutorial)</a>
+<div class="resource-meta">ACID spiegato con esempi pratici · ~15 min</div>
+</div>
+
+<p><strong>Domande guida:</strong></p>
+<ol>
+<li>Quando sceglieresti SQL e quando NoSQL? Esempio per ciascuno.</li>
+<li>Cosa significano A, C, I, D in ACID? Perché sono critici per una banca?</li>
+</ol>
+
+<h3>SQL Injection (~30 min · OBBLIGATORIO)</h3>
+<div class="resource">
+<a href="https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html">🔧 OWASP · SQL Injection Prevention Cheat Sheet</a>
+<div class="resource-meta">Le 4 Primary Defenses · ~25 min · lettura obbligatoria</div>
+</div>
+<div class="resource">
+<a href="https://owasp.org/Top10/A03_2021-Injection/">📖 OWASP Top 10 · A03:2021 Injection</a>
+<div class="resource-meta">Injection (SQL e altre) in Top 10 2021 · ~10 min</div>
+</div>
+
+<p><strong>Domande guida:</strong></p>
+<ol>
+<li>Scrivi un esempio di query Python vulnerabile a SQLi e riscrivila con prepared statement.</li>
+<li>Quali sono le 4 Primary Defenses di OWASP contro SQLi?</li>
+</ol>
+
+<h3>Setup Podman (obbligatorio per il lab in aula L7)</h3>
+<div class="resource">
+<a href="https://podman.io/docs/installation">🔧 Podman · Installation guide</a>
+<div class="resource-meta">Windows (WSL2) / macOS (brew) / Linux nativo · ~30 min install + verifica</div>
+</div>
+<p><strong>Perché Podman e non Docker Desktop?</strong> Docker Desktop richiede licenza a pagamento per uso aziendale. Podman è FOSS, rootless by default (più sicuro), CLI quasi identica a Docker. Alternativa accettabile: Docker Engine su Linux nativo.</p>
+<p>Azioni richieste:</p>
+<ol>
+<li>Installa Podman</li>
+<li>Verifica con <code>podman --version</code> e <code>podman run hello-world</code></li>
+<li>Pull delle 3 immagini M2: <code>podman pull postgres:16</code>, <code>podman pull mysql:8</code>, <code>podman pull nginx:alpine</code></li>
+<li>Avvia 3 container insieme, verifica <code>podman ps</code></li>
+</ol>
+
+<h3>Compiti Blocco 2 (prepara M2, 16 esercizi)</h3>
+<div class="resource">
+<a href="esercizi-compiti-blocco2-g6.html">📘 Compiti G6 Blocco 2 - Prepara Modulo 2</a>
+<div class="resource-meta">16 esercizi · virtualizzazione, container, DB, SQLi, Podman setup · con soluzioni</div>
+</div>
+</section>
+
+<section style="text-align:center; background:#F1F5F9; padding:20px">
+<p style="font-size:13px; color:#64748B; margin:0">Buon lavoro, buono studio, e ci vediamo al Modulo 2.</p>
+</section>
+
+</div></body></html>

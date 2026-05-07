@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>Esercizi G6 · Argomenti Lezione 6 (escluso lab)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.6;padding:20px}
+.container{max-width:920px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F1B2D 0%,#1E293B 100%);color:#fff;padding:30px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:24px;margin-bottom:6px}
+header p{color:#CBD5E1;font-size:14px}
+.intro{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:20px;font-size:14px}
+.cat{background:#0891B2;color:#fff;padding:10px 16px;border-radius:8px;margin:24px 0 14px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.ex{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:12px}
+.ex-num{display:inline-block;background:#0891B2;color:#fff;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;margin-bottom:8px}
+.ex-tag{display:inline-block;background:#E2E8F0;color:#475569;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;margin-left:6px;text-transform:uppercase}
+.ex h3{font-size:15px;margin-bottom:8px}
+.ex p{font-size:13px;margin-bottom:8px;color:#334155}
+.ex code{background:#1E293B;color:#38BDF8;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:11px}
+.ex pre{background:#1E293B;color:#E2E8F0;padding:10px;border-radius:6px;font-family:Consolas,monospace;font-size:11px;margin:8px 0;overflow-x:auto;line-height:1.5}
+.opts{margin:8px 0}
+.opts label{display:block;padding:8px 12px;margin:4px 0;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:6px;cursor:pointer;font-size:13px;transition:all 0.15s}
+.opts label:hover{background:#E0F2FE;border-color:#0891B2}
+.opts input[type=radio]{margin-right:8px}
+.opts label.correct{background:#D1FAE5;border-color:#059669;color:#065F46}
+.opts label.wrong{background:#FEE2E2;border-color:#DC2626;color:#991B1B}
+.feedback{margin-top:10px;padding:10px 14px;border-radius:6px;font-size:13px;display:none}
+.feedback.show{display:block}
+.feedback.ok{background:#D1FAE5;color:#065F46;border-left:4px solid #059669}
+.feedback.ko{background:#FEE2E2;color:#991B1B;border-left:4px solid #DC2626}
+.feedback strong{display:block;margin-bottom:4px}
+details{margin-top:10px;background:#F1F5F9;border-radius:6px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600;color:#0891B2;font-size:12px}
+.sol{font-size:12px;color:#0F1B2D;line-height:1.7;margin-top:8px}
+.sol code{background:#1E293B;color:#38BDF8;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:11px}
+#score{position:sticky;top:10px;background:#fff;border:2px solid #0891B2;border-radius:10px;padding:14px 20px;margin-bottom:20px;font-size:14px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.06);z-index:100}
+#score .num{font-size:24px;color:#0891B2}
+.btn-reset{float:right;background:#0891B2;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600}
+.btn-reset:hover{background:#0E7490}
+</style></head><body><div class="container">
+
+<header>
+<h1>📝 Esercizi G6 · Argomenti Lezione 6</h1>
+<p>20 esercizi sui temi della giornata · hardening Linux/Windows, account, sudoers, PAM, audit, framework · escluso lab pratico</p>
+</header>
+
+<div id="score">
+✅ Corrette: <span class="num" id="ok">0</span> / 20 &nbsp;&nbsp;
+❌ Sbagliate: <span class="num" id="ko">0</span>
+<button class="btn-reset" onclick="reset()">Reset</button>
+</div>
+
+<div class="intro">
+<strong>Istruzioni:</strong> per ogni domanda, seleziona la risposta che ritieni corretta. Il sistema fornirà feedback immediato. Per le domande aperte, scrivi mentalmente la risposta e poi confronta con la soluzione proposta cliccando "Mostra soluzione".
+</div>
+
+<!-- ===== CATEGORIA A: CONCETTO HARDENING + FRAMEWORK ===== -->
+<div class="cat">A · Concetto hardening e framework</div>
+
+<div class="ex"><span class="ex-num">1</span><span class="ex-tag">scelta multipla</span>
+<h3>Definizione di hardening</h3>
+<p>Quale tra le seguenti è la definizione più corretta di "hardening"?</p>
+<div class="opts" data-correct="b">
+<label><input type="radio" name="q1" value="a">a) Applicazione di patch di sicurezza per chiudere vulnerabilità note</label>
+<label><input type="radio" name="q1" value="b">b) Riduzione della superficie d'attacco e dei privilegi a quanto strettamente necessario</label>
+<label><input type="radio" name="q1" value="c">c) Installazione di antivirus e firewall su tutti i sistemi aziendali</label>
+<label><input type="radio" name="q1" value="d">d) Sostituzione di hardware obsoleto con modelli più recenti</label>
+</div>
+<div class="feedback ok"><strong>Corretto.</strong> L'hardening è il processo sistematico di ridurre la superficie d'attacco (servizi inutili disabilitati, porte chiuse, account limitati) e applicare il principio di least privilege. Il patching (a) è correlato ma è un'altra disciplina. Antivirus/firewall (c) sono difese reattive, non hardening.</div>
+<div class="feedback ko"><strong>Non corretto.</strong> La risposta è b. L'hardening agisce <em>prima</em> dell'attacco, riducendo cosa l'attaccante può fare quando ottiene accesso. Patching (a) chiude singole CVE ma non riduce la superficie complessiva.</div>
+</div>
+
+<div class="ex"><span class="ex-num">2</span><span class="ex-tag">scelta multipla</span>
+<h3>CIS L1 vs CIS L2 vs STIG</h3>
+<p>Confronta i tre framework di hardening. Quale affermazione è VERA?</p>
+<div class="opts" data-correct="c">
+<label><input type="radio" name="q2" value="a">a) STIG è meno stringente di CIS L1 perché è generico</label>
+<label><input type="radio" name="q2" value="b">b) CIS L2 è uno standard ISO ufficiale, CIS L1 no</label>
+<label><input type="radio" name="q2" value="c">c) STIG è più stringente di CIS L2 e include controlli specifici DoD (FIPS, smart card)</label>
+<label><input type="radio" name="q2" value="d">d) I tre framework sono identici, cambiano solo i nomi</label>
+</div>
+<div class="feedback ok"><strong>Corretto.</strong> STIG (Defense Information Systems Agency) è progettato per ambienti DoD USA e impone requisiti che CIS considera "nice-to-have": FIPS-validated cryptography obbligatoria, smart card authentication, retention log estesa (1 anno+), controllo TLS minimum 1.2.</div>
+<div class="feedback ko"><strong>Non corretto.</strong> La risposta è c. La gerarchia di rigore è: CIS L1 (baseline) &lt; CIS L2 (più stringente, alcune limitazioni operative) &lt; STIG (specifico DoD, requisiti più restrittivi).</div>
+</div>
+
+<div class="ex"><span class="ex-num">3</span><span class="ex-tag">aperta</span>
+<h3>Compensating controls</h3>
+<p>Hai un server legacy Windows Server 2008 con applicazione critica non aggiornabile. CIS L1 richiede di disabilitare SMBv1 ma l'applicazione lo richiede per funzionare. Cosa fai? Suggerisci 3 compensating controls.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+1. <strong>Microsegmentazione</strong>: isolare il server in zona di rete dedicata, accettare SMBv1 solo da IP autorizzati specifici, bloccare SMB cross-zone.<br>
+2. <strong>EDR + monitoring intensivo</strong>: agente che logga ogni connessione SMBv1, alert su pattern anomali, IDS Snort/Suricata in zona dedicata.<br>
+3. <strong>Sunset plan documentato</strong>: timeline esplicita per migrazione applicazione, accettazione rischio formale firmata da business owner, revisione trimestrale.<br>
+Extra: <strong>compensating in profondità</strong> (encryption rete via IPSec se possibile), <strong>privilege restriction</strong> (account che usano l'app non amministratori), <strong>backup offline</strong> isolato per scenario ransomware.<br>
+Il punto chiave: hardening non è "applica tutto o niente". CIS prevede esplicitamente eccezioni documentate con compensating controls equivalenti.
+</div></details></div>
+
+<!-- ===== CATEGORIA B: ACCOUNT MANAGEMENT (passwd, shadow, group) ===== -->
+<div class="cat">B · /etc/passwd, /etc/shadow, /etc/group</div>
+
+<div class="ex"><span class="ex-num">4</span><span class="ex-tag">identifica output</span>
+<h3>Anatomia di una riga shadow</h3>
+<p>Cosa puoi dedurre da questa riga di <code>/etc/shadow</code>?</p>
+<pre>alice:!$y$j9T$RjT5...$XKv...:19847:0:99999:7:::</pre>
+<div class="opts" data-correct="b">
+<label><input type="radio" name="q4" value="a">a) L'account alice ha password yescrypt valida</label>
+<label><input type="radio" name="q4" value="b">b) L'account alice è bloccato (locked), il prefisso "!" invalida l'hash</label>
+<label><input type="radio" name="q4" value="c">c) L'hash è MD5 ed è scaduto da 19847 giorni</label>
+<label><input type="radio" name="q4" value="d">d) La password sta per scadere (max 99999 giorni dall'ultimo cambio)</label>
+</div>
+<div class="feedback ok"><strong>Corretto.</strong> Il "!" prima dell'hash <code>$y$</code> indica account locked: la password non è più validabile, l'utente non può loggarsi via password. Tipicamente impostato con <code>passwd -l alice</code>. L'hash sotto resterebbe yescrypt valido se sbloccato con <code>passwd -u alice</code>.</div>
+<div class="feedback ko"><strong>Non corretto.</strong> La risposta è b. Il prefisso "!" davanti all'hash è il marker di account locked. 19847 sono giorni dal 1/1/1970 dell'ultimo cambio password (campo 3), 99999 è il max age (campo 5, =mai scaduta).</div>
+</div>
+
+<div class="ex"><span class="ex-num">5</span><span class="ex-tag">scelta multipla</span>
+<h3>Permessi corretti CIS L1</h3>
+<p>Quali sono i permessi corretti per <code>/etc/shadow</code> secondo CIS L1?</p>
+<div class="opts" data-correct="c">
+<label><input type="radio" name="q5" value="a">a) 644 root:root (world-readable)</label>
+<label><input type="radio" name="q5" value="b">b) 755 root:root (world-readable + execute)</label>
+<label><input type="radio" name="q5" value="c">c) 640 root:shadow (read root + gruppo shadow, niente others)</label>
+<label><input type="radio" name="q5" value="d">d) 444 root:root (read-only per tutti)</label>
+</div>
+<div class="feedback ok"><strong>Corretto.</strong> 0640 root:shadow è il default Ubuntu corretto. Solo root scrive, root e membri del gruppo shadow leggono (necessario per programmi PAM-based come login, sudo). World-readable sarebbe disastroso: chiunque sul sistema potrebbe leggere e crackare offline tutti gli hash.</div>
+<div class="feedback ko"><strong>Non corretto.</strong> La risposta è c (640 root:shadow). L'hash di password non deve mai essere world-readable: il filesystem layout di Ubuntu di default è già conforme.</div>
+</div>
+
+<div class="ex"><span class="ex-num">6</span><span class="ex-tag">aperta</span>
+<h3>Audit account anomali</h3>
+<p>Scrivi 3 comandi awk one-liner che cercano potenziali anomalie in <code>/etc/passwd</code>.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<code>awk -F: '$3==0 {print $1}' /etc/passwd</code><br>
+→ Account con UID 0 (deve essere SOLO root). Se ne trovi altri, è backdoor.<br><br>
+<code>awk -F: '{print $3}' /etc/passwd | sort | uniq -d</code><br>
+→ UID duplicati (anomalia: due utenti con stesso UID si confondono nel filesystem).<br><br>
+<code>awk -F: '$3&lt;1000 &amp;&amp; $7!~/nologin|false/ {print $1, $7}' /etc/passwd</code><br>
+→ Account di sistema (UID&lt;1000) con shell di login attiva. Dovrebbero avere <code>/sbin/nologin</code> o <code>/bin/false</code>. Se hanno bash è errore di hardening (o backdoor).<br><br>
+Bonus: <code>awk -F: '$2==""' /etc/shadow</code> per password vuote (CIS L1 critico).
+</div></details></div>
+
+<div class="ex"><span class="ex-num">7</span><span class="ex-tag">scelta multipla</span>
+<h3>Algoritmo hashing moderno</h3>
+<p>Quale dei seguenti algoritmi hash trovati nel campo 2 di <code>/etc/shadow</code> è il default consigliato su Ubuntu 22.04+?</p>
+<div class="opts" data-correct="d">
+<label><input type="radio" name="q7" value="a">a) <code>$1$</code> (MD5)</label>
+<label><input type="radio" name="q7" value="b">b) <code>$5$</code> (SHA-256)</label>
+<label><input type="radio" name="q7" value="c">c) <code>$6$</code> (SHA-512)</label>
+<label><input type="radio" name="q7" value="d">d) <code>$y$</code> (yescrypt)</label>
+</div>
+<div class="feedback ok"><strong>Corretto.</strong> yescrypt (<code>$y$</code>) è il default da Ubuntu 22.04 e Debian 11. È memory-hard (richiede RAM significativa per ogni hash) e resiste meglio alle GPU farm rispetto a SHA-512. MD5 (<code>$1$</code>) è deprecato. SHA-256/512 (<code>$5$/$6$</code>) sono ancora accettabili ma legacy.</div>
+<div class="feedback ko"><strong>Non corretto.</strong> La risposta è d (yescrypt). Verificalo sul tuo sistema: <code>sudo head -1 /etc/shadow</code>.</div>
+</div>
+
+<!-- ===== CATEGORIA C: SUDOERS ===== -->
+<div class="cat">C · sudoers, sudoers.d, shell escape</div>
+
+<div class="ex"><span class="ex-num">8</span><span class="ex-tag">scelta multipla</span>
+<h3>Lettura riga sudoers</h3>
+<p>Cosa significa questa riga di sudoers?<br><code>%admin web01=(root) NOPASSWD: /usr/bin/systemctl restart nginx</code></p>
+<div class="opts" data-correct="c">
+<label><input type="radio" name="q8" value="a">a) L'utente admin può fare qualunque cosa su web01 senza password</label>
+<label><input type="radio" name="q8" value="b">b) Tutti gli utenti possono riavviare nginx solo digitando password</label>
+<label><input type="radio" name="q8" value="c">c) I membri del gruppo admin, sull'host web01, possono eseguire <code>systemctl restart nginx</code> come root senza password</label>
+<label><input type="radio" name="q8" value="d">d) Solo l'host web01 può eseguire il comando come root</label>
+</div>
+<div class="feedback ok"><strong>Corretto.</strong> Il <code>%</code> davanti al nome indica gruppo (non utente). <code>web01</code> è l'host (la regola si applica solo lì). <code>(root)</code> è il target user. <code>NOPASSWD</code> non chiede password al sudo. Il comando deve corrispondere ESATTAMENTE: <code>systemctl restart nginx</code> permesso, <code>systemctl stop nginx</code> NO.</div>
+<div class="feedback ko"><strong>Non corretto.</strong> La risposta è c. Il <code>%</code> identifica un gruppo, non un singolo utente. La sintassi sudoers è: <code>chi  host=(target_user) [NOPASSWD:] comando</code>.</div>
+</div>
+
+<div class="ex"><span class="ex-num">9</span><span class="ex-tag">scelta multipla</span>
+<h3>Pattern pericoloso</h3>
+<p>Quale di queste regole sudoers è MOLTO pericolosa per privilege escalation?</p>
+<div class="opts" data-correct="b">
+<label><input type="radio" name="q9" value="a"><code>backup_user ALL=(root) NOPASSWD: /usr/local/bin/backup.sh</code></label>
+<label><input type="radio" name="q9" value="b"><code>devops ALL=(root) NOPASSWD: /usr/bin/find</code></label>
+<label><input type="radio" name="q9" value="c"><code>admin ALL=(ALL) ALL</code> (richiede password)</label>
+<label><input type="radio" name="q9" value="d"><code>monitor ALL=(root) NOPASSWD: /usr/bin/cat /var/log/syslog</code></label>
+</div>
+<div class="feedback ok"><strong>Corretto.</strong> <code>find</code> ha la flag <code>-exec</code> che permette esecuzione di comandi arbitrari come root. Esempio: <code>sudo find . -exec /bin/sh \; -quit</code> apre shell root immediata. È un pattern classico di GTFOBins. Le altre regole sono più sicure: a) script root-owned specifico, c) richiede password, d) cat di un file specifico (read-only).</div>
+<div class="feedback ko"><strong>Non corretto.</strong> La risposta è b. <code>find</code> con <code>-exec</code> è uno degli shell-escape binary più conosciuti. Mai dare NOPASSWD su binari generici come find, vim, awk, less, more, vi.</div>
+</div>
+
+<div class="ex"><span class="ex-num">10</span><span class="ex-tag">aperta</span>
+<h3>Pattern sicuro per automazione</h3>
+<p>Devi configurare uno script di backup notturno che gira come <code>backup_user</code> e deve poter eseguire <code>tar</code> con permessi di root. Senza usare NOPASSWD su tar generico, qual è il pattern sicuro?</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Strategia 1 (preferita): wrapper script root-owned senza input esterni</strong><br>
+1. Crea <code>/usr/local/bin/run-backup.sh</code> con shebang <code>#!/bin/bash</code> + <code>set -euo pipefail</code><br>
+2. Dentro lo script, hardcodato: <code>tar czf /backup/etc-$(date +%F).tar.gz /etc/</code><br>
+3. Permessi: <code>chown root:root /usr/local/bin/run-backup.sh</code> + <code>chmod 0755</code><br>
+4. Sudoers: <code>backup_user ALL=(root) NOPASSWD: /usr/local/bin/run-backup.sh</code><br>
+backup_user può solo eseguire QUEL preciso script senza parametri. Niente shell escape.<br><br>
+<strong>Strategia 2 (più moderna): systemd timer come root</strong><br>
+Niente sudo, niente NOPASSWD. Lo script gira come root via systemd timer schedulato. Più pulito perché elimina del tutto il vettore sudo.<br><br>
+<strong>Strategia 3 (granulare): POSIX capabilities</strong><br>
+<code>setcap cap_dac_read_search+ep /usr/local/bin/tar-backup</code> dà capability di lettura senza root pieno.<br><br>
+La regola: <strong>NOPASSWD solo su script specifici root-owned</strong>, mai su binari generici.
+</div></details></div>
+
+<!-- ===== CATEGORIA D: PAM ===== -->
+<div class="cat">D · PAM</div>
+
+<div class="ex"><span class="ex-num">11</span><span class="ex-tag">scelta multipla</span>
+<h3>I 4 momenti di PAM</h3>
+<p>Quali sono i 4 tipi di stack PAM nel ciclo di vita di una sessione?</p>
+<div class="opts" data-correct="d">
+<label><input type="radio" name="q11" value="a">a) login, logout, sudo, su</label>
+<label><input type="radio" name="q11" value="b">b) read, write, execute, delete</label>
+<label><input type="radio" name="q11" value="c">c) ssh, console, x11, vnc</label>
+<label><input type="radio" name="q11" value="d">d) auth, account, password, session</label>
+</div>
+<div class="feedback ok"><strong>Corretto.</strong> Sono i 4 momenti del ciclo di vita. <strong>auth</strong> verifica chi sei (password, MFA). <strong>account</strong> verifica se puoi accedere ora (orari, account scaduto). <strong>password</strong> applica policy al cambio password. <strong>session</strong> setup/teardown sessione (mount home, ulimits, log).</div>
+<div class="feedback ko"><strong>Non corretto.</strong> La risposta è d. Per ogni servizio (sshd, sudo, login...) PAM ha uno stack di moduli per ognuno dei 4 tipi.</div>
+</div>
+
+<div class="ex"><span class="ex-num">12</span><span class="ex-tag">aperta</span>
+<h3>Modulo pam_faillock</h3>
+<p>Spiega cosa fa <code>pam_faillock</code> e perché è importante per sicurezza.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>pam_faillock</strong> implementa il blocco account dopo N tentativi di autenticazione falliti consecutivi. Configurazione tipica in <code>/etc/security/faillock.conf</code> o nello stack PAM:<br>
+<code>deny=5</code> = blocca dopo 5 fallimenti<br>
+<code>unlock_time=900</code> = sblocco automatico dopo 15 minuti<br>
+<code>fail_interval=900</code> = finestra temporale entro cui contare i fallimenti<br><br>
+<strong>Perché è critico</strong>: blocca attacchi brute force SSH automatici. Un attaccante che prova 10000 password al secondo viene fermato dopo 5 tentativi, deve aspettare 15 minuti, in pratica brute force impraticabile (50000 anni per password decente).<br><br>
+<strong>Limite</strong>: distributed brute force da botnet (1 tentativo per IP) può aggirare. Per quello servono fail2ban (block IP) o rate limit a monte.<br><br>
+Sostituisce il deprecato <code>pam_tally2</code>. È nello stack <code>auth</code> con due righe: <code>preauth</code> (controlla se già lockato) e <code>authfail</code> (incrementa contatore se auth fallisce).
+</div></details></div>
+
+<!-- ===== CATEGORIA E: SSH + FILESYSTEM ===== -->
+<div class="cat">E · SSH hardening e filesystem</div>
+
+<div class="ex"><span class="ex-num">13</span><span class="ex-tag">scelta multipla</span>
+<h3>SSH: priorità di hardening</h3>
+<p>Tra le seguenti, qual è la singola misura SSH più impattante per ridurre il rischio di compromissione?</p>
+<div class="opts" data-correct="c">
+<label><input type="radio" name="q13" value="a">a) Cambiare la porta da 22 a 2222</label>
+<label><input type="radio" name="q13" value="b">b) Banner di benvenuto con avviso legale</label>
+<label><input type="radio" name="q13" value="c">c) <code>PasswordAuthentication no</code> + chiavi pubbliche</label>
+<label><input type="radio" name="q13" value="d">d) Limitare numero di connessioni concorrenti</label>
+</div>
+<div class="feedback ok"><strong>Corretto.</strong> Disabilitare auth via password elimina del tutto la classe degli attacchi brute force online (90%+ del traffico SSH malevolo su Internet). Le chiavi pubbliche con passphrase sono ordini di grandezza più resistenti. Cambiare porta (a) è "security through obscurity", utile solo per ridurre rumore nei log. Banner (b) ha valore legale, non difensivo.</div>
+<div class="feedback ko"><strong>Non corretto.</strong> La risposta è c. La differenza tra password auth e key-only auth è la mitigazione di interi pattern d'attacco, non incrementale.</div>
+</div>
+
+<div class="ex"><span class="ex-num">14</span><span class="ex-tag">scelta multipla</span>
+<h3>Mount option noexec</h3>
+<p>Cosa fa l'opzione di mount <code>noexec</code> applicata a una partizione?</p>
+<div class="opts" data-correct="b">
+<label><input type="radio" name="q14" value="a">a) Disabilita la lettura dei file binari</label>
+<label><input type="radio" name="q14" value="b">b) Il kernel rifiuta di eseguire file binari da quella partizione</label>
+<label><input type="radio" name="q14" value="c">c) Disabilita lo swap</label>
+<label><input type="radio" name="q14" value="d">d) Permette esecuzione solo a root</label>
+</div>
+<div class="feedback ok"><strong>Corretto.</strong> Tipicamente applicata a <code>/tmp</code>, <code>/var/tmp</code>, <code>/dev/shm</code>: il kernel blocca <code>execve()</code> su file in quella partizione. Mitiga il pattern classico "scarico exploit in /tmp ed eseguo". Caveat: alcuni installer/compilatori falliscono con noexec su /tmp. <code>nosuid</code> e <code>nodev</code> sono complementari.</div>
+<div class="feedback ko"><strong>Non corretto.</strong> La risposta è b. <code>noexec</code> non disabilita lettura, blocca solo l'esecuzione. Esempio: <code>cat /tmp/script.sh</code> funziona, <code>/tmp/script.sh</code> fallisce con "Permission denied".</div>
+</div>
+
+<div class="ex"><span class="ex-num">15</span><span class="ex-tag">aperta</span>
+<h3>Bind mount vs partizione fisica</h3>
+<p>Spiega le differenze di sicurezza tra usare un bind mount con <code>noexec/nosuid/nodev</code> e avere una partizione fisica separata con le stesse opzioni.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Identico:</strong> protezione runtime <code>noexec/nosuid/nodev</code> uguale (kernel applica le opzioni allo stesso modo).<br><br>
+<strong>Diverso (vantaggi partizione fisica):</strong><br>
+1. <strong>Isolamento spazio disco</strong>: attaccante che riempie /tmp con bind mount esaurisce tutta la root partition (DoS sistema, log persi). Con partizione fisica si ferma a 5 GB.<br>
+2. <strong>Garanzia attivazione al boot</strong>: bind mount applicato post-boot, c'è finestra in cui /tmp è root partition senza protezioni. Partizione fisica montata dal kernel da subito.<br>
+3. <strong>Resistenza a remount malevolo</strong>: <code>mount -o remount,exec /tmp</code> più tracciabile su partizione fisica (auditd, AppArmor/SELinux).<br>
+4. <strong>Snapshot/backup granulari</strong>: LVM permette snapshot di /var/log indipendenti dal resto.<br>
+5. <strong>Encryption granulare</strong>: cifrare solo /home con LUKS richiede partizione separata.<br>
+6. <strong>Compliance CIS L1</strong>: richiede esplicitamente partizioni separate, accetta bind mount come compensating control documentato.<br><br>
+<strong>Quando bind mount è "abbastanza"</strong>: laptop personale, server in produzione che non si vuole reinstallare. Per server enterprise nuovi: parti dal layout corretto.
+</div></details></div>
+
+<!-- ===== CATEGORIA F: AUDIT TOOL ===== -->
+<div class="cat">F · auditd, Lynis, OpenSCAP</div>
+
+<div class="ex"><span class="ex-num">16</span><span class="ex-tag">scelta multipla</span>
+<h3>Lynis vs auditd: differenza</h3>
+<p>Quale affermazione descrive correttamente Lynis e auditd?</p>
+<div class="opts" data-correct="d">
+<label><input type="radio" name="q16" value="a">a) Sono lo stesso tool con nomi diversi</label>
+<label><input type="radio" name="q16" value="b">b) auditd fa configuration audit, Lynis fa logging continuo</label>
+<label><input type="radio" name="q16" value="c">c) Entrambi sono compliance scanner certificati STIG</label>
+<label><input type="radio" name="q16" value="d">d) Lynis fa configuration audit una-tantum, auditd fa logging continuo di eventi</label>
+</div>
+<div class="feedback ok"><strong>Corretto.</strong> Sono complementari, non alternativi. <strong>Lynis</strong>: scansione attiva una-tantum della configurazione, ~2 minuti, produce report con score. Domanda: "il sistema è configurato bene?". <strong>auditd</strong>: servizio always-on che logga eventi mentre accadono. Domanda: "cosa è successo sul sistema?".</div>
+<div class="feedback ko"><strong>Non corretto.</strong> La risposta è d. Lynis = configuration audit (snapshot stato), auditd = audit logging (registrazione continua eventi). Inversione tipica, attenzione.</div>
+</div>
+
+<div class="ex"><span class="ex-num">17</span><span class="ex-tag">scelta multipla</span>
+<h3>OpenSCAP e CIS</h3>
+<p>OpenSCAP può scansionare un sistema secondo CIS Benchmark?</p>
+<div class="opts" data-correct="c">
+<label><input type="radio" name="q17" value="a">a) No, OpenSCAP fa solo STIG</label>
+<label><input type="radio" name="q17" value="b">b) Sì, con profili CIS firmati ufficialmente da CIS</label>
+<label><input type="radio" name="q17" value="c">c) Sì, con profili CIS-equivalent mantenuti dal progetto ComplianceAsCode (community)</label>
+<label><input type="radio" name="q17" value="d">d) No, per CIS bisogna usare solo CIS-CAT Pro</label>
+</div>
+<div class="feedback ok"><strong>Corretto.</strong> OpenSCAP è motore SCAP generico. Profili STIG ufficiali da DISA, profili CIS-equivalent da ComplianceAsCode (collaborazione community/Red Hat, github.com/ComplianceAsCode/content). Per CIS strict-ufficiale serve CIS-CAT Pro (richiede SecureSuite membership). In pratica enterprise usano OpenSCAP+ComplianceAsCode per coverage senza costi licenza.</div>
+<div class="feedback ko"><strong>Non corretto.</strong> La risposta è c. OpenSCAP è agnostico al framework: scansiona qualunque profilo SCAP-compliant, inclusi quelli CIS-equivalent della community.</div>
+</div>
+
+<!-- ===== CATEGORIA G: WINDOWS HARDENING ===== -->
+<div class="cat">G · Windows: GPO, LAPS, BitLocker, PowerShell, Tier model</div>
+
+<div class="ex"><span class="ex-num">18</span><span class="ex-tag">scelta multipla</span>
+<h3>LAPS: scopo principale</h3>
+<p>Qual è il problema principale che LAPS (Local Administrator Password Solution) risolve?</p>
+<div class="opts" data-correct="b">
+<label><input type="radio" name="q18" value="a">a) Permette agli utenti di gestire le proprie password locali</label>
+<label><input type="radio" name="q18" value="b">b) Genera password admin locale UNICA per ogni PC, bloccando Pass-the-Hash lateral movement</label>
+<label><input type="radio" name="q18" value="c">c) Sostituisce Active Directory con un sistema più moderno</label>
+<label><input type="radio" name="q18" value="d">d) Impedisce agli utenti di installare software</label>
+</div>
+<div class="feedback ok"><strong>Corretto.</strong> Senza LAPS, tutti i PC enterprise hanno tipicamente lo stesso admin locale (default da imaging). Compromissione di un PC = hash admin locale identico su 1000 altri PC = Pass-the-Hash diffuso. LAPS genera password univoca random per ogni PC, ruotata periodicamente, custodita in AD con ACL. Hash diverso per macchina, lateral movement bloccato.</div>
+<div class="feedback ko"><strong>Non corretto.</strong> La risposta è b. LAPS è una difesa specifica contro Pass-the-Hash via account admin locale, scenario tipico in attacchi enterprise post-compromise.</div>
+</div>
+
+<div class="ex"><span class="ex-num">19</span><span class="ex-tag">scelta multipla</span>
+<h3>BitLocker: cosa NON protegge</h3>
+<p>BitLocker con TPM+PIN protegge il disco. Quale di queste minacce NON è mitigata da BitLocker?</p>
+<div class="opts" data-correct="c">
+<label><input type="radio" name="q19" value="a">a) Furto fisico del laptop spento</label>
+<label><input type="radio" name="q19" value="b">b) Rimozione del disco e montaggio su altra macchina</label>
+<label><input type="radio" name="q19" value="c">c) Malware in esecuzione sul PC acceso e sbloccato</label>
+<label><input type="radio" name="q19" value="d">d) Smaltimento PC dismesso senza wipe</label>
+</div>
+<div class="feedback ok"><strong>Corretto.</strong> BitLocker protegge il dato a riposo (PC spento), non in uso (PC acceso). Quando l'OS gira, i file sono decifrati al volo per essere usati: malware in esecuzione vede dati in chiaro come l'utente legittimo. BitLocker è complementare a hardening software, non sostitutivo. Defense in depth: layer diversi per minacce diverse.</div>
+<div class="feedback ko"><strong>Non corretto.</strong> La risposta è c. BitLocker non c'entra niente con malware su PC acceso: l'OS è già caricato, la chiave è in memoria, i file sono decifrati. Per il malware servono altre difese (EDR, hardening OS, AppLocker).</div>
+</div>
+
+<div class="ex"><span class="ex-num">20</span><span class="ex-tag">aperta</span>
+<h3>Tier Model: scenario</h3>
+<p>Sei admin di un'azienda con 1 Domain Controller, 50 server, 1000 workstation. Spiega come applicheresti il Tier Model di Microsoft per limitare lateral movement, e cosa NON deve mai succedere.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Tier 0</strong> (Domain Controller, PKI, sistemi di gestione identità): account admin "DA-tier0" che si logga SOLO su DC, da PAW (Privileged Access Workstation) dedicata. Mai su server applicativi, mai su workstation.<br><br>
+<strong>Tier 1</strong> (server applicativi: file server, app server, DB): account "SA-tier1" si logga su server, mai su workstation, mai su DC.<br><br>
+<strong>Tier 2</strong> (workstation utenti): account helpdesk "WA-tier2" si logga sulle workstation per supporto, mai su server o DC.<br><br>
+<strong>Cosa NON deve mai succedere:</strong><br>
+1. <strong>Domain Admin che si logga su workstation</strong>: se la workstation è compromessa, Mimikatz dump LSASS → hash domain admin in memoria → attacco prende il dominio. È il pattern N°1 di compromissione AD.<br>
+2. <strong>Tier 0 admin che si logga via RDP a server applicativo</strong>: idem, hash high-tier finisce su server tier-1.<br>
+3. <strong>Account admin condivisi tra tier</strong>: tipo "admin@dominio" usato per tutto. Singolo account compromesso = compromise tutti i tier.<br><br>
+<strong>Mitigazione tecnica</strong>: Authentication Policy Silos in AD impediscono fisicamente che account tier-0 si loggino fuori dal proprio tier. Combinato con LAPS (admin locali per macchina), microsegmentazione (slide L5), credential guard (LSASS protetto), forma il pattern enterprise standard contro lateral movement.<br><br>
+Il Tier Model è la difesa <em>organizzativa</em> contro Pass-the-Hash. La defense in depth richiede tutte: identità separate (Tier), tecnica (LAPS, Credential Guard), rete (microsegmentazione).
+</div></details></div>
+
+<script>
+document.querySelectorAll('.opts').forEach(opts => {
+  opts.querySelectorAll('input[type=radio]').forEach(input => {
+    input.addEventListener('change', e => {
+      if (opts.dataset.answered) return;
+      const correct = opts.dataset.correct;
+      const labels = opts.querySelectorAll('label');
+      labels.forEach(l => {
+        const v = l.querySelector('input').value;
+        if (v === correct) l.classList.add('correct');
+        else if (l.querySelector('input').checked) l.classList.add('wrong');
+      });
+      opts.dataset.answered = 'true';
+      const ex = opts.closest('.ex');
+      const fbOk = ex.querySelector('.feedback.ok');
+      const fbKo = ex.querySelector('.feedback.ko');
+      if (e.target.value === correct) {
+        fbOk.classList.add('show');
+        document.getElementById('ok').textContent = parseInt(document.getElementById('ok').textContent) + 1;
+      } else {
+        fbKo.classList.add('show');
+        document.getElementById('ko').textContent = parseInt(document.getElementById('ko').textContent) + 1;
+      }
+    });
+  });
+});
+
+function reset() {
+  document.querySelectorAll('.opts').forEach(opts => {
+    delete opts.dataset.answered;
+    opts.querySelectorAll('label').forEach(l => l.classList.remove('correct', 'wrong'));
+    opts.querySelectorAll('input[type=radio]').forEach(i => i.checked = false);
+  });
+  document.querySelectorAll('.feedback').forEach(f => f.classList.remove('show'));
+  document.getElementById('ok').textContent = '0';
+  document.getElementById('ko').textContent = '0';
+  window.scrollTo(0, 0);
+}
+</script>
+
+</div></body></html>
