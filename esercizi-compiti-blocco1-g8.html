@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>Compiti B1 G8 - Consolida SQLi</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.6;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F4C75 0%,#059669 100%);color:#fff;padding:30px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:24px;margin-bottom:6px}
+header p{color:#D1FAE5;font-size:14px}
+.intro{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:20px;font-size:14px}
+.cat{background:#059669;color:#fff;padding:10px 16px;border-radius:8px;margin:24px 0 14px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.ex{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:20px;margin-bottom:14px}
+.ex-num{display:inline-block;background:#10B981;color:#fff;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;margin-bottom:10px}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-left:8px}
+.b-passive{background:#D1FAE5;color:#065F46}
+.b-active{background:#DBEAFE;color:#1E40AF}
+.b-practical{background:#FEE2E2;color:#991B1B}
+.ex h3{font-size:16px;margin-bottom:10px;color:#0F1B2D;display:inline}
+.ex p{font-size:14px;margin:10px 0;color:#334155}
+.ex ul{margin:8px 0 10px 22px;font-size:13px;color:#475569}
+.ex ol{margin:8px 0 10px 22px;font-size:13px;color:#475569}
+details{margin-top:12px;background:#F0FDF4;border-radius:6px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600;color:#059669;font-size:13px}
+details[open] summary{margin-bottom:8px}
+.sol{font-size:13px;color:#0F1B2D;line-height:1.7}
+.sol code{background:#1E293B;color:#34D399;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+.sol pre{background:#1E293B;color:#E2E8F0;padding:10px 12px;border-radius:6px;margin:8px 0;overflow-x:auto;font-family:Consolas,monospace;font-size:11px;line-height:1.4}
+code{background:#1E293B;color:#34D399;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+pre{background:#1E293B;color:#E2E8F0;padding:12px 14px;border-radius:6px;margin:10px 0;overflow-x:auto;font-family:Consolas,monospace;font-size:12px;line-height:1.45}
+pre code{background:transparent;color:#E2E8F0;padding:0}
+.deliverable{background:#FEF2F2;border:2px solid #DC2626;border-radius:8px;padding:14px;margin:20px 0;font-size:13px}
+.deliverable h3{color:#991B1B;margin-bottom:8px;font-size:14px;text-transform:uppercase;letter-spacing:0.5px}
+</style></head><body><div class="container">
+<header><h1>✍️ Compiti Blocco 1 · G8 Consolida</h1><p>18 esercizi SQLi &amp; Difese · 3-4 ore di lavoro · entro domenica 3 maggio</p></header>
+<div class="intro"><strong>Obiettivo:</strong> consolidare i concetti di L8. Suddivisi per livello: <span class="badge b-passive">PASSIVO</span> lettura/riflessione, <span class="badge b-active">ATTIVO</span> produzione di testo o analisi, <span class="badge b-practical">PRATICO</span> hands-on con tool. Le soluzioni sono nascoste — apritele solo dopo aver provato.</div>
+
+<div class="cat">Categoria A · Fondamenti SQLi (Esercizi 1-4)</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 1</span><h3>Le 3 condizioni in 5 esempi</h3><span class="badge b-passive">PASSIVO</span>
+<p>Per ognuno di questi 5 scenari, indica se c'è SQLi e quale/i delle 3 condizioni necessarie sono presenti:</p>
+<ol>
+<li>App desktop che usa SQLite locale, il filtro ricerca è costruito concatenando <code>input_utente</code> nella stringa SQL</li>
+<li>Script CLI che prende un argomento da command line, lo concatena in query PostgreSQL</li>
+<li>App web che costruisce query dinamicamente concatenando il nome di una TABELLA da un valore di configurazione hardcoded</li>
+<li>API che riceve JSON, usa <code>json['user_id']</code> come int dentro <code>execute("... WHERE id=%s", (int(json['user_id']),))</code></li>
+<li>Cron job che legge un file CSV generato da export esterno e lo concatena in query</li>
+</ol>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>1.</strong> SQLi SÌ. Tutte e 3 condizioni: input user-controlled (ricerca), flusso verso query, nessuna parametrizzazione.<br><br>
+<strong>2.</strong> SQLi SÌ (tecnicamente). Argument CLI = user-controlled, concatenato in query. La condizione 1 vale anche per script — l'utente della CLI è comunque "user".<br><br>
+<strong>3.</strong> SQLi NO. Condizione 1 rotta: il nome tabella viene da configurazione hardcoded, NON da input utente. Ma attenzione: se quel valore di config in futuro fosse alimentato da input esterno, diventerebbe vulnerabile.<br><br>
+<strong>4.</strong> SQLi NO. Parametrizzazione con <code>%s</code> + cast esplicito a <code>int()</code>. Doppia protezione: prepared + type safety.<br><br>
+<strong>5.</strong> SQLi SÌ, con caratteristica <em>second-order</em>. Il file CSV = input indiretto utente (qualcuno l'ha generato). Se quel qualcuno può mettere SQL nel CSV, c'è SQLi all'esecuzione del cron. Difesa: mai fidarsi dei CSV esterni, sempre parametrizzare anche quando "sembra" sicuro.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 2</span><h3>Taxonomy dei 4 tipi</h3><span class="badge b-passive">PASSIVO</span>
+<p>Completa la tabella associando ogni scenario al tipo di SQLi più appropriato (error / UNION / boolean / time / OOB):</p>
+<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px"><tr style="background:#0F4C75;color:#fff"><td style="padding:8px">Scenario</td><td style="padding:8px">Tipo più adatto</td></tr>
+<tr><td style="padding:6px 8px;border-bottom:1px solid #E2E8F0">L'app ritorna HTML con tabella prodotti visibile</td><td>...</td></tr>
+<tr><td style="padding:6px 8px;border-bottom:1px solid #E2E8F0">L'app ritorna sempre pagina identica, HTTP 200 uguale</td><td>...</td></tr>
+<tr><td style="padding:6px 8px;border-bottom:1px solid #E2E8F0">App dev con stack trace PHP esposto</td><td>...</td></tr>
+<tr><td style="padding:6px 8px;border-bottom:1px solid #E2E8F0">API che ritorna JSON <code>{"ok":true}</code> o <code>{"ok":false}</code></td><td>...</td></tr>
+<tr><td style="padding:6px 8px;border-bottom:1px solid #E2E8F0">Firewall blocca tutto tranne DNS egress</td><td>...</td></tr>
+</table>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Tabella prodotti HTML</strong> → UNION-based (output visibile nella pagina)<br>
+<strong>Risposta sempre identica</strong> → Blind Time-based (nessuna differenza osservabile)<br>
+<strong>Stack trace PHP</strong> → In-band Error-based (error page è canale diretto)<br>
+<strong>JSON ok/false</strong> → Blind Boolean-based (differenza minima osservabile)<br>
+<strong>Solo DNS egress</strong> → Out-of-band (DNS è canale di esfiltrazione)
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 3</span><h3>Classifica snippet reali</h3><span class="badge b-active">ATTIVO</span>
+<p>Ecco 4 snippet di codice. Per ognuno: (a) classifica come VULNERABILE o SICURO, (b) se vulnerabile indica tipo SQLi più probabile, (c) proponi fix.</p>
+<pre><code>// A · Node.js con mysql2
+const user = req.query.user;
+connection.query(
+  `SELECT * FROM accounts WHERE username='${user}'`,
+  (err, rows) =&gt; res.json(rows)
+);
+
+// B · Python con SQLAlchemy text()
+from sqlalchemy import text
+name = request.args.get('name')
+result = session.execute(
+  text(f"SELECT * FROM users WHERE name='{name}'")
+)
+
+// C · PHP con PDO
+$pdo = new PDO('mysql:host=...', $user, $pass);
+$pdo-&gt;setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+$stmt = $pdo-&gt;prepare("SELECT * FROM users WHERE id = ?");
+$stmt-&gt;execute([$_GET['id']]);
+
+// D · Java con Statement
+String q = "SELECT * FROM users WHERE name='" +
+           request.getParameter("name") + "'";
+Statement stmt = conn.createStatement();
+ResultSet rs = stmt.executeQuery(q);</code></pre>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>A · VULNERABILE.</strong> Template literal JS = concatenazione. Tipo: UNION se output visibile, blind altrimenti. Fix: <code>connection.query('SELECT * FROM accounts WHERE username = ?', [user], ...)</code><br><br>
+<strong>B · VULNERABILE.</strong> <code>text()</code> con f-string = concatenazione SQL. Il fatto che sia SQLAlchemy non protegge — abbiamo "sceso" al raw. Tipo: tutti, dipende da output. Fix: <code>text("SELECT * FROM users WHERE name=:name").bindparams(name=name)</code>.<br><br>
+<strong>C · SICURO.</strong> PDO con <code>ATTR_EMULATE_PREPARES=false</code> = real prepared statement native MySQL. L'<code>execute([...])</code> passa array posizionale di bind. Attenzione: senza <code>setAttribute</code>, PDO di default emula → fragile. Questa è la configurazione corretta.<br><br>
+<strong>D · VULNERABILE.</strong> <code>Statement</code> + concatenazione. Classico caso di SQLi Java. Fix: usa <code>PreparedStatement</code> + <code>setString</code>:<br>
+<code>PreparedStatement ps = conn.prepareStatement("SELECT * FROM users WHERE name=?");<br>ps.setString(1, request.getParameter("name"));</code>
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 4</span><h3>OWASP Top 10 storia</h3><span class="badge b-passive">PASSIVO</span>
+<p>SQLi è nell'OWASP Top 10 dal 2003. Scrivi una timeline breve (~150 parole) che tocchi: (1) prima apparizione, (2) anni al primo posto, (3) cosa è cambiato nel 2021, (4) perché la categoria A03:2021 è un "ombrello" più largo.</p>
+<details><summary>Mostra soluzione tipica</summary><div class="sol">
+La SQL Injection appare nel OWASP Top 10 del 2003 in posizione A6, classificata tra le vulnerabilità di "flawed input validation". Nel 2007 sale ad A2 per l'esplosione delle web app 2.0. Dal 2010 al 2017 è stabile in prima posizione (A1) per <strong>11 anni consecutivi</strong>, riflettendo la sua diffusione e l'impatto (esfiltrazione dati, RCE via DB).<br><br>
+Nel 2021 OWASP ristruttura la classifica con nuova metodologia (incidenza + exploitability + impatto) e la categoria "Injection" diventa A03 — un ombrello che include CWE-89 (SQLi), CWE-79 (XSS), CWE-77 (Command), CWE-94 (Code), CWE-917 (Template), CWE-91 (XML). Tutte condividono lo stesso pattern: input non fidato eseguito come codice nel contesto sbagliato.<br><br>
+Il "ridimensionamento" ad A03 non riflette meno frequenza — il report 2021 dichiara che <strong>94% delle app testate</strong> aveva qualche forma di injection. È il risultato di framework moderni (ORM safe-by-default) che riducono la facilità su app nuove, mentre sulle legacy rimane pervasiva.
+</div></details></div>
+
+<div class="cat">Categoria B · Pratica con sqlmap (Esercizi 5-9)</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 5</span><h3>DVWA low · riproduci la demo</h3><span class="badge b-practical">PRATICO</span>
+<p>Rifai la demo di classe da solo, sul tuo DVWA in Podman. Ogni step deve produrre un output. Annota cosa hai visto:</p>
+<ol>
+<li>Setup DVWA a security=low, copia PHPSESSID</li>
+<li>sqlmap detection sul parametro id</li>
+<li>Fingerprint DBMS</li>
+<li>Enumerate: databases → tables → columns</li>
+<li>Dump tabella users con --passwords</li>
+</ol>
+<details><summary>Mostra output attesi</summary><div class="sol">
+<strong>Step 2:</strong> "Parameter 'id' is vulnerable. Type: boolean-blind, error, union, time-blind". ~30-60 secondi.<br>
+<strong>Step 3:</strong> <code>MySQL &gt;= 5.0</code>, banner <code>5.7.x</code>.<br>
+<strong>Step 4a:</strong> 4 databases: dvwa, information_schema, mysql, performance_schema.<br>
+<strong>Step 4b:</strong> 2 tables in dvwa: guestbook, users.<br>
+<strong>Step 4c:</strong> 5 columns in users: user_id, first_name, last_name, user, password.<br>
+<strong>Step 5:</strong> 5 entries, hash MD5 crackati in rockyou.txt. Utenti visibili: admin/password, gordonb/abc123, 1337/charley, pablo/letmein, smithy/password.<br><br>
+Se NON hai visto tutto questo, segnala in chat al formatore: tipicamente il problema è cookie scaduto o security level non impostato a low.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 6</span><h3>DVWA medium · la sfida</h3><span class="badge b-practical">PRATICO</span>
+<p>Cambia security level a <strong>medium</strong> e ripeti sqlmap. La pagina ha ora protezioni (<code>mysqli_real_escape_string</code>, parametro numerico). Cosa cambia nell'output di sqlmap?</p>
+<ol>
+<li>Quali tipi di SQLi sono ancora rilevati?</li>
+<li>Quanto tempo in più serve?</li>
+<li>Quale tecnica funziona e perché?</li>
+</ol>
+<details><summary>Mostra analisi attesa</summary><div class="sol">
+A security=medium, DVWA usa <code>mysqli_real_escape_string($id)</code> E il form invia <code>id</code> come numero (via dropdown), non stringa libera. Ma il problema è che il backend concatena senza quote: <code>SELECT ... WHERE id = $id</code> (nessun apostrofo intorno a $id).<br><br>
+<strong>Risultato:</strong><br>
+• <strong>Error-based</strong>: ancora funziona (mysqli_real_escape_string non blocca errori SQL provocati da CAST)<br>
+• <strong>UNION-based</strong>: funziona (nessun apostrofo a cui scappare, quindi escape inefficace)<br>
+• <strong>Boolean-blind</strong>: funziona<br>
+• <strong>Time-blind</strong>: funziona<br><br>
+<strong>Tempo:</strong> simile al low, forse 10-20 secondi in più di detection.<br><br>
+<strong>Lezione:</strong> <code>mysqli_real_escape_string</code> è una difesa DEBOLE e contestuale — serve SOLO a scappare apostrofi dentro stringhe quotate. Se la query non mette quotes, è inefficace. Questo è il classico anti-pattern "escape" che i senior PHP developers criticano: meglio prepared statements always.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 7</span><h3>Lettura output sqlmap</h3><span class="badge b-active">ATTIVO</span>
+<p>Dato questo estratto di output sqlmap:</p>
+<pre><code>[INFO] testing 'Boolean-based blind - Parameter replace (original value)'
+[INFO] GET parameter 'id' appears to be 'Boolean-based blind - Parameter replace' injectable 
+[INFO] testing 'MySQL &gt;= 5.1 AND error-based - WHERE or HAVING clause (EXTRACTVALUE)'
+[INFO] GET parameter 'id' is 'MySQL &gt;= 5.1 AND error-based' injectable
+[INFO] testing 'MySQL UNION query (NULL) - 1 to 20 columns'
+[INFO] target URL appears to have 2 columns in query
+[INFO] GET parameter 'id' is 'MySQL UNION query (NULL) - 1 to 20 columns' injectable</code></pre>
+<p>Rispondi:</p>
+<ol>
+<li>Quanti tipi di SQLi sono stati confermati?</li>
+<li>Cosa significa "2 columns in query"? A che serve?</li>
+<li>Quale funzione MySQL sta usando per error-based?</li>
+</ol>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>1.</strong> <strong>Tre tipi</strong> confermati: Boolean-blind, Error-based, UNION-based. Note: sqlmap di solito prova anche time-based nello stesso run; se non è in output significa che ha saltato perché già aveva conferme sufficienti.<br><br>
+<strong>2.</strong> "2 columns in query" = la query SQL originale ha 2 colonne nel SELECT. sqlmap ha fatto binary search (ORDER BY 1, ORDER BY 2, ORDER BY 3, ...) finché non ha trovato errore. Serve per costruire payload UNION validi: UNION SELECT deve avere lo stesso numero di colonne, altrimenti DB dà errore di incompatibility.<br><br>
+<strong>3.</strong> <strong>EXTRACTVALUE</strong> — funzione MySQL che processa XML. Se il secondo argomento non è XPath valido, solleva errore tipo "XPATH syntax error: '&lt;dato_esfiltrato&gt;'". Altra funzione nello stesso pattern: <code>UPDATEXML</code>. Entrambe mostrano il dato nel messaggio d'errore.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 8</span><h3>Flag sqlmap avanzati</h3><span class="badge b-active">ATTIVO</span>
+<p>Per ognuno di questi scenari, scegli i flag sqlmap più appropriati tra: <code>--level</code>, <code>--risk</code>, <code>--technique</code>, <code>--tamper</code>, <code>--threads</code>, <code>--delay</code>, <code>--random-agent</code>, <code>--proxy</code>.</p>
+<ol>
+<li>Target protetto da WAF, serve payload obfuscated</li>
+<li>Rate limit attivo sul target, serve rallentare</li>
+<li>Voglio vedere TUTTE le richieste sqlmap in Burp Suite</li>
+<li>Test esaustivo su tutti i parametri inclusi cookie e header</li>
+<li>Serve solo detection rapida, basta un tipo di SQLi</li>
+</ol>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>1 · WAF bypass:</strong> <code>--tamper=space2comment,between,charencode</code> (combinazione di tamper scripts). Opzionalmente anche <code>--random-agent</code> per non essere bloccati da signature User-Agent.<br><br>
+<strong>2 · Rate limit:</strong> <code>--delay=3 --threads=1</code>. 3 secondi tra request, nessun parallelismo.<br><br>
+<strong>3 · Proxying su Burp:</strong> <code>--proxy=http://127.0.0.1:8080</code>. Utile per logging dettagliato e manual review dei payload inviati.<br><br>
+<strong>4 · Test esaustivo:</strong> <code>--level=5 --risk=3</code>. Level=5 include cookie, header, user-agent; risk=3 autorizza payload invasivi (UPDATE/INSERT).<br><br>
+<strong>5 · Detection rapida:</strong> <code>--technique=B</code> (solo boolean-blind) o <code>--technique=BE</code> (boolean + error). Skip UNION, time, OOB — più veloci ma meno completi.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 9</span><h3>Screenshot deliverable</h3><span class="badge b-practical">PRATICO</span>
+<p>Produci uno screenshot (o screen recording breve) del tuo terminale che mostra l'intero workflow sqlmap contro DVWA: dalla detection al dump della tabella users con password crackate.</p>
+<p>Upload: inviare via chat al formatore. File accettati: .png, .jpg, .mp4 (max 30 sec).</p>
+<p class="deliverable" style="margin-top:10px;padding:10px;background:#FEF2F2;border:1px solid #DC2626;border-radius:6px"><strong>Questo è un deliverable obbligatorio per L9.</strong></p>
+</div>
+
+<div class="cat">Categoria C · Difese in profondità (Esercizi 10-14)</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 10</span><h3>Prepared in 3 linguaggi</h3><span class="badge b-active">ATTIVO</span>
+<p>Data questa query concettuale: <em>"Trova gli ordini di un utente per un intervallo di date"</em>, con 3 parametri: <code>user_id</code>, <code>start_date</code>, <code>end_date</code>. Scrivi la versione prepared in Python (psycopg2), Node.js (pg), Java (JDBC).</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Python · psycopg2</strong>
+<pre>cursor.execute(
+    "SELECT id, amount, status FROM orders "
+    "WHERE user_id = %s "
+    "AND created_at BETWEEN %s AND %s "
+    "ORDER BY created_at DESC",
+    (user_id, start_date, end_date)
+)
+results = cursor.fetchall()</pre>
+
+<strong>Node.js · pg</strong>
+<pre>const result = await client.query(
+    'SELECT id, amount, status FROM orders ' +
+    'WHERE user_id = $1 ' +
+    'AND created_at BETWEEN $2 AND $3 ' +
+    'ORDER BY created_at DESC',
+    [userId, startDate, endDate]
+);
+const rows = result.rows;</pre>
+
+<strong>Java · JDBC</strong>
+<pre>String sql = "SELECT id, amount, status FROM orders " +
+             "WHERE user_id = ? " +
+             "AND created_at BETWEEN ? AND ? " +
+             "ORDER BY created_at DESC";
+PreparedStatement ps = conn.prepareStatement(sql);
+ps.setInt(1, userId);
+ps.setDate(2, startDate);
+ps.setDate(3, endDate);
+ResultSet rs = ps.executeQuery();</pre>
+
+Note: tre sintassi diverse (<code>%s</code>, <code>$1</code>, <code>?</code>) ma stesso concetto — valori passati SEPARATI dalla query, il driver fa il bind.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 11</span><h3>ORM · spot the bug</h3><span class="badge b-active">ATTIVO</span>
+<p>Trova i bug di sicurezza in questi 3 snippet ORM:</p>
+<pre><code># A · Django ORM
+from django.db import connection
+def search(request):
+    q = request.GET.get('q')
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT * FROM products WHERE name LIKE '%" + q + "%'"
+        )
+        return cursor.fetchall()
+
+# B · SQLAlchemy
+from sqlalchemy import text
+def user_by_name(session, name):
+    return session.execute(
+        text(f"SELECT * FROM users WHERE name = '{name}'")
+    ).first()
+
+# C · Sequelize
+async function searchPosts(tag) {
+    const results = await sequelize.query(
+        "SELECT * FROM posts WHERE tags LIKE '%" + tag + "%'",
+        { type: QueryTypes.SELECT }
+    );
+    return results;
+}</code></pre>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>A · Django bug:</strong> <code>connection.cursor().execute()</code> accetta un secondo argomento <code>params</code>. Il bug è la concatenazione.<br>
+Fix: <code>cursor.execute("SELECT * FROM products WHERE name LIKE %s", ['%' + q + '%'])</code><br><br>
+<strong>B · SQLAlchemy bug:</strong> <code>text()</code> con f-string = concatenazione SQL.<br>
+Fix: <code>text("SELECT * FROM users WHERE name = :name").bindparams(name=name)</code><br><br>
+<strong>C · Sequelize bug:</strong> <code>sequelize.query()</code> con concat.<br>
+Fix: usare <code>replacements</code>:<br>
+<pre>await sequelize.query(
+    "SELECT * FROM posts WHERE tags LIKE :tag",
+    { replacements: { tag: '%' + tag + '%' }, type: QueryTypes.SELECT }
+);</pre>
+Oppure <code>bind</code> (placeholder posizionale):<br>
+<pre>await sequelize.query(
+    "SELECT * FROM posts WHERE tags LIKE $1",
+    { bind: ['%' + tag + '%'], type: QueryTypes.SELECT }
+);</pre>
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 12</span><h3>Allowlist dinamica per tabelle</h3><span class="badge b-active">ATTIVO</span>
+<p>Scenario: pannello admin che permette di esportare CSV da una delle seguenti tabelle: <code>users</code>, <code>orders</code>, <code>products</code>, <code>audit_log</code>. L'utente sceglie la tabella da dropdown.</p>
+<p>Scrivi il codice Python che implementa l'export con allowlist robusta, sapendo che il nome tabella NON può essere parametrizzato come valore.</p>
+<details><summary>Mostra soluzione</summary><div class="sol"><pre>ALLOWED_TABLES = {
+    'users': ['id', 'email', 'created_at'],          # non email password
+    'orders': ['id', 'user_id', 'amount', 'status', 'created_at'],
+    'products': ['id', 'name', 'price', 'stock'],
+    'audit_log': ['id', 'action', 'user_id', 'timestamp'],
+}
+
+@app.route('/admin/export/&lt;table&gt;')
+@require_admin
+def export_csv(table):
+    if table not in ALLOWED_TABLES:
+        return "Tabella non consentita", 400
+    
+    columns = ALLOWED_TABLES[table]
+    cols_sql = ', '.join(columns)  # sicuro: cols vengono dal dict
+    
+    # concat sicura: table è in allowlist, cols sono enumerate hardcoded
+    cursor.execute(f"SELECT {cols_sql} FROM {table}")
+    
+    # ... csv response
+    rows = cursor.fetchall()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(columns)
+    writer.writerows(rows)
+    return Response(output.getvalue(), mimetype='text/csv')</pre>
+Punti chiave:<br>
+1. <code>ALLOWED_TABLES</code> mappa chiave → colonne permesse. Ogni tabella ha la propria whitelist di colonne — evita di esporre colonne sensibili (es. password_hash per users).<br>
+2. La concatenazione <code>f"SELECT {cols_sql} FROM {table}"</code> è sicura PERCHÉ sia <code>table</code> sia <code>cols_sql</code> derivano dal dict finito.<br>
+3. Attenzione: NON passare <code>columns</code> direttamente dal request — deve sempre venire dalla server-side allowlist.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 13</span><h3>LPP analisi · cosa può fare l'attaccante?</h3><span class="badge b-active">ATTIVO</span>
+<p>In un'app che ha una SQL injection esistente, analizza cosa può fare l'attaccante nei 3 scenari seguenti:</p>
+<ol>
+<li>App user = <code>postgres</code> (superuser)</li>
+<li>App user = <code>app_runtime</code> con GRANT SELECT, INSERT, UPDATE su 5 tabelle business</li>
+<li>App user = <code>readonly</code> con GRANT SELECT su 3 tabelle business</li>
+</ol>
+<p>Per ciascuno, elenca 3 impatti concreti (what can the attacker do).</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Scenario 1 · superuser (game over):</strong>
+<ul><li>DROP DATABASE / DROP TABLE → distruzione dati</li><li>COPY TO PROGRAM → RCE (esegue comandi OS come user postgres)</li><li>pg_read_server_files → leggere /etc/passwd, chiavi SSH, config file</li><li>CREATE USER / ALTER ROLE → persistence backdoor</li><li>Leggere TUTTI i database, non solo quello dell'app</li></ul>
+
+<strong>Scenario 2 · app_runtime CRUD limitato:</strong>
+<ul><li>Esfiltrare TUTTI i dati delle 5 tabelle business (SELECT ok)</li><li>Modificare dati (UPDATE): cambio prezzi, redirecting ordini, alterazione saldo account</li><li>Inserire dati fake (INSERT): account admin nuovi se c'è logica business errata, log falsi</li><li>NON può: DROP, ALTER, creare user, leggere altri DB/schema, accedere al file system</li></ul>
+
+<strong>Scenario 3 · readonly (blast radius minimo):</strong>
+<ul><li>Esfiltrare dati delle 3 tabelle — comunque grave se contengono PII/finanziario</li><li>Enumeration: capire struttura DB, volumi, relazioni</li><li>Information gathering per attacchi successivi (es. hash password trovati → crack offline)</li><li>NON può: modificare nulla, accedere ad altre tabelle, RCE</li></ul>
+
+<strong>Morale:</strong> LPP non impedisce la SQLi, ma trasforma un data breach catastrofico in un data leak contenuto. Essenziale per compliance (GDPR, PCI-DSS) perché riduce lo "scope" dell'incidente.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 14</span><h3>WAF · scrivi regole ModSecurity</h3><span class="badge b-active">ATTIVO</span>
+<p>Scrivi 3 regole ModSecurity (Core Rule Set style) che bloccano payload SQLi comuni. Indica anche un possibile bypass per ogni regola.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Regola 1 · blocca UNION SELECT:</strong>
+<pre>SecRule ARGS "@rx (?i)union\s+select" \
+    "id:10001, deny, status:403, \
+     msg:'SQL Injection: UNION SELECT pattern'"</pre>
+Bypass: <code>UNION/**/SELECT</code>, <code>UNION%00SELECT</code>, <code>UnIoN sElEcT</code>, <code>UN%49ON SELECT</code> (URL encoding di 'I').<br><br>
+
+<strong>Regola 2 · blocca quote + OR:</strong>
+<pre>SecRule ARGS "@rx (?i)'\s*or\s+['\"0-9]" \
+    "id:10002, deny, status:403, \
+     msg:'SQL Injection: OR tautology'"</pre>
+Bypass: senza apostrofo (<code>1 OR 1=1</code>), con AND (<code>1 AND 1=1</code>), con backticks MySQL, con funzioni (<code>1 OR MID(...)</code>).<br><br>
+
+<strong>Regola 3 · blocca functions specifiche:</strong>
+<pre>SecRule ARGS "@rx (?i)(sleep|pg_sleep|waitfor|benchmark)\s*\(" \
+    "id:10003, deny, status:403, \
+     msg:'SQL Injection: time-based function'"</pre>
+Bypass: encoding hex (<code>0x73 0x6C ...</code>), stringhe concatenate (<code>SL||EEP</code>), versioned comments MySQL (<code>/*!50000 SLEEP*/</code>).<br><br>
+
+<strong>Conclusione:</strong> le 3 regole bloccano attacchi automatizzati generici, ma un attaccante mirato ha strumenti di bypass (sqlmap --tamper) pronti. Il WAF è utile, non sufficiente.
+</div></details></div>
+
+<div class="cat">Categoria D · Sintesi e scenari (Esercizi 15-18)</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 15</span><h3>Defense in Depth · ordina le difese</h3><span class="badge b-passive">PASSIVO</span>
+<p>Ordina le 5 difese dalla più forte (strutturale) alla più debole (perimetrale), motiva l'ordine.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>1° · Prepared Statements</strong> (strutturale). Rompe la condizione 3 delle 3 necessarie per SQLi. È una separazione architetturale codice/dati a livello driver — non bypassabile.<br><br>
+<strong>2° · ORM</strong> (strutturale automatico). È il modo in cui la maggior parte delle app moderne applica prepared. Sicuro per API idiomatiche; inefficace se si "scende" a raw().<br><br>
+<strong>3° · Input Validation</strong> (contestuale). Allowlist funziona bene per enum di valori limitati. Non sostituisce prepared — complementa.<br><br>
+<strong>4° · LPP DB user</strong> (contenimento). NON impedisce la SQLi, ma ne riduce l'impatto quando le difese 1-3 falliscono. Fondamentale per mitigation real-world.<br><br>
+<strong>5° · WAF</strong> (perimetrale, blocklist). Ha bypass noti, falsi positivi, è solo pattern detection. Utile per rallentare attacchi automatizzati e logging, non per protezione strutturale.<br><br>
+<strong>Morale:</strong> se hai tempo limitato per hardening, dai priorità 1→2→4 (prepared, ORM, LPP). Input validation e WAF sono strumenti complementari, non sostituti.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 16</span><h3>Quadro etico · caso studio</h3><span class="badge b-active">ATTIVO</span>
+<p>Leggi questo scenario e rispondi in 200 parole:</p>
+<blockquote style="background:#F1F5F9;padding:14px;border-left:4px solid #64748B;margin:12px 0;font-size:13px;color:#334155">
+<em>Mario è uno studente. Si è iscritto a un sito di ecommerce italiano e per caso nota che cambiando l'URL <code>?id=100</code> a <code>?id=100 OR 1=1</code> vede tutti gli ordini di tutti gli utenti. Mario vuole "fare la cosa giusta" e pensa: lancio sqlmap per capire l'entità del problema, poi scrivo al CISO dell'azienda con un report dettagliato.</em>
+</blockquote>
+<p>Mario sta facendo la cosa giusta? Motiva usando art. 615-ter e 635-bis c.p.</p>
+<details><summary>Mostra risposta tipica</summary><div class="sol">
+<strong>No, Mario sta per commettere un reato.</strong> L'intenzione è buona ma la legge italiana è chiara: l'art. 615-ter c.p. criminalizza l'<strong>accesso abusivo</strong> a sistema informatico, INDIPENDENTEMENTE dall'intento di danno. Basta aver sfruttato una vulnerabilità per accedere a dati non propri.<br><br>
+Nota progressiva del rischio:<br>
+• Il primo accesso con <code>?id=100 OR 1=1</code> è già accesso abusivo — Mario può invocare che "gli è apparso per caso" ma la giurisprudenza valuta l'intento e la consapevolezza. Sapere che si tratta di bypass di autorizzazione rende difficile difendersi.<br>
+• Lanciare sqlmap eleva il livello di esposizione penale: è uso di strumento esplicitamente offensive, con decine di richieste HTTP loggabili dal SOC dell'azienda. Aggiunge anche profilo di art. 635-bis se sqlmap provoca errori DB o carichi anomali.<br><br>
+<strong>Cosa deve fare Mario:</strong><br>
+1. Fermarsi immediatamente. Non replicare il bug.<br>
+2. Verificare se l'azienda ha un programma <strong>Bug Bounty</strong> o una pagina <code>/security.txt</code> con istruzioni di disclosure responsabile.<br>
+3. Se non c'è: contatto diretto via email al DPO/CISO, report breve del pattern osservato UNA VOLTA (il primo), SENZA esfiltrazione dati ulteriore.<br>
+4. Non fornire PoC eseguiti su loro sistema — solo descrizione del pattern e offerta di dettagli in privato.<br><br>
+Solo con autorizzazione scritta dall'azienda Mario può fare pentest. Fino a quel momento, qualsiasi test è reato.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 17</span><h3>Esercizio fix · l'app bancaria</h3><span class="badge b-active">ATTIVO</span>
+<p>Riscrivi questa funzione Python applicando <strong>Difesa 1 + 3 + 4</strong> (prepared + allowlist + LPP):</p>
+<pre><code>@app.route('/transactions/&lt;account_id&gt;')
+def list_transactions(account_id):
+    # app user: postgres (superuser)
+    sort = request.args.get('sort', 'date')
+    order = request.args.get('order', 'desc')
+    limit = request.args.get('limit', 100)
+    
+    q = f"""
+        SELECT * FROM transactions
+        WHERE account_id = {account_id}
+        ORDER BY {sort} {order}
+        LIMIT {limit}
+    """
+    return db.execute(q).fetchall()</code></pre>
+<details><summary>Mostra soluzione completa</summary><div class="sol">
+<strong>DDL · LPP DB user (fare una volta, in migration):</strong>
+<pre>CREATE USER app_bank_runtime WITH
+    NOSUPERUSER NOCREATEDB NOCREATEROLE
+    NOREPLICATION NOBYPASSRLS
+    PASSWORD '...';
+
+GRANT CONNECT ON DATABASE bankdb TO app_bank_runtime;
+GRANT USAGE ON SCHEMA public TO app_bank_runtime;
+GRANT SELECT, INSERT ON transactions TO app_bank_runtime;
+GRANT SELECT ON accounts TO app_bank_runtime;
+-- read-only su accounts, no UPDATE (saldo non modificabile da API)</pre>
+
+<strong>Python app · prepared + allowlist:</strong>
+<pre>ALLOWED_SORT = {'date': 'created_at', 'amount': 'amount', 'type': 'type'}
+ALLOWED_ORDER = {'asc', 'desc'}
+
+@app.route('/transactions/&lt;account_id&gt;')
+@require_auth
+def list_transactions(account_id):
+    # 1 · validazione account_id
+    try:
+        account_id = int(account_id)
+    except ValueError:
+        return {"error": "invalid account_id"}, 400
+    
+    # 2 · ownership check (non esposto in chiaro)
+    if not user_owns_account(g.user_id, account_id):
+        return {"error": "forbidden"}, 403
+    
+    # 3 · allowlist sort + order
+    sort_col = ALLOWED_SORT.get(request.args.get('sort'), 'created_at')
+    order = request.args.get('order', 'desc').lower()
+    if order not in ALLOWED_ORDER:
+        order = 'desc'
+    
+    # 4 · validazione limit
+    try:
+        limit = min(int(request.args.get('limit', 100)), 500)
+    except ValueError:
+        limit = 100
+    
+    # 5 · prepared statement + concatenazione sicura per sort/order
+    cursor.execute(
+        f"SELECT id, amount, type, created_at "
+        f"FROM transactions "
+        f"WHERE account_id = %s "
+        f"ORDER BY {sort_col} {order} "
+        f"LIMIT %s",
+        (account_id, limit)
+    )
+    return cursor.fetchall()</pre>
+
+Punti chiave applicati:<br>
+• <strong>Difesa 1</strong> (prepared): <code>account_id</code> e <code>limit</code> via <code>%s</code><br>
+• <strong>Difesa 3</strong> (allowlist): <code>sort_col</code> da dict chiuso, <code>order</code> da set chiuso<br>
+• <strong>Difesa 4</strong> (LPP): app_user senza DROP/ALTER/SUPERUSER, SELECT limitato a 2 tabelle<br>
+• <strong>Bonus</strong>: ownership check server-side, type validation con int(), limit capped a 500
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 18</span><h3>Blog post · riflessione</h3><span class="badge b-active">ATTIVO</span>
+<p>Scrivi un post di 400-600 parole dal titolo <em>"Le 3 SQLi che ho imparato a riconoscere (e come le fixerei)"</em>. Il post deve:</p>
+<ul>
+<li>Descrivere 3 scenari di SQLi che hai affrontato in L8 o visto negli esercizi</li>
+<li>Per ogni scenario: contesto, perché è vulnerabile, impatto potenziale, fix applicato</li>
+<li>Chiusura con riflessione personale su "cosa ho portato a casa"</li>
+<li>Tono tecnico ma accessibile, come se scrivessi per un audience dev junior</li>
+</ul>
+<p>Upload: inviare via chat al formatore come testo o file .md.</p>
+<p style="margin-top:10px;padding:10px;background:#FEF2F2;border:1px solid #DC2626;border-radius:6px;font-size:13px"><strong>Questo è un deliverable attivo.</strong> Non serve soluzione guida — è un esercizio di sintesi personale. Evitare copia-incolla: il valore è nell'articolare col proprio linguaggio.</p>
+</div>
+
+<div class="deliverable">
+<h3>📬 Deliverable obbligatori per L9</h3>
+<ol>
+<li>Screenshot dump tabella users DVWA (Esercizio 9)</li>
+<li>2 snippet fixati con prepared statement (scelta libera tra Esercizi 6, 10, 11, 17)</li>
+<li>Invia entro <strong>domenica 3 maggio sera</strong> via chat al formatore</li>
+</ol>
+</div>
+
+</div></body></html>

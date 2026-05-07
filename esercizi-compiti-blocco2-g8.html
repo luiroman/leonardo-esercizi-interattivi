@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>Compiti B2 G8 - Prepara L9 NoSQL + Audit</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.6;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F4C75 0%,#0077B6 100%);color:#fff;padding:30px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:24px;margin-bottom:6px}
+header p{color:#E0F2FE;font-size:14px}
+.intro{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:20px;font-size:14px}
+.cat{background:#0077B6;color:#fff;padding:10px 16px;border-radius:8px;margin:24px 0 14px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.ex{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:20px;margin-bottom:14px}
+.ex-num{display:inline-block;background:#0077B6;color:#fff;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;margin-bottom:10px}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-left:8px}
+.b-passive{background:#D1FAE5;color:#065F46}
+.b-active{background:#DBEAFE;color:#1E40AF}
+.b-practical{background:#FEE2E2;color:#991B1B}
+.ex h3{font-size:16px;margin-bottom:10px;color:#0F1B2D;display:inline}
+.ex p{font-size:14px;margin:10px 0;color:#334155}
+.ex ul{margin:8px 0 10px 22px;font-size:13px;color:#475569}
+.ex ol{margin:8px 0 10px 22px;font-size:13px;color:#475569}
+details{margin-top:12px;background:#EFF6FF;border-radius:6px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600;color:#0077B6;font-size:13px}
+details[open] summary{margin-bottom:8px}
+.sol{font-size:13px;color:#0F1B2D;line-height:1.7}
+.sol code{background:#1E293B;color:#7DD3FC;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+.sol pre{background:#1E293B;color:#E2E8F0;padding:10px 12px;border-radius:6px;margin:8px 0;overflow-x:auto;font-family:Consolas,monospace;font-size:11px;line-height:1.4}
+code{background:#1E293B;color:#7DD3FC;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+pre{background:#1E293B;color:#E2E8F0;padding:12px 14px;border-radius:6px;margin:10px 0;overflow-x:auto;font-family:Consolas,monospace;font-size:12px;line-height:1.45}
+pre code{background:transparent;color:#E2E8F0;padding:0}
+.deliverable{background:#FEF2F2;border:2px solid #DC2626;border-radius:8px;padding:14px;margin:20px 0;font-size:13px}
+.deliverable h3{color:#991B1B;margin-bottom:8px;font-size:14px;text-transform:uppercase;letter-spacing:0.5px}
+</style></head><body><div class="container">
+<header><h1>🔮 Compiti Blocco 2 · G8 Prepara L9</h1><p>16 esercizi NoSQL Injection + Audit · 2-3 ore · entro domenica 3 maggio</p></header>
+<div class="intro"><strong>Obiettivo:</strong> preparare il terreno per L9 "NoSQL Injection + Database Audit Avanzato". I temi: MongoDB operator injection, Redis command injection, pgAudit setup, Row-Level Security in PostgreSQL. Le soluzioni sono nascoste — apritele solo dopo aver provato. <span class="badge b-passive">PASSIVO</span> <span class="badge b-active">ATTIVO</span> <span class="badge b-practical">PRATICO</span>.</div>
+
+<div class="cat">Categoria A · MongoDB Injection (Esercizi 1-5)</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 1</span><h3>Perché NoSQL non è immune</h3><span class="badge b-passive">PASSIVO</span>
+<p>Tante aziende migrano a NoSQL convinte che "senza SQL, niente SQLi". Spiega in 3-4 righe perché questa convinzione è falsa, citando 2 esempi concreti di injection su database NoSQL (MongoDB, Redis, o altri).</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+L'injection non è una proprietà del linguaggio SQL, ma della <strong>mancata separazione tra codice e dati</strong>. Qualunque interprete che accetti comandi strutturati può essere attaccato se l'input utente viene concatenato senza controllo. MongoDB accetta query JSON: se costruisci <code>{user: input}</code> e l'input è <code>{"$ne": null}</code>, ottieni <code>{user: {"$ne": null}}</code> che matcha TUTTI gli utenti — operator injection. Redis accetta comandi testo separati da <code>\r\n</code>: se concateni un input utente in un comando e l'input contiene newline, puoi iniettare comandi (<code>FLUSHDB</code>, <code>CONFIG SET</code>) — command injection. La difesa è la stessa di SQLi: schema validation, driver che parametrizza, niente concatenazione.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 2</span><h3>Operator injection MongoDB · bypass login</h3><span class="badge b-active">ATTIVO</span>
+<p>Data questa funzione Node.js di login:</p>
+<pre><code>app.post('/login', async (req, res) =&gt; {
+  const user = await db.collection('users').findOne({
+    username: req.body.username,
+    password: req.body.password
+  });
+  if (user) return res.json({ok: true});
+  return res.json({ok: false});
+});</code></pre>
+<p>L'attaccante invia una POST con Content-Type: application/json e body:</p>
+<pre><code>{"username": "admin", "password": {"$ne": null}}</code></pre>
+<p>Spiega cosa succede, perché l'attacco riesce, e come si difende.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Cosa succede:</strong> la query Mongo diventa <code>findOne({username: "admin", password: {"$ne": null}})</code>, che si legge "trova un utente con username admin e password diversa da null". L'utente admin esiste, ha una password (diversa da null), quindi il match c'è. L'attaccante è loggato come admin <strong>senza conoscere la password</strong>.<br><br>
+<strong>Perché riesce:</strong> Express con <code>express.json()</code> fa automaticamente parse del body JSON. Il valore <code>{"$ne": null}</code> entra nella query come oggetto, che Mongo interpreta come operator (<code>$ne</code> = not equal). Il codice si aspettava una stringa, ma accetta qualunque tipo.<br><br>
+<strong>Difese:</strong>
+<ol>
+<li><strong>Type check esplicito</strong>: <code>if (typeof req.body.username !== 'string' || typeof req.body.password !== 'string') return res.status(400)</code>.</li>
+<li><strong>Schema validation</strong>: usa Joi, Yup, Zod per validare il body. Schema: <code>{username: z.string(), password: z.string()}</code>.</li>
+<li><strong>Sanitize operatori</strong>: <code>mongo-sanitize</code> rimuove ricorsivamente chiavi che iniziano con <code>$</code> o contengono <code>.</code>.</li>
+<li><strong>Soprattutto</strong>: mai fare match password plain così — usa bcrypt lato server, query solo per username, poi <code>bcrypt.compare(input, user.passwordHash)</code>.</li>
+</ol>
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 3</span><h3>Operatori MongoDB pericolosi in injection</h3><span class="badge b-passive">PASSIVO</span>
+<p>Elenca e spiega brevemente almeno 4 operatori MongoDB che possono essere abusati in un attacco di operator injection (es. <code>$ne</code>). Per ciascuno indica come l'attaccante li usa.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<ul>
+<li><code>$ne</code> (not equal) — <code>{password: {"$ne": null}}</code> matcha qualunque password non null. Bypass login classico.</li>
+<li><code>$gt</code> / <code>$lt</code> (greater/less than) — <code>{password: {"$gt": ""}}</code> matcha qualunque stringa. Simile a $ne, funziona anche quando $ne è sanitizzato.</li>
+<li><code>$regex</code> — <code>{username: {"$regex": "^admin"}}</code> consente enumerazione: provare <code>"^a"</code>, <code>"^ad"</code>, ecc. per trovare username esistenti. È l'equivalente NoSQL di blind boolean SQLi.</li>
+<li><code>$where</code> — accetta stringa JavaScript eseguita da Mongo. <code>{$where: "this.password == this.username"}</code>. In configurazioni permissive, è RCE sul server Mongo. Disabilitato di default su MongoDB Atlas; attivo in alcune installazioni legacy.</li>
+<li><code>$exists</code> — <code>{admin_flag: {"$exists": true}}</code> per enumerare i campi del documento e trovare campi sensibili non documentati.</li>
+<li><code>$or</code> / <code>$and</code> — <code>{"$or": [{username: "admin"}, {admin: true}]}</code> per combinazioni logiche non previste dall'app.</li>
+</ul>
+La difesa generale: <strong>type check</strong> — se il campo deve essere stringa, verificare <code>typeof === 'string'</code> prima di passarlo alla query.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 4</span><h3>Mongoose vs driver native · quale è più sicuro?</h3><span class="badge b-active">ATTIVO</span>
+<p>In Node.js ci sono due approcci per parlare con MongoDB: il driver nativo <code>mongodb</code>, o l'ORM-like <code>Mongoose</code>. Confronta i due in termini di difesa da operator injection: quale offre più garanzie by-default e perché? Cita almeno 2 meccanismi di Mongoose che aiutano.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Driver native (<code>mongodb</code>):</strong> zero ORM, zero schema. Passi oggetti JavaScript direttamente al driver. Se l'app non fa type check, operator injection passa dritta. Responsabilità di sicurezza 100% sull'applicazione.<br><br>
+<strong>Mongoose:</strong> ORM-like con schema obbligatorio. Offre by-default:
+<ol>
+<li><strong>Schema type casting</strong>: se il campo è definito <code>{username: String}</code>, Mongoose converte (o rifiuta) input non-string. Un <code>{"$ne": null}</code> viene coerced a stringa, diventando innocuo ("[object Object]").</li>
+<li><strong>Strict mode</strong>: di default Mongoose ignora campi non presenti nello schema. Questo previene che attaccante aggiunga <code>{admin: true}</code> in un <code>.create()</code>.</li>
+<li><strong>Validators</strong>: regole custom (minlength, enum, regex, funzioni) che bloccano valori non validi prima del DB.</li>
+<li><strong>sanitizeFilter</strong> (plugin opzionale): rimuove operatori da input utente.</li>
+</ol>
+<strong>Verdict:</strong> Mongoose è più sicuro by-default, ma attenzione: <code>Model.find(req.body)</code> bypassa type casting sugli operatori di query. Sempre costruire esplicitamente il filter object. Inoltre Mongoose non protegge da tutto — va comunque fatto type check prima di passargli l'input.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 5</span><h3>Fix un endpoint MongoDB vulnerabile</h3><span class="badge b-practical">PRATICO</span>
+<p>Dato questo endpoint Node.js con Express + mongodb driver:</p>
+<pre><code>app.get('/search', async (req, res) =&gt; {
+  const docs = await db.collection('products').find({
+    category: req.query.cat,
+    price: { $lte: req.query.max }
+  }).toArray();
+  res.json(docs);
+});</code></pre>
+<p>Identifica le 2 vulnerabilità di operator injection e riscrivi l'endpoint con le difese corrette.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Vulnerabilità:</strong>
+<ol>
+<li><code>req.query.cat</code> può essere un oggetto (Express parsifica <code>?cat[$ne]=null</code> come <code>{$ne: null}</code>) → bypass filtro categoria.</li>
+<li><code>req.query.max</code> arriva come stringa ma Mongo fa comparison su stringhe — inoltre se attaccante passa <code>?max[$gt]=0</code> ottiene sempre <code>{$lte: {$gt: 0}}</code> che è sintassi non valida ma può causare errori o bypass.</li>
+</ol>
+<strong>Fix:</strong>
+<pre>const ALLOWED_CATS = ['electronics','books','clothing','food'];
+
+app.get('/search', async (req, res) =&gt; {
+  // 1. Type check + allowlist per category
+  const cat = String(req.query.cat || '');
+  if (!ALLOWED_CATS.includes(cat)) {
+    return res.status(400).json({error: 'invalid category'});
+  }
+
+  // 2. Type cast esplicito per max
+  const max = Number(req.query.max);
+  if (!Number.isFinite(max) || max &lt; 0) {
+    return res.status(400).json({error: 'invalid max'});
+  }
+
+  const docs = await db.collection('products').find({
+    category: cat,
+    price: { $lte: max }
+  }).toArray();
+  res.json(docs);
+});</pre>
+<strong>Principi applicati:</strong> type coercion con <code>String()</code> e <code>Number()</code>, allowlist per categoria (lista chiusa), validation con default safe, early return con 400. Lo stesso pattern di SQLi: <em>se puoi enumerare i valori leciti, enumerali</em>.
+</div></details></div>
+
+<div class="cat">Categoria B · Redis & altri NoSQL (Esercizi 6-8)</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 6</span><h3>Redis command injection via newline</h3><span class="badge b-passive">PASSIVO</span>
+<p>Il protocollo Redis (RESP) separa i comandi con <code>\r\n</code>. Spiega come questo diventa un vettore di injection se l'app concatena input utente in comandi Redis raw, e dai un esempio di payload malevolo.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+Se l'app costruisce comandi come <code>"GET user:" + username</code> e li manda come stringa al server Redis, un input contenente <code>\r\n</code> permette di iniettare comandi arbitrari. Esempio: <code>username = "john\r\nFLUSHDB\r\n"</code> produce il flusso:
+<pre>GET user:john
+FLUSHDB</pre>
+Il server Redis esegue il secondo comando. <strong>FLUSHDB</strong> cancella tutti i dati del database corrente. Altri comandi pericolosi iniettabili: <code>CONFIG SET dir /tmp</code> + <code>CONFIG SET dbfilename shell.php</code> + <code>SAVE</code> = writefile primitive per RCE se Redis è configurato male; <code>DEBUG SLEEP 100</code> DoS; <code>MIGRATE</code> esfiltrazione dati.<br><br>
+<strong>Difesa:</strong> usare driver client ufficiale (redis-py, ioredis) che parametrizza usando binary RESP protocol, non testo concatenato. I driver moderni non sono vulnerabili by-default. Si è vulnerabili solo se si costruiscono comandi a mano o si usa <code>eval</code>/<code>client.sendCommand</code> con stringhe raw.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 7</span><h3>CQL Injection in Cassandra</h3><span class="badge b-passive">PASSIVO</span>
+<p>Apache Cassandra usa CQL (Cassandra Query Language), una sintassi simile a SQL. Spiega se Cassandra è vulnerabile a injection, come, e se le difese di SQLi classiche si applicano anche qui.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+Sì, <strong>CQL injection esiste</strong> ed è molto simile a SQL injection. CQL supporta <code>SELECT</code>, <code>WHERE</code>, <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, <code>BATCH</code>. Se concateni input utente in query CQL, sei vulnerabile agli stessi attacchi: bypass con <code>' OR '1'='1</code>, UNION (con limiti — Cassandra non supporta JOIN, ma supporta altre primitive), etc.<br><br>
+<strong>Differenze da SQLi:</strong>
+<ul>
+<li>Cassandra NON supporta stacked queries (no <code>;DROP TABLE</code>)</li>
+<li>Cassandra NON ha <code>information_schema</code> classico — enumerate passa per <code>system_schema.tables</code></li>
+<li>Meno feature di exploitation rispetto a PostgreSQL/MySQL (no COPY TO PROGRAM, no UDF facili)</li>
+</ul>
+<strong>Difesa:</strong> <em>le stesse di SQLi</em>. Il driver Java/Python/Node di Cassandra supporta prepared statements nativi con placeholder <code>?</code>. Esempio Python:
+<pre>session.execute(
+    "SELECT * FROM users WHERE id = ?",
+    [user_id]
+)</pre>
+Principio generale: qualunque linguaggio di query strutturato è vulnerabile a injection se concateni input, e la difesa è sempre la parametrizzazione nativa del driver.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 8</span><h3>Tabella comparativa NoSQL injection</h3><span class="badge b-active">ATTIVO</span>
+<p>Completa la seguente tabella riempiendo le celle vuote. Salvala come documento personale per L9.</p>
+<pre>DB         | Tipo di injection    | Payload esempio       | Difesa
+-----------|----------------------|------------------------|-------------
+MongoDB    | Operator injection   | ?                      | ?
+Redis      | Command injection    | ?                      | ?
+Cassandra  | CQL injection        | ?                      | ?
+Elasticsrc | Query DSL injection  | ?                      | ?</pre>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<pre>DB         | Tipo injection       | Payload esempio                       | Difesa
+-----------|----------------------|---------------------------------------|---------------
+MongoDB    | Operator injection   | {"$ne": null}                         | type check +
+           |                      | {"$regex": "^adm"}                    | schema (Mongoose)
+-----------|----------------------|---------------------------------------|---------------
+Redis      | Command injection    | input\r\nFLUSHDB\r\n                  | client driver
+           | (via newline RESP)   | input\r\nCONFIG SET dir /tmp\r\n     | ufficiale (parametrizza)
+-----------|----------------------|---------------------------------------|---------------
+Cassandra  | CQL injection        | ' OR '1'='1                           | prepared
+           | (simile a SQL)       | ' UNION SELECT FROM system_schema     | statements
+-----------|----------------------|---------------------------------------|---------------
+Elasticsrc | Query DSL injection  | {"match_all":{}} al posto di {"term"} | validation
+           |                      | script injection con Painless         | + disable scripts</pre>
+<strong>Pattern comune a tutti</strong>: input utente che raggiunge il query engine come struttura dati (JSON, testo, bytes) senza separazione strutturale tra comando e dato. La difesa canonica è sempre la stessa: <strong>parametrizzazione a livello driver + validation a livello applicativo</strong>.
+</div></details></div>
+
+<div class="cat">Categoria C · pgAudit setup (Esercizi 9-12)</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 9</span><h3>Cos'è pgAudit</h3><span class="badge b-passive">PASSIVO</span>
+<p>In 5-6 righe, spiega cos'è <strong>pgAudit</strong>, che problema risolve, e quali sono le sue differenze rispetto al logging standard di PostgreSQL (<code>log_statement</code>).</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+pgAudit è un'<strong>extension di PostgreSQL</strong> che fornisce audit logging dettagliato e strutturato. Nata perché il logging standard di Postgres (<code>log_statement = 'all'</code>) è troppo verboso per uso in produzione (perdi il segnale nel rumore) e troppo poco dettagliato per compliance (GDPR, SOX, PCI-DSS). pgAudit risolve con 2 features chiave:
+<ol>
+<li><strong>Session audit</strong>: logga classi di comandi (READ, WRITE, FUNCTION, ROLE, DDL, MISC) con granularità fine. Puoi loggare solo DDL e ROLE, ignorando SELECT triviali.</li>
+<li><strong>Object audit</strong>: logga operazioni su tabelle specifiche. Esempio: ogni accesso alla tabella <code>sensitive_data</code>, indipendentemente da chi lo fa.</li>
+</ol>
+<strong>Formato strutturato</strong>: ogni entry ha 11 campi (audit type, statement id, substatement id, class, command, object type, object name, statement, parameter, etc.) facilmente parsabile dai SIEM (Splunk, ELK).<br><br>
+<strong>Differenza con log_statement</strong>: log_statement = 'all' è binario (tutto o niente); pgAudit è granulare per classe e per oggetto. Inoltre pgAudit logga anche statement dentro funzioni, log_statement no.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 10</span><h3>Installazione pgAudit in container PostgreSQL</h3><span class="badge b-practical">PRATICO</span>
+<p>Hai un container PostgreSQL 16 running. Installa pgAudit come extension. Produci comando <code>docker exec</code> o <code>podman exec</code> che:</p>
+<ol>
+<li>Installa il pacchetto <code>postgresql-16-pgaudit</code> dentro il container</li>
+<li>Configura <code>postgresql.conf</code> con <code>shared_preload_libraries='pgaudit'</code></li>
+<li>Riavvia PostgreSQL</li>
+<li>Crea l'extension nel database <code>app</code></li>
+</ol>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<pre><span style="color:#94A3B8">## 1. Installa pacchetto Debian (immagine postgres:16 è basata su Debian)</span>
+$ podman exec -u root pg podman apt-get update
+$ podman exec -u root pg apt-get install -y postgresql-16-pgaudit
+
+<span style="color:#94A3B8">## 2. Configura shared_preload_libraries nel postgresql.conf</span>
+$ podman exec -u postgres pg psql -U postgres -c \
+  "ALTER SYSTEM SET shared_preload_libraries = 'pgaudit';"
+
+<span style="color:#94A3B8">## 3. Riavvia PostgreSQL per caricare la libreria</span>
+$ podman restart pg
+
+<span style="color:#94A3B8">## 4. Crea l'extension nel database app</span>
+$ podman exec -u postgres pg psql -U postgres -d app -c \
+  "CREATE EXTENSION pgaudit;"
+
+<span style="color:#94A3B8">## 5. Configura cosa loggare (es. DDL + WRITE + ROLE)</span>
+$ podman exec -u postgres pg psql -U postgres -d app -c \
+  "ALTER SYSTEM SET pgaudit.log = 'ddl, write, role';"
+$ podman exec -u postgres pg psql -U postgres -c "SELECT pg_reload_conf();"
+
+<span style="color:#94A3B8">## 6. Verifica</span>
+$ podman exec -u postgres pg psql -U postgres -d app -c "\dx pgaudit"</pre>
+<strong>Nota:</strong> <code>shared_preload_libraries</code> richiede restart, non <code>pg_reload_conf()</code>. Invece <code>pgaudit.log</code> può essere cambiato con reload. In produzione: loggare sempre <code>ddl, role</code>; aggiungere <code>write</code> se la throughput lo permette.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 11</span><h3>Classi di audit pgAudit</h3><span class="badge b-passive">PASSIVO</span>
+<p>pgAudit logga operazioni classificate in 7 classi. Elenca le 7 classi e per ciascuna indica: (a) cosa include, (b) quando tipicamente va abilitata in produzione, (c) impatto su throughput.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<ul>
+<li><strong>READ</strong> — SELECT, COPY TO. (a) ogni lettura dal DB. (b) solo su tabelle sensibili (via object audit), mai su tutto in OLTP ad alto throughput. (c) impatto ALTO — le letture sono il 90% del traffico.</li>
+<li><strong>WRITE</strong> — INSERT, UPDATE, DELETE, TRUNCATE, COPY FROM. (a) modifiche dati. (b) sempre attivo. (c) impatto BASSO/MEDIO — le scritture sono meno frequenti.</li>
+<li><strong>FUNCTION</strong> — execution di funzioni/procedure. (a) chiamate a funzioni definite dall'utente. (b) se usi PL/pgSQL custom, utile per tracciare; altrimenti skip. (c) impatto MEDIO.</li>
+<li><strong>ROLE</strong> — GRANT, REVOKE, CREATE/DROP/ALTER ROLE. (a) permission management. (b) <strong>sempre</strong> — modifiche permessi sono rare e critiche. (c) impatto TRASCURABILE.</li>
+<li><strong>DDL</strong> — CREATE, ALTER, DROP tabelle/indici/schemi. (a) cambi strutturali schema. (b) <strong>sempre</strong>. (c) impatto TRASCURABILE.</li>
+<li><strong>MISC</strong> — DISCARD, FETCH, CHECKPOINT, VACUUM, etc. (a) comandi amministrativi. (b) opzionale, utile per troubleshooting. (c) impatto BASSO.</li>
+<li><strong>ALL</strong> — tutte le classi. (a) ovvio. (b) solo in compliance stretta (es. sistemi PCI-DSS) e con hardware abbondante. (c) impatto MOLTO ALTO.</li>
+</ul>
+<strong>Policy standard Leonardo</strong>: <code>pgaudit.log = 'ddl, role, write'</code> — tracci schema changes, permission changes, modifiche dati. Le letture le tracci solo su tabelle classified sensibili tramite object audit.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 12</span><h3>Leggere un log pgAudit</h3><span class="badge b-active">ATTIVO</span>
+<p>Dato questo entry di log pgAudit:</p>
+<pre><code>LOG:  AUDIT: SESSION,23,1,WRITE,UPDATE,TABLE,public.users,
+UPDATE users SET role='admin' WHERE id=&lt;unknown&gt;,&lt;binary_param&gt;</code></pre>
+<p>Estrai tutte le informazioni che puoi da questo log. Questo tipo di query ti allarmerebbe in un contesto di SOC? Perché?</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Parsing del log:</strong>
+<ul>
+<li><code>AUDIT:</code> — prefisso pgAudit che distingue le sue entries dai log normali</li>
+<li><code>SESSION</code> — tipo audit: session (chi ha eseguito la query a livello sessione); alternativa sarebbe OBJECT (accesso a oggetto specifico)</li>
+<li><code>23</code> — statement_id (contatore per sessione)</li>
+<li><code>1</code> — substatement_id (per statement con sub-query)</li>
+<li><code>WRITE</code> — classe audit</li>
+<li><code>UPDATE</code> — comando SQL</li>
+<li><code>TABLE</code> — tipo oggetto</li>
+<li><code>public.users</code> — nome oggetto (schema.table)</li>
+<li><code>UPDATE users SET role='admin' WHERE id=&lt;unknown&gt;</code> — statement eseguito (con parametro mascherato per privacy)</li>
+<li><code>&lt;binary_param&gt;</code> — indica che il valore è stato passato come bind param (buon segno: la query è parametrizzata)</li>
+</ul>
+<strong>Allarme SOC? Sì, fortissimo.</strong> Motivi:
+<ol>
+<li><code>UPDATE ... SET role='admin'</code> è privilege escalation — qualcuno sta promuovendo un account a admin</li>
+<li>Se il processo che ha fatto questa query è l'<code>app_runtime</code> user (che non dovrebbe avere UPDATE su role), siamo davanti a SQLi riuscita con impact critico</li>
+<li>Se è l'admin user, verificare se è stato fatto da console autorizzata o da sessione anomala (orario, IP)</li>
+</ol>
+<strong>Alert SIEM</strong>: regola tipica → <code>UPDATE ... SET role</code> o <code>INSERT INTO admin</code> sempre paging on-call, anche se da account admin. Questa è la ragione per cui pgAudit + SIEM è game-changer: detection in tempo reale di compromissioni.
+</div></details></div>
+
+<div class="cat">Categoria D · Row-Level Security in PostgreSQL (Esercizi 13-16)</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 13</span><h3>Cos'è RLS e quando serve</h3><span class="badge b-passive">PASSIVO</span>
+<p>Spiega in 5-6 righe cosa fa <strong>Row-Level Security (RLS)</strong> in PostgreSQL, che problema risolve, e dai un esempio concreto di quando useresti RLS invece di filtrare solo nell'applicazione.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+RLS permette di definire <strong>policy per-riga</strong> su una tabella: quando un utente DB fa una query, PostgreSQL filtra automaticamente le righe in base a una condizione (policy) definita dal DBA. L'applicazione riceve già il subset filtrato, senza dover aggiungere <code>WHERE user_id = X</code> nella query.<br><br>
+<strong>Problema che risolve:</strong> in app multi-tenant o con authorization complessa, il filtering è ripetuto in centinaia di query. Un solo <code>SELECT * FROM orders</code> dimenticato senza <code>WHERE user_id</code> = data leak. Con RLS, anche se l'app sbaglia a filtrare, il DB enforza la policy.<br><br>
+<strong>Esempio concreto — SaaS multi-tenant:</strong> tabella <code>customers</code> condivisa tra tutti i tenant. Policy: <code>USING (tenant_id = current_setting('app.current_tenant')::int)</code>. L'app setta la variabile a inizio sessione. Anche se uno sviluppatore scrive <code>SELECT * FROM customers</code> senza <code>WHERE tenant_id</code>, riceve solo le righe del tenant corrente. Applicato anche alle query di reportistica via Metabase o BI tools — impossibile sbagliare il filtro.<br><br>
+<strong>Connessione a SQLi:</strong> anche se c'è SQLi che permette <code>UNION SELECT * FROM customers</code>, RLS continua a filtrare. È defense-in-depth al livello DB.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 14</span><h3>Scrivi una policy RLS per ordini</h3><span class="badge b-active">ATTIVO</span>
+<p>Data una tabella <code>orders(id, customer_id, product, amount)</code> con milioni di record da migliaia di clienti: scrivi il DDL completo PostgreSQL per abilitare RLS in modo che ciascun customer veda SOLO i propri ordini. Assumi che l'app setti <code>app.current_customer_id</code> a inizio sessione.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<pre><span style="color:#94A3B8">-- 1. Abilita RLS sulla tabella</span>
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+
+<span style="color:#94A3B8">-- 2. (Opzionale) enforce anche per table owner (senza questo, owner bypassa RLS)</span>
+ALTER TABLE orders FORCE ROW LEVEL SECURITY;
+
+<span style="color:#94A3B8">-- 3. Definisci la policy di SELECT per customer own rows</span>
+CREATE POLICY customer_own_orders ON orders
+    FOR SELECT
+    USING (customer_id = current_setting('app.current_customer_id')::int);
+
+<span style="color:#94A3B8">-- 4. Policy di INSERT: customer può creare solo proprio ordine</span>
+CREATE POLICY customer_insert_own ON orders
+    FOR INSERT
+    WITH CHECK (customer_id = current_setting('app.current_customer_id')::int);
+
+<span style="color:#94A3B8">-- 5. Policy di UPDATE/DELETE: solo propri ordini</span>
+CREATE POLICY customer_modify_own ON orders
+    FOR UPDATE USING (customer_id = current_setting('app.current_customer_id')::int)
+    WITH CHECK (customer_id = current_setting('app.current_customer_id')::int);
+
+CREATE POLICY customer_delete_own ON orders
+    FOR DELETE
+    USING (customer_id = current_setting('app.current_customer_id')::int);
+
+<span style="color:#94A3B8">-- 6. Grant al user applicativo (senza questo non può accedere affatto)</span>
+GRANT SELECT, INSERT, UPDATE, DELETE ON orders TO app_runtime;
+
+<span style="color:#94A3B8">-- 7. App setta il customer_id a inizio di ogni sessione/transazione</span>
+-- Dal lato applicativo, prima di ogni query:
+-- SET app.current_customer_id = '12345';</pre>
+<strong>Attenzione</strong>: <code>FORCE ROW LEVEL SECURITY</code> è fondamentale se il table owner è lo stesso user dell'app — altrimenti l'app bypassa RLS (owner ha bypass implicit). In produzione: tabella creata dall'user migration, RLS attiva anche per owner, app si connette come app_runtime.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 15</span><h3>RLS vs SQLi · come interagiscono</h3><span class="badge b-active">ATTIVO</span>
+<p>Scenario: app vulnerabile a SQLi. Utente malizioso paziente esegue <code>UNION SELECT * FROM orders</code> via sqlmap. La tabella orders ha RLS attiva come nel esercizio 14. Cosa otterrà l'attaccante? Cosa NON otterrà? Cosa significa per la strategia defense-in-depth?</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Cosa ottiene:</strong> l'attaccante ottiene <strong>SOLO le righe che matchano la policy RLS</strong>. Se la sessione ha <code>app.current_customer_id = 42</code>, il <code>UNION SELECT * FROM orders</code> ritorna solo gli ordini del customer 42 — gli stessi che l'app gli mostrava legittimamente. Nessun vantaggio.<br><br>
+<strong>Cosa NON ottiene:</strong> gli ordini degli altri customer. La SQLi ha bucato l'applicazione ma il DB filtra comunque. Questa è la magia di RLS.<br><br>
+<strong>Casi in cui RLS fallisce:</strong>
+<ol>
+<li>Se <code>app.current_customer_id</code> è settata a un ID "admin" speciale (0, -1, NULL) che bypassa la policy — attaccante potrebbe provare a manipolare la sessione.</li>
+<li>Se la policy usa <code>current_user</code> e l'app si collega come superuser — superuser bypassa RLS di default (serve <code>FORCE ROW LEVEL SECURITY</code>).</li>
+<li>Se c'è una tabella alternative senza RLS (es. un backup in schema <code>archive</code>) — attaccante la trova con <code>--dbs --tables</code>.</li>
+<li>Se l'attaccante trova modo di eseguire <code>SET app.current_customer_id = 999;</code> in una stacked query, può cambiare il contesto.</li>
+</ol>
+<strong>Defense-in-depth:</strong> RLS è una delle difese più potenti contro SQLi perché agisce a livello DB, indipendente dall'applicazione. Il pattern completo:
+<ol>
+<li>Prepared statements (elimina 99% SQLi)</li>
+<li>LPP DB user (limita privilegi in caso di bypass)</li>
+<li>RLS (filtra righe anche con SQLi riuscita)</li>
+<li>pgAudit (detection nei log in tempo reale)</li>
+<li>WAF (rate limit + pattern blocker)</li>
+</ol>
+Con tutti e 5 i livelli: SQLi funzionante → ottiene solo righe già autorizzate + viene loggata + WAF la blocca dopo N tentativi. Rischio residuo = minimo.
+</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 16</span><h3>Checklist finale setup L9</h3><span class="badge b-practical">PRATICO</span>
+<p>Prima di lunedì 4 maggio devi avere pronto:</p>
+<ol>
+<li>Container MongoDB 7 running (bind localhost)</li>
+<li>Container PostgreSQL 16 con extension pgAudit loaded</li>
+<li>Screenshot <code>docker ps</code> o <code>podman ps</code> che mostra entrambi i container running</li>
+<li>Screenshot <code>\dx pgaudit</code> output dentro il container Postgres</li>
+</ol>
+<p>Esegui lo script di setup, cattura i 2 screenshot richiesti, e verifica la checklist. Se qualcosa non funziona, posta la domanda nel canale Slack del corso.</p>
+<details><summary>Mostra script di riferimento</summary><div class="sol">
+<pre><span style="color:#94A3B8"># 1. MongoDB</span>
+$ podman run -d --name mongo -p 127.0.0.1:27017:27017 mongo:7
+
+<span style="color:#94A3B8"># 2. PostgreSQL con pgAudit (Postgres 16 ufficiale, poi installiamo pgAudit)</span>
+$ podman run -d --name pg -p 127.0.0.1:5432:5432 \
+    -e POSTGRES_PASSWORD=dev_only -e POSTGRES_DB=app postgres:16
+
+<span style="color:#94A3B8"># 3. Installa pgAudit dentro il container</span>
+$ podman exec -u root pg bash -c \
+    "apt-get update && apt-get install -y postgresql-16-pgaudit"
+
+<span style="color:#94A3B8"># 4. Abilita shared_preload_libraries</span>
+$ podman exec -u postgres pg psql -U postgres -c \
+    "ALTER SYSTEM SET shared_preload_libraries = 'pgaudit';"
+$ podman restart pg
+$ sleep 5
+
+<span style="color:#94A3B8"># 5. Crea extension</span>
+$ podman exec -u postgres pg psql -U postgres -d app -c \
+    "CREATE EXTENSION pgaudit;"
+
+<span style="color:#94A3B8"># 6. Verifica (questi gli screenshot da inviare)</span>
+$ podman ps
+$ podman exec -u postgres pg psql -U postgres -d app -c "\dx pgaudit"
+
+<span style="color:#94A3B8"># Output atteso:</span>
+<span style="color:#94A3B8"># CONTAINER ID  IMAGE         COMMAND      STATUS      PORTS                   NAMES</span>
+<span style="color:#94A3B8"># abc123...    mongo:7       mongod       Up 2m      127.0.0.1:27017-&gt;27017  mongo</span>
+<span style="color:#94A3B8"># def456...    postgres:16   postgres     Up 1m      127.0.0.1:5432-&gt;5432    pg</span>
+<span style="color:#94A3B8">#</span>
+<span style="color:#94A3B8">#                           List of installed extensions</span>
+<span style="color:#94A3B8">#  Name   | Version | Schema |           Description            </span>
+<span style="color:#94A3B8"># --------+---------+--------+----------------------------------</span>
+<span style="color:#94A3B8">#  pgaudit| 16.0    | public | provides auditing functionality</span></pre>
+<strong>Se qualcosa va male:</strong> <code>podman logs pg</code> mostra gli errori. Il più comune: <code>shared_preload_libraries</code> settato prima di installare pgAudit → il DB non parte. Soluzione: resetta con <code>ALTER SYSTEM RESET shared_preload_libraries</code>, installa, poi riapplica.
+</div></details></div>
+
+<div class="deliverable">
+<h3>📬 Deliverable obbligatori per L9</h3>
+<p>Entro <strong>domenica 3 maggio 2026 sera</strong>, invia al formatore via chat del corso:</p>
+<ol>
+<li>Screenshot di <code>podman ps</code> (o <code>docker ps</code>) con entrambi i container MongoDB e PostgreSQL running</li>
+<li>Screenshot di <code>\dx pgaudit</code> che mostra l'extension installata nel database <code>app</code></li>
+</ol>
+<p>Senza questi 2 screenshot non si parte con i lab della L9. In caso di problemi di setup, scrivi nel canale Slack entro venerdì sera per avere il tempo di risolvere.</p>
+</div>
+
+</div></body></html>
