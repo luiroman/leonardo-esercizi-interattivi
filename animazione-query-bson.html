@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL vs MongoDB · Stringa parsata vs Documento BSON — Animazione</title>
+<style>
+  :root{
+    --title:#0F4C75;
+    --text:#1E293B;
+    --muted:#64748B;
+    --bg:#F8F9FA;
+    --border:#E2E8F0;
+    --success:#059669;
+    --danger:#DC2626;
+    --warn:#D97706;
+    --sql:#7C3AED;       /* viola — lato SQL */
+    --mongo:#0891B2;     /* teal — lato Mongo */
+    --bson:#0E7490;      /* teal scuro — BSON */
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--text)}
+
+  .header{
+    background:var(--title);color:#fff;padding:14px 22px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .header h1{margin:0;font-size:1.05rem;font-weight:600;letter-spacing:0.2px}
+  .header .sub{font-size:0.78rem;opacity:0.85}
+
+  .stage{
+    position:relative;
+    background:#fff;
+    border:1px solid var(--border);
+    border-top:0;
+    border-radius:0 0 8px 8px;
+    margin:0 14px 14px;
+    height:580px;
+    overflow:hidden;
+  }
+
+  /* Divisore verticale tra i due mondi */
+  .divider{
+    position:absolute;left:50%;top:0;bottom:78px;width:1px;
+    background:var(--border);
+  }
+  .panel-label{
+    position:absolute;top:10px;font-size:0.72rem;font-weight:700;
+    letter-spacing:1.2px;text-transform:uppercase;
+    transition:opacity 0.5s;
+  }
+  .panel-label.left{left:18px;color:var(--sql)}
+  .panel-label.right{right:18px;color:var(--mongo)}
+
+  /* Stato "inattivo" del lato non in animazione */
+  .side-left, .side-right { transition: opacity 0.5s; }
+  .side-dim { opacity: 0.22; }
+
+  /* Box "codice sorgente" */
+  .src{
+    position:absolute;top:42px;width:42%;
+    background:#0F172A;color:#E2E8F0;
+    border-radius:8px;padding:10px 12px;
+    font-family:"SF Mono",Menlo,Consolas,monospace;font-size:0.78rem;
+    line-height:1.45;
+    box-shadow:0 4px 12px rgba(15,23,42,0.12);
+    min-height:78px;
+  }
+  .src.left{left:14px}
+  .src.right{right:14px}
+  .src .lbl{
+    color:#94A3B8;font-family:-apple-system,sans-serif;font-size:0.65rem;
+    text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;display:block;
+  }
+  .src .kw{color:#7DD3FC}
+  .src .str{color:#FCA5A5}
+  .src .op{color:#FCD34D}
+  .src .num{color:#A7F3D0}
+  .src .pun{color:#94A3B8}
+  .src .inj{
+    background:#7F1D1D;color:#FECACA;padding:1px 4px;border-radius:3px;
+    transition:background 0.4s;
+  }
+  .src .inj.hot{background:#DC2626;color:#fff;box-shadow:0 0 0 2px rgba(220,38,38,0.4)}
+
+  /* Pipeline boxes (sotto al sorgente, allineati verticalmente) */
+  .pipe{
+    position:absolute;width:42%;
+    border:1.5px solid var(--border);border-radius:8px;
+    background:#fff;
+    padding:7px 10px;
+    font-size:0.74rem;font-family:"SF Mono",Menlo,monospace;
+    color:var(--text);
+    opacity:0;transform:translateY(-6px) scale(0.97);
+    transition:opacity 0.4s, transform 0.4s, border-color 0.4s, background 0.4s;
+    min-height:34px;
+  }
+  .pipe.show{opacity:1;transform:translateY(0) scale(1)}
+  .pipe .lbl{
+    color:var(--muted);font-family:-apple-system,sans-serif;
+    font-size:0.6rem;text-transform:uppercase;letter-spacing:0.8px;
+    display:block;margin-bottom:2px;font-weight:600;
+  }
+  .pipe.left{left:14px;border-color:var(--sql)}
+  .pipe.right{right:14px;border-color:var(--mongo)}
+  .pipe.bson{background:#ECFEFF;border-color:var(--bson)}
+  .pipe.bson .lbl{color:var(--bson)}
+  .pipe.danger{border-color:var(--danger);background:#FEF2F2}
+  .pipe.danger .lbl{color:var(--danger)}
+  .pipe.ok{border-color:var(--success);background:#ECFDF5}
+  .pipe.ok .lbl{color:var(--success)}
+
+  /* Posizioni verticali della pipeline */
+  .pos-1{top:152px}
+  .pos-2{top:214px}
+  .pos-3{top:276px}
+  .pos-4{top:340px}
+  .pos-5{top:402px}
+
+  /* Frecce verticali tra i box */
+  .arrow{
+    position:absolute;width:0;height:0;
+    border-left:5px solid transparent;border-right:5px solid transparent;
+    border-top:7px solid var(--border);
+    opacity:0;transition:opacity 0.4s, border-top-color 0.4s;
+  }
+  .arrow.show{opacity:1}
+  .arrow.left{left:calc(14px + 21% - 5px)}
+  .arrow.right{right:calc(14px + 21% - 5px)}
+  .arr-pos-1{top:192px}
+  .arr-pos-2{top:254px}
+  .arr-pos-3{top:316px}
+  .arr-pos-4{top:380px}
+
+  /* Codice tipografico AST (mini) */
+  .ast{font-size:0.7rem;line-height:1.35;color:#475569}
+  .ast .node{color:var(--sql);font-weight:700}
+  .ast.broken .node{color:var(--danger)}
+
+  /* Verdict finale */
+  .verdict{
+    position:absolute;width:42%;
+    border-radius:8px;padding:8px 10px;
+    font-size:0.78rem;font-weight:600;
+    opacity:0;transform:translateY(-4px);
+    transition:opacity 0.4s, transform 0.4s;
+    text-align:center;
+    top:464px;
+  }
+  .verdict.show{opacity:1;transform:translateY(0)}
+  .verdict.left{left:14px}
+  .verdict.right{right:14px}
+  .verdict.ok{background:#D1FAE5;color:#065F46;border:1px solid var(--success)}
+  .verdict.bad{background:#FEE2E2;color:#7F1D1D;border:1px solid var(--danger)}
+
+  /* Status bar */
+  .statusbar{
+    position:absolute;left:0;right:0;bottom:0;height:78px;
+    background:var(--title);color:#fff;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 22px;gap:18px;
+  }
+  .status-left{flex:1;min-width:0}
+  .phase-label{
+    font-size:0.66rem;font-weight:700;letter-spacing:1.2px;
+    text-transform:uppercase;opacity:0.7;margin-bottom:2px;
+  }
+  .status-text{font-size:0.92rem;font-weight:500;letter-spacing:0.2px}
+  .dots{display:flex;gap:8px;align-items:center}
+  .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:rgba(255,255,255,0.28);transition:background 0.3s, transform 0.3s;
+  }
+  .dot.active{background:#fff;transform:scale(1.25)}
+  .dot.done{background:#34D399}
+
+  /* Controlli */
+  .controls{
+    display:flex;gap:8px;align-items:center;
+  }
+  .ctrl-btn{
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.25);
+    color:#fff;
+    padding:6px 12px;
+    border-radius:6px;
+    font-size:0.78rem;font-weight:500;
+    cursor:pointer;
+    font-family:inherit;
+    transition:background 0.2s, border-color 0.2s;
+    min-width:90px;
+    text-align:center;
+  }
+  .ctrl-btn:hover{background:rgba(255,255,255,0.22);border-color:rgba(255,255,255,0.45)}
+  .ctrl-btn:active{background:rgba(255,255,255,0.30)}
+  .ctrl-btn .icon{font-size:0.85rem;margin-right:4px}
+
+  .scenario-label{
+    position:absolute;top:10px;left:50%;transform:translateX(-50%);
+    font-size:0.7rem;font-weight:700;letter-spacing:1.5px;
+    text-transform:uppercase;color:var(--muted);
+    background:#fff;padding:3px 14px;border:1px solid var(--border);
+    border-radius:12px;
+    transition:color 0.4s, border-color 0.4s, background 0.4s;
+  }
+  .scenario-label.attack{color:var(--danger);border-color:var(--danger);background:#FEF2F2}
+  .scenario-label .side-tag{
+    color:var(--text);font-weight:600;letter-spacing:0.5px;
+    margin-left:8px;padding-left:8px;border-left:1px solid var(--border);
+  }
+  .scenario-label.attack .side-tag{color:var(--danger);border-left-color:var(--danger)}
+
+  footer{
+    text-align:center;font-size:0.72rem;color:var(--muted);
+    padding:8px 0 14px;
+  }
+
+  /* Mobile */
+  @media (max-width: 760px){
+    .stage{height:auto;min-height:1000px}
+    .src,.pipe,.verdict{position:relative;width:auto;left:auto!important;right:auto!important;margin:6px 14px}
+    .divider,.arrow,.panel-label{display:none}
+    .scenario-label{position:relative;display:inline-block;margin:10px auto;left:auto;transform:none}
+    .stage{display:flex;flex-direction:column;padding-bottom:90px}
+    .pos-1,.pos-2,.pos-3,.pos-4,.pos-5{top:auto}
+    .controls{flex-wrap:wrap;justify-content:flex-end}
+    .ctrl-btn{min-width:auto;padding:6px 10px}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📦 SQL vs MongoDB · Stringa parsata vs Documento BSON</h1>
+  <div class="sub">Lezione 9 · Modulo 2 · Login bypass via injection</div>
+</div>
+
+<div class="stage">
+
+  <div class="divider"></div>
+  <div class="panel-label left side-left">SQL · stringa testuale</div>
+  <div class="panel-label right side-right">MongoDB · documento strutturato</div>
+  <div class="scenario-label" id="scenario">
+    <span id="scenario-text">Scenario: autenticazione legittima</span>
+    <span class="side-tag" id="side-tag">— lato SQL</span>
+  </div>
+
+  <!-- ============ LATO SQL (sinistra) ============ -->
+  <div class="side-left">
+    <div class="src left" id="src-sql">
+      <span class="lbl">codice sorgente · stringa</span>
+      <span id="sql-code">
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> users
+<span class="kw">WHERE</span> email = <span class="str">'<span id="sql-email">mario@x.it</span>'</span>
+&nbsp;&nbsp;<span class="kw">AND</span> password = <span class="str">'<span id="sql-pwd">segreta</span>'</span>;
+      </span>
+    </div>
+
+    <div class="pipe left pos-1" id="pipe-sql-1">
+      <span class="lbl">① Lexer · tokenizza la stringa</span>
+      <code id="sql-tok-line">SELECT · * · FROM · users · WHERE · email · = · '<span id="sql-tok-email">mario@x.it</span>' · AND · password · = · '<span id="sql-tok-pwd">segreta</span>'</code>
+    </div>
+    <div class="arrow left arr-pos-1" id="arr-sql-1"></div>
+
+    <div class="pipe left pos-2" id="pipe-sql-2">
+      <span class="lbl">② Parser · costruisce l'albero sintattico</span>
+      <code id="sql-parse-line">parsing grammatica SQL…</code>
+    </div>
+    <div class="arrow left arr-pos-2" id="arr-sql-2"></div>
+
+    <div class="pipe left pos-3" id="pipe-sql-3">
+      <span class="lbl">③ AST · albero sintattico astratto</span>
+      <div class="ast" id="sql-ast">
+        <span class="node">SELECT</span> ─ * <br>
+        &nbsp;&nbsp;<span class="node">FROM</span> ─ users <br>
+        &nbsp;&nbsp;<span class="node">WHERE</span> ─ email = 'mario@x.it' <span class="node">AND</span> password = 'segreta'
+      </div>
+    </div>
+    <div class="arrow left arr-pos-3" id="arr-sql-3"></div>
+
+    <div class="pipe left pos-4" id="pipe-sql-4">
+      <span class="lbl">④ Query planner · piano di esecuzione</span>
+      <code>Index Scan on users(email) → Filter(password)</code>
+    </div>
+    <div class="arrow left arr-pos-4" id="arr-sql-4"></div>
+
+    <div class="pipe left pos-5" id="pipe-sql-5">
+      <span class="lbl">⑤ Risultato</span>
+      <code id="sql-result">1 riga · login OK per mario@x.it</code>
+    </div>
+
+    <div class="verdict left ok" id="verdict-sql">✓ Autenticazione corretta</div>
+  </div>
+
+
+  <!-- ============ LATO MONGO (destra) ============ -->
+  <div class="side-right">
+    <div class="src right" id="src-mongo">
+      <span class="lbl">codice sorgente · oggetto / documento</span>
+      <span id="mongo-code">
+db.users.<span class="kw">find</span>(<span class="pun">{</span>
+&nbsp;&nbsp;email: <span class="str">"<span id="mongo-email">mario@x.it</span>"</span>,
+&nbsp;&nbsp;password: <span class="str">"<span id="mongo-pwd">segreta</span>"</span>
+<span class="pun">}</span>)
+      </span>
+    </div>
+
+    <div class="pipe right pos-1" id="pipe-mongo-1">
+      <span class="lbl">① Driver · serializza in BSON (binario)</span>
+      <code style="color:var(--bson)">\x4C\x00 \x02email\x00 mario@x.it\x00 \x02password\x00 segreta\x00 \x00</code>
+    </div>
+    <div class="arrow right arr-pos-1" id="arr-mongo-1"></div>
+
+    <div class="pipe right pos-2 bson" id="pipe-mongo-2">
+      <span class="lbl">② Wire protocol · TCP → server</span>
+      <code>OP_MSG · BSON payload</code>
+    </div>
+    <div class="arrow right arr-pos-2" id="arr-mongo-2"></div>
+
+    <div class="pipe right pos-3" id="pipe-mongo-3">
+      <span class="lbl">③ Server · deserializza · documento già strutturato</span>
+      <div class="ast" id="mongo-doc">
+        <span class="node" style="color:var(--mongo)">{</span><br>
+        &nbsp;&nbsp;email: <span style="color:var(--text)">"mario@x.it"</span>,<br>
+        &nbsp;&nbsp;password: <span style="color:var(--text)">"segreta"</span><br>
+        <span class="node" style="color:var(--mongo)">}</span>
+      </div>
+    </div>
+    <div class="arrow right arr-pos-3" id="arr-mongo-3"></div>
+
+    <div class="pipe right pos-4" id="pipe-mongo-4">
+      <span class="lbl">④ Query planner · piano di esecuzione</span>
+      <code>IXSCAN { email: 1 } → match password</code>
+    </div>
+    <div class="arrow right arr-pos-4" id="arr-mongo-4"></div>
+
+    <div class="pipe right pos-5" id="pipe-mongo-5">
+      <span class="lbl">⑤ Risultato</span>
+      <code id="mongo-result">1 documento · login OK per mario@x.it</code>
+    </div>
+
+    <div class="verdict right ok" id="verdict-mongo">✓ Autenticazione corretta</div>
+  </div>
+
+
+  <!-- ============ STATUS BAR ============ -->
+  <div class="statusbar">
+    <div class="status-left">
+      <div class="phase-label" id="phase">FASE 1 / 4 · LECITO · SQL</div>
+      <div class="status-text" id="status">Premi ▶ per iniziare l'animazione</div>
+    </div>
+    <div class="dots">
+      <div class="dot" data-i="0"></div>
+      <div class="dot" data-i="1"></div>
+      <div class="dot" data-i="2"></div>
+      <div class="dot" data-i="3"></div>
+      <div class="dot" data-i="4"></div>
+      <div class="dot" data-i="5"></div>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" id="btn-play" title="Play / Pausa">
+        <span class="icon" id="play-icon">▶</span><span id="play-text">Play</span>
+      </button>
+      <button class="ctrl-btn" id="btn-step" title="Avanti di uno step">
+        <span class="icon">⏭</span>Avanti
+      </button>
+      <button class="ctrl-btn" id="btn-reset" title="Riavvia da capo">
+        <span class="icon">↻</span>Reset
+      </button>
+    </div>
+  </div>
+</div>
+
+<footer>Corso Cybersecurity — Leonardo SpA · Modulo 2 — Compute &amp; Database</footer>
+
+<script>
+  // =========================================================================
+  // CONFIG
+  // =========================================================================
+  const STEP = 3400;
+  const STEP_LONG = 5800;
+  const PAUSE_BETWEEN_PHASES = 1800;
+
+  // =========================================================================
+  // STATO MACCHINA
+  // =========================================================================
+  // L'animazione è una sequenza di "atti". Ogni atto è una funzione async che
+  // esegue un cambio visivo + setStatus. waitStep() li serializza supportando
+  // pause e step manuale.
+  //
+  // Stato globale:
+  //   playing: bool — se true, gli act scorrono in automatico
+  //   stepping: bool — se true, esegue UN solo act poi si rimette in pausa
+  //   abortToken: incrementato a ogni reset; le wait controllano se è cambiato
+  //   currentActs: lista di funzioni da eseguire
+  //   actIdx: indice prossimo act da eseguire
+  // =========================================================================
+
+  let playing = false;
+  let stepping = false;
+  let abortToken = 0;
+  let currentActs = [];
+  let actIdx = 0;
+  let runnerActive = false;
+
+  function $(id){ return document.getElementById(id); }
+  function show(el){ if(typeof el==='string') el=$(el); el && el.classList.add('show'); }
+  function hide(el){ if(typeof el==='string') el=$(el); el && el.classList.remove('show'); }
+
+  // wait sensibile a play/pausa/abort. Risolve quando è passato il tempo
+  // OPPURE quando viene chiamato un Reset (in tal caso solleva 'aborted').
+  function waitInterruptible(ms){
+    return new Promise((resolve, reject) => {
+      const myToken = abortToken;
+      const startedAt = Date.now();
+      let remaining = ms;
+      let tickHandle = null;
+      let lastResume = Date.now();
+
+      function done(){
+        if(tickHandle) clearTimeout(tickHandle);
+        if(myToken !== abortToken) reject('aborted'); else resolve();
+      }
+
+      function tick(){
+        if(myToken !== abortToken){ done(); return; }
+        if(!playing && !stepping){
+          // pausa: non scaliamo il tempo, riproviamo tra poco
+          tickHandle = setTimeout(tick, 100);
+          return;
+        }
+        const now = Date.now();
+        remaining -= (now - lastResume);
+        lastResume = now;
+        if(remaining <= 0){ done(); return; }
+        tickHandle = setTimeout(tick, Math.min(remaining, 150));
+      }
+
+      tick();
+    });
+  }
+
+  function setStatus(t){ $('status').textContent = t; }
+  function setPhase(t){ $('phase').textContent = t; }
+
+  function setScenario(text, sideTag, attack){
+    $('scenario-text').textContent = 'Scenario: ' + text;
+    $('side-tag').textContent = sideTag ? '— ' + sideTag : '';
+    $('scenario').classList.toggle('attack', !!attack);
+  }
+
+  function dotActive(i){
+    document.querySelectorAll('.dot').forEach((d, idx) => {
+      d.classList.remove('active','done');
+      if(idx < i) d.classList.add('done');
+      if(idx === i) d.classList.add('active');
+    });
+  }
+
+  function dimSide(side){
+    // side: 'sql' | 'mongo' | 'both'
+    const L = document.querySelectorAll('.side-left');
+    const R = document.querySelectorAll('.side-right');
+    L.forEach(el => el.classList.toggle('side-dim', side === 'mongo'));
+    R.forEach(el => el.classList.toggle('side-dim', side === 'sql'));
+  }
+
+  function clearSide(side){
+    // Rimuove show, danger, ok dai pipe, arrow, verdict del lato indicato
+    const sel = side === 'sql' ? '.left' : '.right';
+    document.querySelectorAll('.pipe' + sel).forEach(p => {
+      p.classList.remove('show','danger','ok');
+      if(p.id === 'pipe-mongo-2') p.classList.add('bson');
+    });
+    document.querySelectorAll('.arrow' + sel).forEach(a => a.classList.remove('show'));
+    document.querySelectorAll('.verdict' + sel).forEach(v => v.classList.remove('show','bad','ok'));
+    if(side === 'sql') $('verdict-sql').classList.add('ok');
+    else $('verdict-mongo').classList.add('ok');
+  }
+
+  // =========================================================================
+  // CONTENUTI: aggiornano il sorgente per il caso lecito o injection
+  // =========================================================================
+
+  function setSqlLegit(){
+    $('sql-email').textContent = 'mario@x.it';
+    $('sql-pwd').textContent = 'segreta';
+    $('sql-tok-email').innerHTML = 'mario@x.it';
+    $('sql-tok-pwd').innerHTML = 'segreta';
+    $('sql-tok-email').className = '';
+    $('sql-tok-pwd').className = '';
+    $('sql-ast').classList.remove('broken');
+    $('sql-ast').innerHTML =
+      '<span class="node">SELECT</span> ─ * <br>' +
+      '&nbsp;&nbsp;<span class="node">FROM</span> ─ users <br>' +
+      '&nbsp;&nbsp;<span class="node">WHERE</span> ─ email = \'mario@x.it\' <span class="node">AND</span> password = \'segreta\'';
+    $('sql-result').textContent = '1 riga · login OK per mario@x.it';
+    $('verdict-sql').textContent = '✓ Autenticazione corretta';
+  }
+
+  function setSqlAttack(){
+    // classico: email = admin'-- (l'apostrofo chiude la stringa, -- commenta il resto)
+    $('sql-email').innerHTML = '<span class="inj">admin\'--</span>';
+    $('sql-pwd').textContent = 'qualsiasi';
+    $('sql-tok-email').innerHTML = '<span class="inj hot">admin\'--</span>';
+    $('sql-tok-pwd').innerHTML = 'qualsiasi';
+    $('sql-ast').classList.add('broken');
+    $('sql-ast').innerHTML =
+      '<span class="node">SELECT</span> ─ * <br>' +
+      '&nbsp;&nbsp;<span class="node">FROM</span> ─ users <br>' +
+      '&nbsp;&nbsp;<span class="node">WHERE</span> ─ email = \'admin\' <span style="color:var(--muted)">— resto commentato</span>';
+    $('sql-result').textContent = '⚠ Login OK come admin · password mai verificata';
+  }
+
+  function setMongoLegit(){
+    $('mongo-code').innerHTML =
+      'db.users.<span class="kw">find</span>(<span class="pun">{</span>\n' +
+      '&nbsp;&nbsp;email: <span class="str">"<span id="mongo-email">mario@x.it</span>"</span>,\n' +
+      '&nbsp;&nbsp;password: <span class="str">"<span id="mongo-pwd">segreta</span>"</span>\n' +
+      '<span class="pun">}</span>)';
+    $('mongo-doc').innerHTML =
+      '<span class="node" style="color:var(--mongo)">{</span><br>' +
+      '&nbsp;&nbsp;email: <span style="color:var(--text)">"mario@x.it"</span>,<br>' +
+      '&nbsp;&nbsp;password: <span style="color:var(--text)">"segreta"</span><br>' +
+      '<span class="node" style="color:var(--mongo)">}</span>';
+    $('mongo-result').textContent = '1 documento · login OK per mario@x.it';
+    $('verdict-mongo').textContent = '✓ Autenticazione corretta';
+  }
+
+  function setMongoAttack(){
+    // L'utente invia password come oggetto: { $ne: null }
+    $('mongo-code').innerHTML =
+      'db.users.<span class="kw">find</span>(<span class="pun">{</span>\n' +
+      '&nbsp;&nbsp;email: <span class="str">"<span id="mongo-email">admin@x.it</span>"</span>,\n' +
+      '&nbsp;&nbsp;password: <span class="inj">{ <span class="op">$ne</span>: null }</span>\n' +
+      '<span class="pun">}</span>)';
+    $('mongo-doc').innerHTML =
+      '<span class="node" style="color:var(--mongo)">{</span><br>' +
+      '&nbsp;&nbsp;email: <span style="color:var(--text)">"admin@x.it"</span>,<br>' +
+      '&nbsp;&nbsp;password: <span style="color:var(--danger);font-weight:600">{ $ne: null }</span><br>' +
+      '<span class="node" style="color:var(--mongo)">}</span>';
+    $('mongo-result').textContent = '⚠ Login OK come admin · password mai confrontata';
+  }
+
+  // =========================================================================
+  // RESET TOTALE
+  // =========================================================================
+  function resetAll(){
+    abortToken++;
+    playing = false;
+    stepping = false;
+    actIdx = 0;
+    setPlayUI(false);
+    clearSide('sql');
+    clearSide('mongo');
+    dimSide('both'); // entrambi visibili
+    document.querySelectorAll('.dot').forEach(d => d.classList.remove('active','done'));
+    setSqlLegit();
+    setMongoLegit();
+    $('scenario').classList.remove('attack');
+    setScenario('autenticazione legittima', 'lato SQL', false);
+    setPhase('FASE 1 / 4 · LECITO · SQL');
+    setStatus('Premi ▶ per iniziare l\'animazione');
+  }
+
+  // =========================================================================
+  // COSTRUZIONE DELLA SEQUENZA DI ACT
+  // =========================================================================
+
+  function buildPhaseActs(side, attack, phaseNum){
+    // Per uno dei 4 atti (lecito-sql, lecito-mongo, attacco-sql, attacco-mongo)
+    // ritorna un array di funzioni async che eseguono i 6 step + verdetto.
+    const isSql = (side === 'sql');
+    const phaseLabel = `FASE ${phaseNum} / 4 · ${attack ? 'ATTACCO' : 'LECITO'} · ${isSql ? 'SQL' : 'MONGO'}`;
+    const sideTag = isSql ? 'lato SQL' : 'lato MongoDB';
+    const scenarioText = attack ? 'login bypass via injection' : 'autenticazione legittima';
+
+    const acts = [];
+
+    // Atto 0: setup scena
+    acts.push(async () => {
+      // Pulisce il lato che si sta per animare
+      clearSide(side);
+      // Imposta sorgente lecito o malevolo
+      if(isSql){
+        if(attack) setSqlAttack(); else setSqlLegit();
+      } else {
+        if(attack) setMongoAttack(); else setMongoLegit();
+      }
+      // Mantiene visibile il lato precedente (se c'è) ma offuscato
+      // Per la FASE 1 lecito-sql, il lato Mongo è azzerato e dimmato
+      // Per la FASE 2 lecito-mongo, il lato SQL è già completato — lo lasciamo "done" ma dimmato
+      // Per le fasi attacco, azzeriamo il lato che non si anima e lo lasciamo dimmato
+      if(phaseNum === 1){
+        // azzera anche il mongo (era pulito, ma per sicurezza)
+        clearSide('mongo');
+      } else if(phaseNum === 2){
+        // SQL completato dalla fase 1, lo lasciamo ma dim
+      } else if(phaseNum === 3){
+        // attacco-sql: azzera tutto e ricomincia con dati attacco
+        clearSide('sql');
+        clearSide('mongo'); // anche mongo si pulisce, perché nella fase 3 mostrerà solo sql attacco
+      } else if(phaseNum === 4){
+        // attacco-mongo: lascia sql attacco visibile come riferimento
+      }
+      dimSide(side);
+      setPhase(phaseLabel);
+      setScenario(scenarioText, sideTag, attack);
+      dotActive(0);
+      setStatus(isSql
+        ? (attack ? 'L\'utente invia email = "admin\'--" — il lexer accoglie i caratteri come parte della stringa'
+                  : 'Codice sorgente: una stringa SQL con i parametri concatenati')
+        : (attack ? 'L\'utente invia password come oggetto { $ne: null } — il driver costruisce un documento valido'
+                  : 'Codice sorgente: un oggetto JS — la struttura è già qui'));
+      await waitInterruptible(STEP);
+    });
+
+    // Atto 1: step ①
+    acts.push(async () => {
+      dotActive(1);
+      const id1 = isSql ? 'pipe-sql-1' : 'pipe-mongo-1';
+      const arr1 = isSql ? 'arr-sql-1' : 'arr-mongo-1';
+      show(id1); show(arr1);
+      setStatus(isSql
+        ? 'Step ① — il lexer spezza la stringa in token (parole chiave, operatori, valori)'
+        : 'Step ① — il driver serializza l\'oggetto in BSON, formato binario per il filo');
+      await waitInterruptible(STEP);
+    });
+
+    // Atto 2: step ②
+    acts.push(async () => {
+      dotActive(2);
+      const id = isSql ? 'pipe-sql-2' : 'pipe-mongo-2';
+      const arr = isSql ? 'arr-sql-2' : 'arr-mongo-2';
+      show(id); show(arr);
+      if(attack){
+        if(isSql) $('sql-parse-line').innerHTML = 'l\'apostrofo dentro \'admin\'--\' chiude la stringa → nuova sintassi';
+        else $('sql-parse-line') /* no-op for mongo */;
+      } else if(isSql){
+        $('sql-parse-line').innerHTML = 'parsing grammatica SQL…';
+      }
+      setStatus(isSql
+        ? (attack ? 'Step ② — l\'apostrofo dentro l\'input chiude la stringa: il parser trova nuova sintassi'
+                  : 'Step ② — il parser applica la grammatica SQL ai token')
+        : 'Step ② — il BSON viaggia in TCP fino al server (wire protocol)');
+      await waitInterruptible(STEP);
+    });
+
+    // Atto 3: step ③
+    acts.push(async () => {
+      dotActive(3);
+      const id = isSql ? 'pipe-sql-3' : 'pipe-mongo-3';
+      const arr = isSql ? 'arr-sql-3' : 'arr-mongo-3';
+      show(id); show(arr);
+      if(attack){
+        const dangerEl = $(id);
+        dangerEl.classList.add('danger');
+      }
+      setStatus(isSql
+        ? (attack ? 'Step ③ — l\'AST cambia: il check sulla password è dopo i caratteri "--" e viene COMMENTATO'
+                  : 'Step ③ — nasce ora la struttura logica della query (AST)')
+        : (attack ? 'Step ③ — il documento è valido, ma password non è una stringa: è un sotto-documento operatore'
+                  : 'Step ③ — il server deserializza il BSON: la struttura era già nel sorgente, qui torna a essere documento'));
+      await waitInterruptible(STEP);
+    });
+
+    // Atto 4: step ④
+    acts.push(async () => {
+      dotActive(4);
+      const id = isSql ? 'pipe-sql-4' : 'pipe-mongo-4';
+      const arr = isSql ? 'arr-sql-4' : 'arr-mongo-4';
+      show(id); show(arr);
+      setStatus('Step ④ — il query planner sceglie il piano di esecuzione (il database non sa se è un attacco)');
+      await waitInterruptible(STEP);
+    });
+
+    // Atto 5: step ⑤ + verdetto
+    acts.push(async () => {
+      dotActive(5);
+      const id5 = isSql ? 'pipe-sql-5' : 'pipe-mongo-5';
+      show(id5);
+      const v = isSql ? $('verdict-sql') : $('verdict-mongo');
+      if(attack){
+        $(id5).classList.add('danger');
+        v.classList.remove('ok'); v.classList.add('bad');
+        v.textContent = isSql
+          ? '✗ Iniezione SINTATTICA — il parser ha letto una query diversa'
+          : '✗ Iniezione STRUTTURALE — il valore è diventato un operatore';
+      } else {
+        v.classList.add('ok');
+        v.textContent = '✓ Autenticazione corretta';
+      }
+      show(v);
+      setStatus(isSql
+        ? (attack ? 'Risultato — login OK come admin senza conoscere la password (SQL injection)'
+                  : 'Risultato — la query funziona: 1 utente trovato, login OK')
+        : (attack ? 'Risultato — login OK come admin: { $ne: null } è vero per qualunque password (NoSQL injection)'
+                  : 'Risultato — la query funziona: 1 documento trovato, login OK'));
+      await waitInterruptible(STEP_LONG);
+    });
+
+    // Atto 6: pausa breve tra fasi (tranne dopo l'ultima)
+    if(phaseNum < 4){
+      acts.push(async () => {
+        await waitInterruptible(PAUSE_BETWEEN_PHASES);
+      });
+    } else {
+      // Ultimo atto: messaggio di chiusura riepilogativo
+      acts.push(async () => {
+        dimSide('both');
+        setPhase('CONFRONTO FINALE');
+        setStatus('Stesso effetto (login bypass), due meccanismi diversi: stringa parsata vs documento strutturato');
+        await waitInterruptible(STEP_LONG);
+      });
+    }
+
+    return acts;
+  }
+
+  function buildAllActs(){
+    return [
+      ...buildPhaseActs('sql', false, 1),
+      ...buildPhaseActs('mongo', false, 2),
+      ...buildPhaseActs('sql', true, 3),
+      ...buildPhaseActs('mongo', true, 4),
+    ];
+  }
+
+  // =========================================================================
+  // RUNNER: esegue gli act in sequenza, rispettando playing/stepping
+  // =========================================================================
+
+  async function runner(){
+    if(runnerActive) return;
+    runnerActive = true;
+    const myToken = abortToken;
+    try {
+      while(actIdx < currentActs.length){
+        if(myToken !== abortToken) break;
+        if(!playing && !stepping){
+          // in pausa: aspetta
+          await new Promise(r => setTimeout(r, 80));
+          continue;
+        }
+        const act = currentActs[actIdx];
+        actIdx++;
+        try { await act(); }
+        catch(e){ if(e === 'aborted') break; else throw e; }
+        if(stepping){
+          stepping = false;
+          playing = false;
+          setPlayUI(false);
+          // cambia label: ora è in pausa dopo step
+          if(actIdx < currentActs.length){
+            // mantiene il setStatus dell'act eseguito; aggiunge hint
+            const cur = $('status').textContent;
+            if(!cur.includes('▶')) setStatus(cur + '  ·  premi ▶ o ⏭ per continuare');
+          }
+        }
+      }
+      if(actIdx >= currentActs.length){
+        // animazione completata — resta in stato finale, non riavvia automaticamente
+        playing = false;
+        setPlayUI(false);
+        $('btn-play').disabled = true;
+        $('btn-step').disabled = true;
+      }
+    } finally {
+      runnerActive = false;
+    }
+  }
+
+  // =========================================================================
+  // CONTROLLI UI
+  // =========================================================================
+
+  function setPlayUI(isPlaying){
+    if(isPlaying){
+      $('play-icon').textContent = '⏸';
+      $('play-text').textContent = 'Pausa';
+    } else {
+      $('play-icon').textContent = '▶';
+      $('play-text').textContent = 'Play';
+    }
+  }
+
+  function onPlayPause(){
+    if(actIdx >= currentActs.length){
+      // se animazione finita, il pulsante è disabilitato — niente da fare
+      return;
+    }
+    playing = !playing;
+    setPlayUI(playing);
+    if(playing){
+      runner();
+    }
+  }
+
+  function onStep(){
+    if(actIdx >= currentActs.length) return;
+    stepping = true;
+    runner();
+  }
+
+  function onReset(){
+    resetAll();
+    currentActs = buildAllActs();
+    actIdx = 0;
+    $('btn-play').disabled = false;
+    $('btn-step').disabled = false;
+  }
+
+  // =========================================================================
+  // INIZIALIZZAZIONE
+  // =========================================================================
+  window.addEventListener('load', () => {
+    resetAll();
+    currentActs = buildAllActs();
+    $('btn-play').addEventListener('click', onPlayPause);
+    $('btn-step').addEventListener('click', onStep);
+    $('btn-reset').addEventListener('click', onReset);
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autenticazione realistica · Pattern hash + bcrypt — Animazione</title>
+<style>
+  :root{
+    --title:#0F4C75;
+    --text:#1E293B;
+    --muted:#64748B;
+    --bg:#F8F9FA;
+    --border:#E2E8F0;
+    --success:#059669;
+    --danger:#DC2626;
+    --warn:#D97706;
+    --sql:#7C3AED;
+    --mongo:#0891B2;
+    --bson:#0E7490;
+    --app:#B45309;
+    --db:#0F4C75;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--text)}
+
+  .header{
+    background:var(--title);color:#fff;padding:14px 22px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .header h1{margin:0;font-size:1.05rem;font-weight:600;letter-spacing:0.2px}
+  .header .sub{font-size:0.78rem;opacity:0.85}
+
+  .stage{
+    position:relative;
+    background:#fff;
+    border:1px solid var(--border);
+    border-top:0;
+    border-radius:0 0 8px 8px;
+    margin:0 14px 14px;
+    height:680px;
+    overflow:hidden;
+  }
+
+  .zone{
+    position:absolute;left:14px;right:14px;
+    border-radius:10px;
+    transition:opacity 0.5s, background 0.4s;
+  }
+  .zone-app{
+    top:14px;height:230px;
+    background:linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 100%);
+    border:1px solid #FCD34D;
+  }
+  .zone-net{
+    top:248px;height:54px;
+    background:transparent;
+  }
+  .net-label{
+    position:absolute;left:50%;top:50%;transform:translate(-50%, -50%);
+    font-size:0.7rem;font-weight:600;letter-spacing:0.8px;
+    color:var(--muted);
+    background:#fff;padding:3px 12px;border-radius:12px;
+    border:1px dashed var(--border);
+    z-index:1;
+  }
+  .zone-db{
+    top:306px;height:230px;
+    background:linear-gradient(180deg, #EFF6FF 0%, #DBEAFE 100%);
+    border:1px solid #93C5FD;
+  }
+  .zone-label{
+    position:absolute;
+    font-size:0.68rem;font-weight:700;letter-spacing:1.2px;
+    text-transform:uppercase;
+    padding:3px 10px;border-radius:4px;
+    background:#fff;
+    top:8px;
+  }
+  .zone-app .zone-label{left:14px;color:var(--app);border:1px solid #FCD34D}
+  .zone-db .zone-label{left:14px;color:var(--db);border:1px solid #93C5FD}
+
+  .zone.attack-mode.zone-app{
+    background:linear-gradient(180deg, #FEF2F2 0%, #FEE2E2 100%);
+    border-color:#FCA5A5;
+  }
+  .zone.attack-mode.zone-db{
+    background:linear-gradient(180deg, #FEF2F2 0%, #FECACA 100%);
+    border-color:#FCA5A5;
+  }
+
+  .box{
+    position:absolute;
+    border:1.5px solid var(--border);
+    border-radius:8px;
+    background:#fff;
+    padding:8px 12px;
+    font-size:0.78rem;
+    font-family:"SF Mono",Menlo,Consolas,monospace;
+    color:var(--text);
+    opacity:0;transform:translateY(-4px) scale(0.98);
+    transition:opacity 0.4s, transform 0.4s, border-color 0.4s, box-shadow 0.4s;
+    line-height:1.4;
+  }
+  .box.show{opacity:1;transform:translateY(0) scale(1)}
+  .box .lbl{
+    color:var(--muted);
+    font-family:-apple-system,sans-serif;
+    font-size:0.6rem;text-transform:uppercase;letter-spacing:0.8px;
+    display:block;margin-bottom:3px;font-weight:700;
+  }
+  .box.app{border-color:#F59E0B}
+  .box.app .lbl{color:var(--app)}
+  .box.db{border-color:#3B82F6}
+  .box.db .lbl{color:var(--db)}
+  .box.code-dark{
+    background:#0F172A;color:#E2E8F0;border-color:#1E293B;
+  }
+  .box.code-dark .lbl{color:#94A3B8}
+  .box.highlight{box-shadow:0 0 0 3px rgba(34,197,94,0.18)}
+  .box.highlight-attack{box-shadow:0 0 0 3px rgba(220,38,38,0.25)}
+  .box.danger{border-color:var(--danger);background:#FEF2F2}
+  .box.danger .lbl{color:var(--danger)}
+  .box.success{border-color:var(--success);background:#ECFDF5}
+
+  .kw{color:#7DD3FC}
+  .str{color:#FCA5A5}
+  .num{color:#A7F3D0}
+  .pun{color:#94A3B8}
+  .fn{color:#C4B5FD}
+  .placeholder{color:#FCD34D;background:rgba(251,191,36,0.1);padding:0 3px;border-radius:3px}
+  .true{color:#34D399;font-weight:700}
+  .false{color:#F87171;font-weight:700}
+  .inj{
+    background:#7F1D1D;color:#FECACA;padding:1px 4px;border-radius:3px;
+  }
+  .inj.hot{background:#DC2626;color:#fff;box-shadow:0 0 0 2px rgba(220,38,38,0.4)}
+
+  .app-input{       top:50px;  left:30px;   width:46%; }
+  .app-call-query{  top:50px;  right:30px;  width:46%; }
+  .app-receive{     top:140px; left:30px;   width:46%; min-height:78px; }
+  .app-bcrypt{      top:140px; right:30px;  width:46%; min-height:78px; }
+  .db-query{        top:354px; left:30px;   width:46%;  min-height:78px;}
+  .db-table{        top:354px; right:30px;  width:46%;  min-height:78px;}
+
+  /* Wordlist box (overlay durante attacco mongo) */
+  .wordlist-box{
+    position:absolute;
+    top:454px; left:30px; right:30px;
+    border:1.5px dashed var(--danger);
+    border-radius:8px;
+    background:#FFF7ED;
+    padding:8px 12px;
+    font-size:0.74rem;
+    font-family:"SF Mono",Menlo,Consolas,monospace;
+    color:var(--text);
+    opacity:0;
+    transition:opacity 0.4s;
+    line-height:1.4;
+  }
+  .wordlist-box.show{opacity:1}
+  .wordlist-box .lbl{
+    color:var(--danger);
+    font-family:-apple-system,sans-serif;
+    font-size:0.62rem;text-transform:uppercase;letter-spacing:0.8px;
+    display:block;margin-bottom:4px;font-weight:700;
+  }
+  .wordlist-attempts{
+    display:grid;grid-template-columns:1fr 1fr 1fr;
+    gap:3px 12px;font-size:0.72rem;
+  }
+  .wordlist-attempts .a{color:var(--muted)}
+  .wordlist-attempts .a.try{color:var(--text)}
+  .wordlist-attempts .a.miss{color:var(--muted);text-decoration:line-through}
+  .wordlist-attempts .a.hit{color:var(--success);font-weight:700}
+
+  .verdict{
+    position:absolute;
+    left:14px;right:14px;
+    top:548px;
+    border-radius:8px;
+    padding:8px 14px;
+    font-size:0.82rem;font-weight:600;
+    text-align:center;
+    opacity:0;transform:translateY(-4px);
+    transition:opacity 0.4s, transform 0.4s;
+  }
+  .verdict.show{opacity:1;transform:translateY(0)}
+  .verdict.ok{background:#D1FAE5;color:#065F46;border:1px solid var(--success)}
+  .verdict.bad{background:#FEE2E2;color:#7F1D1D;border:1px solid var(--danger)}
+  .verdict.warn{background:#FFF7ED;color:#9A3412;border:1px solid var(--warn)}
+
+  .arrow-flow{
+    position:absolute;
+    width:46%;
+    left:30px;
+  }
+  .arrow-flow.right{ left:auto; right:30px; }
+  .arrow-down{ top:248px; height:54px; }
+  .arrow-up  { top:248px; height:54px; }
+
+  .arrow-line{
+    position:absolute;
+    left:50%;top:0;bottom:0;
+    width:2px;
+    background:#CBD5E1;
+    transition:background 0.4s;
+  }
+  .arrow-line.active{background:var(--db)}
+  .arrow-line.up.active{background:var(--success)}
+  .arrow-line.attack.active{background:var(--danger)}
+  .arrow-line.up.attack.active{background:var(--danger)}
+
+  .arrow-head{
+    position:absolute;
+    left:calc(50% - 6px);
+    width:0;height:0;
+    border-left:6px solid transparent;
+    border-right:6px solid transparent;
+    opacity:0.45;
+    transition:opacity 0.3s, border-top-color 0.3s, border-bottom-color 0.3s;
+  }
+  .arrow-head.down{
+    bottom:0;
+    border-top:8px solid #94A3B8;
+  }
+  .arrow-head.up{
+    top:0;
+    border-bottom:8px solid #94A3B8;
+  }
+  .arrow-head.show{opacity:1}
+  .arrow-head.show.down{border-top-color:var(--db)}
+  .arrow-head.show.up{border-bottom-color:var(--success)}
+  .arrow-head.show.attack.down{border-top-color:var(--danger)}
+  .arrow-head.show.attack.up{border-bottom-color:var(--danger)}
+
+  .packet{
+    position:absolute;
+    left:calc(50% - 7px);
+    width:14px;height:14px;
+    border-radius:50%;
+    background:var(--db);
+    opacity:0;
+    transition:opacity 0.2s;
+    box-shadow:0 0 8px rgba(15,76,117,0.4);
+  }
+  .packet.attack{
+    background:var(--danger);
+    box-shadow:0 0 8px rgba(220,38,38,0.5);
+  }
+  .packet.show{opacity:1}
+  .packet.travel-down{
+    animation:travelDown 1100ms ease-in-out forwards;
+  }
+  .packet.travel-up{
+    animation:travelUp 1100ms ease-in-out forwards;
+    background:var(--success);
+    box-shadow:0 0 8px rgba(5,150,105,0.4);
+  }
+  .packet.travel-up.attack{
+    background:var(--danger);
+    box-shadow:0 0 8px rgba(220,38,38,0.5);
+  }
+  @keyframes travelDown{
+    0%   { top:0;    opacity:1 }
+    90%  { top:calc(100% - 14px); opacity:1 }
+    100% { top:calc(100% - 14px); opacity:0 }
+  }
+  @keyframes travelUp{
+    0%   { top:calc(100% - 14px); opacity:1 }
+    90%  { top:0;    opacity:1 }
+    100% { top:0;    opacity:0 }
+  }
+
+  .arrow-label{
+    position:absolute;
+    left:calc(50% + 10px);
+    top:50%;transform:translateY(-50%);
+    font-size:0.68rem;font-weight:600;
+    color:var(--muted);
+    background:#fff;padding:1px 8px;border-radius:3px;
+    border:1px solid var(--border);
+    white-space:nowrap;
+    opacity:0;
+    transition:opacity 0.3s;
+    max-width:140px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .arrow-label.show{opacity:1}
+  .arrow-label.up{color:var(--success);border-color:var(--success)}
+  .arrow-label.down{color:var(--db);border-color:var(--db)}
+  .arrow-label.attack{color:var(--danger);border-color:var(--danger)}
+
+  .statusbar{
+    position:absolute;left:0;right:0;bottom:0;height:78px;
+    background:var(--title);color:#fff;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 22px;gap:18px;
+  }
+  .status-left{flex:1;min-width:0}
+  .phase-label{
+    font-size:0.66rem;font-weight:700;letter-spacing:1.2px;
+    text-transform:uppercase;opacity:0.7;margin-bottom:2px;
+  }
+  .status-text{font-size:0.92rem;font-weight:500;letter-spacing:0.2px}
+  .dots{display:flex;gap:8px;align-items:center}
+  .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:rgba(255,255,255,0.28);transition:background 0.3s, transform 0.3s;
+  }
+  .dot.active{background:#fff;transform:scale(1.25)}
+  .dot.done{background:#34D399}
+  .dot.attack-done{background:#F87171}
+
+  .controls{display:flex;gap:8px;align-items:center}
+  .ctrl-btn{
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.25);
+    color:#fff;
+    padding:6px 12px;
+    border-radius:6px;
+    font-size:0.78rem;font-weight:500;
+    cursor:pointer;
+    font-family:inherit;
+    transition:background 0.2s, border-color 0.2s;
+    min-width:90px;
+    text-align:center;
+  }
+  .ctrl-btn:hover{background:rgba(255,255,255,0.22);border-color:rgba(255,255,255,0.45)}
+  .ctrl-btn:active{background:rgba(255,255,255,0.30)}
+  .ctrl-btn:disabled{opacity:0.4;cursor:not-allowed}
+  .ctrl-btn .icon{font-size:0.85rem;margin-right:4px}
+
+  .scenario-label{
+    position:absolute;top:10px;left:50%;transform:translateX(-50%);
+    font-size:0.7rem;font-weight:700;letter-spacing:1.5px;
+    text-transform:uppercase;color:var(--muted);
+    background:#fff;padding:3px 14px;border:1px solid var(--border);
+    border-radius:12px;
+    z-index:5;
+    transition:color 0.4s, border-color 0.4s, background 0.4s;
+  }
+  .scenario-label.attack{color:var(--danger);border-color:var(--danger);background:#FEF2F2}
+  .scenario-label .side-tag{
+    color:var(--text);font-weight:600;letter-spacing:0.5px;
+    margin-left:8px;padding-left:8px;border-left:1px solid var(--border);
+  }
+  .scenario-label.attack .side-tag{color:var(--danger);border-left-color:var(--danger)}
+
+  footer{
+    text-align:center;font-size:0.72rem;color:var(--muted);
+    padding:8px 0 14px;
+  }
+
+  @media (max-width: 760px){
+    .stage{height:auto;min-height:1300px}
+    .zone{position:relative;left:auto;right:auto;margin:8px 14px;top:auto;height:auto;min-height:280px}
+    .box{position:relative;left:auto!important;right:auto!important;width:auto!important;margin:6px 14px;top:auto!important}
+    .arrow-flow,.zone-net{display:none}
+    .verdict,.wordlist-box{position:relative;top:auto;margin:10px 14px;left:auto;right:auto}
+    .scenario-label{position:relative;display:inline-block;margin:10px auto;left:auto;transform:none}
+    .stage{display:flex;flex-direction:column;padding-bottom:90px}
+    .controls{flex-wrap:wrap;justify-content:flex-end}
+    .ctrl-btn{min-width:auto;padding:6px 10px}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔐 Autenticazione realistica · pattern hash + bcrypt</h1>
+  <div class="sub">Lezione 9 · Modulo 2 · Flusso reale e tecniche di iniezione</div>
+</div>
+
+<div class="stage">
+
+  <div class="scenario-label" id="scenario">
+    <span id="scenario-text">Pattern reale di autenticazione</span>
+    <span class="side-tag" id="side-tag">— stack SQL · lecito</span>
+  </div>
+
+  <!-- ============ ZONA APPLICATION SERVER ============ -->
+  <div class="zone zone-app" id="zone-app">
+    <div class="zone-label" id="zone-app-label">🟧 Application server · Node / Python / Java</div>
+  </div>
+
+  <div class="box code-dark app-input" id="app-input">
+    <span class="lbl" id="app-input-label">① L'utente invia credenziali</span>
+    <span id="app-input-content">
+POST /login<br>
+{ email: <span class="str">"mario@x.it"</span>, password: <span class="str">"segreta"</span> }
+    </span>
+  </div>
+
+  <div class="box code-dark app-call-query" id="app-call">
+    <span class="lbl" id="app-call-label">② L'app costruisce la query</span>
+    <span id="app-call-content">
+const q = <span class="str">"SELECT id, password_hash<br>
+&nbsp;&nbsp;FROM users WHERE email = <span class="placeholder">?</span>"</span>;<br>
+db.<span class="fn">query</span>(q, [email]);
+    </span>
+  </div>
+
+  <div class="box app app-receive" id="app-receive">
+    <span class="lbl" id="app-receive-label">④ L'app riceve la riga</span>
+    <span id="app-receive-content">
+{ id: <span class="num">42</span>,<br>
+&nbsp;&nbsp;password_hash: <span style="color:var(--muted);font-size:0.7rem">"$2b$10$N9qo8…"</span> }
+    </span>
+  </div>
+
+  <div class="box app app-bcrypt" id="app-bcrypt">
+    <span class="lbl" id="app-bcrypt-label">⑤ Confronto bcrypt</span>
+    <span id="app-bcrypt-content">
+const ok = <span class="fn">await</span> <span class="fn">bcrypt.compare</span>(<br>
+&nbsp;&nbsp;password,&nbsp;&nbsp;<span style="color:var(--muted)">// "segreta"</span><br>
+&nbsp;&nbsp;row.password_hash<br>
+);<br>
+<span style="color:var(--muted)">// ok = </span><span class="true">true</span>
+    </span>
+  </div>
+
+
+  <!-- ============ ZONA NETWORK ============ -->
+  <div class="zone-net">
+    <div class="net-label">↕ rete TCP · wire protocol</div>
+    <div class="arrow-flow arrow-down" id="flow-down">
+      <div class="arrow-line down" id="line-down"></div>
+      <div class="arrow-head down" id="head-down"></div>
+      <div class="packet" id="pkt-down"></div>
+      <div class="arrow-label down" id="lbl-down">richiesta</div>
+    </div>
+    <div class="arrow-flow arrow-up right" id="flow-up">
+      <div class="arrow-line up" id="line-up"></div>
+      <div class="arrow-head up" id="head-up"></div>
+      <div class="packet" id="pkt-up"></div>
+      <div class="arrow-label up" id="lbl-up">risposta · 1 riga</div>
+    </div>
+  </div>
+
+
+  <!-- ============ ZONA DATABASE ============ -->
+  <div class="zone zone-db" id="zone-db">
+    <div class="zone-label" id="zone-db-label">🟦 Database server · PostgreSQL / MongoDB</div>
+  </div>
+
+  <div class="box db db-query" id="db-query">
+    <span class="lbl" id="db-query-label">③ Il DB esegue la query</span>
+    <span id="db-query-content">
+SELECT id, password_hash<br>
+FROM users<br>
+WHERE email = <span class="str">'mario@x.it'</span>;
+    </span>
+  </div>
+
+  <div class="box db db-table" id="db-table">
+    <span class="lbl" id="db-table-label">tabella users</span>
+    <span id="db-table-content" style="font-size:0.7rem">
+| id | email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | password_hash&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br>
+| <strong>42</strong> | <strong>mario@x.it</strong> | <strong>$2b$10$N9qo8…</strong> |<br>
+| 43 | luca@x.it&nbsp; | $2b$10$qKrHL…&nbsp;&nbsp;&nbsp; |
+    </span>
+  </div>
+
+  <!-- Wordlist (visibile solo durante attacco mongo) -->
+  <div class="wordlist-box" id="wordlist">
+    <span class="lbl">⑥ Attaccante: bruteforce offline o online sull'hash recuperato</span>
+    <div class="wordlist-attempts" id="wordlist-attempts">
+      <span class="a miss">"123456" ✗</span>
+      <span class="a miss">"password" ✗</span>
+      <span class="a miss">"admin" ✗</span>
+      <span class="a miss">"qwerty" ✗</span>
+      <span class="a miss">"letmein" ✗</span>
+      <span class="a miss">"welcome" ✗</span>
+      <span class="a try">… 10 milioni di tentativi …</span>
+      <span class="a hit">"P@ssw0rd1" ✓</span>
+      <span class="a">login OK</span>
+    </div>
+  </div>
+
+
+  <!-- Verdict -->
+  <div class="verdict ok" id="verdict">✓ Autenticazione corretta — la password non è mai uscita dall'app server come testo, e il DB non l'ha mai vista in chiaro</div>
+
+
+  <!-- ============ STATUS BAR ============ -->
+  <div class="statusbar">
+    <div class="status-left">
+      <div class="phase-label" id="phase">FASE 1 / 4 · LECITO · STACK SQL</div>
+      <div class="status-text" id="status">Premi ▶ per iniziare l'animazione</div>
+    </div>
+    <div class="dots">
+      <div class="dot" data-i="0"></div>
+      <div class="dot" data-i="1"></div>
+      <div class="dot" data-i="2"></div>
+      <div class="dot" data-i="3"></div>
+      <div class="dot" data-i="4"></div>
+      <div class="dot" data-i="5"></div>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" id="btn-play" title="Play / Pausa">
+        <span class="icon" id="play-icon">▶</span><span id="play-text">Play</span>
+      </button>
+      <button class="ctrl-btn" id="btn-step" title="Avanti di uno step">
+        <span class="icon">⏭</span>Avanti
+      </button>
+      <button class="ctrl-btn" id="btn-reset" title="Riavvia da capo">
+        <span class="icon">↻</span>Reset
+      </button>
+    </div>
+  </div>
+</div>
+
+<footer>Corso Cybersecurity — Leonardo SpA · Modulo 2 — Compute &amp; Database</footer>
+
+<script>
+  // =========================================================================
+  // CONFIG
+  // =========================================================================
+  const STEP = 3400;
+  const STEP_LONG = 5800;
+  const STEP_VERY_LONG = 7500;
+  const PACKET_TRAVEL = 1100;
+  const PAUSE_BETWEEN_PHASES = 1800;
+
+  let playing = false;
+  let stepping = false;
+  let abortToken = 0;
+  let currentActs = [];
+  let actIdx = 0;
+  let runnerActive = false;
+
+  function $(id){ return document.getElementById(id); }
+  function show(el){ if(typeof el==='string') el=$(el); el && el.classList.add('show'); }
+  function hide(el){ if(typeof el==='string') el=$(el); el && el.classList.remove('show'); }
+  function addClass(el, c){ if(typeof el==='string') el=$(el); el && el.classList.add(c); }
+  function removeClass(el, c){ if(typeof el==='string') el=$(el); el && el.classList.remove(c); }
+
+  function waitInterruptible(ms){
+    return new Promise((resolve, reject) => {
+      const myToken = abortToken;
+      let remaining = ms;
+      let lastResume = Date.now();
+      let tickHandle = null;
+
+      function done(){
+        if(tickHandle) clearTimeout(tickHandle);
+        if(myToken !== abortToken) reject('aborted'); else resolve();
+      }
+      function tick(){
+        if(myToken !== abortToken){ done(); return; }
+        if(!playing && !stepping){
+          tickHandle = setTimeout(tick, 100);
+          return;
+        }
+        const now = Date.now();
+        remaining -= (now - lastResume);
+        lastResume = now;
+        if(remaining <= 0){ done(); return; }
+        tickHandle = setTimeout(tick, Math.min(remaining, 150));
+      }
+      tick();
+    });
+  }
+
+  function setStatus(t){ $('status').textContent = t; }
+  function setPhase(t){ $('phase').textContent = t; }
+  function setScenario(text, sideTag, attack){
+    $('scenario-text').textContent = text;
+    $('side-tag').textContent = sideTag ? '— ' + sideTag : '';
+    $('scenario').classList.toggle('attack', !!attack);
+  }
+
+  function dotActive(i, attackMode){
+    document.querySelectorAll('.dot').forEach((d, idx) => {
+      d.classList.remove('active','done','attack-done');
+      if(idx < i) d.classList.add(attackMode ? 'attack-done' : 'done');
+      if(idx === i) d.classList.add('active');
+    });
+  }
+
+  // =========================================================================
+  // PACKET ANIMATIONS
+  // =========================================================================
+  async function animatePacketDown(attack){
+    addClass('line-down', 'active');
+    if(attack) addClass('line-down','attack');
+    show('lbl-down');
+    if(attack) addClass('lbl-down','attack');
+    show('head-down');
+    if(attack) addClass('head-down','attack');
+    const pkt = $('pkt-down');
+    pkt.classList.remove('travel-down','attack');
+    if(attack) pkt.classList.add('attack');
+    void pkt.offsetWidth;
+    pkt.classList.add('show', 'travel-down');
+    await waitInterruptible(PACKET_TRAVEL);
+    pkt.classList.remove('show');
+  }
+  async function animatePacketUp(attack){
+    addClass('line-up', 'active');
+    if(attack) addClass('line-up','attack');
+    show('lbl-up');
+    if(attack) addClass('lbl-up','attack');
+    show('head-up');
+    if(attack) addClass('head-up','attack');
+    const pkt = $('pkt-up');
+    pkt.classList.remove('travel-up','attack');
+    if(attack) pkt.classList.add('attack');
+    void pkt.offsetWidth;
+    pkt.classList.add('show', 'travel-up');
+    await waitInterruptible(PACKET_TRAVEL);
+    pkt.classList.remove('show');
+  }
+  function clearArrows(){
+    ['line-down','line-up'].forEach(id => {
+      const el = $(id);
+      el.classList.remove('active','attack');
+    });
+    ['lbl-down','lbl-up'].forEach(id => {
+      hide(id);
+      removeClass(id,'attack');
+    });
+    ['head-down','head-up'].forEach(id => {
+      hide(id);
+      removeClass(id,'attack');
+    });
+    $('pkt-down').classList.remove('show','travel-down','attack');
+    $('pkt-up').classList.remove('show','travel-up','attack');
+  }
+
+  // =========================================================================
+  // CONTENT PRESETS — 4 fasi
+  // =========================================================================
+
+  // FASE 1: SQL legittimo
+  function setSqlLegit(){
+    $('zone-app-label').innerHTML = '🟧 Application server · Node / Python / Java';
+    $('zone-db-label').innerHTML = '🟦 Database server · PostgreSQL';
+    $('app-input-label').textContent = '① L\'utente invia credenziali';
+    $('app-input-content').innerHTML =
+      'POST /login<br>' +
+      '{ email: <span class="str">"mario@x.it"</span>, password: <span class="str">"segreta"</span> }';
+    $('app-call-label').textContent = '② L\'app costruisce la query (con placeholder)';
+    $('app-call-content').innerHTML =
+      'const q = <span class="str">"SELECT id, password_hash<br>' +
+      '&nbsp;&nbsp;FROM users WHERE email = <span class="placeholder">?</span>"</span>;<br>' +
+      'db.<span class="fn">query</span>(q, [email]);';
+    $('db-query-label').textContent = '③ Il DB esegue la query · solo filtro per email';
+    $('db-query-content').innerHTML =
+      'SELECT id, password_hash<br>' +
+      'FROM users<br>' +
+      'WHERE email = <span class="str">\'mario@x.it\'</span>;';
+    $('db-table-label').textContent = 'tabella users';
+    $('db-table-content').innerHTML =
+      '| id | email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | password_hash&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br>' +
+      '| <strong>42</strong> | <strong>mario@x.it</strong> | <strong>$2b$10$N9qo8…</strong> |<br>' +
+      '| 43 | luca@x.it&nbsp; | $2b$10$qKrHL…&nbsp;&nbsp;&nbsp; |';
+    $('app-receive-label').textContent = '④ L\'app riceve la riga (solo l\'hash, non la password)';
+    $('app-receive-content').innerHTML =
+      '{ id: <span class="num">42</span>,<br>' +
+      '&nbsp;&nbsp;password_hash: <span style="color:var(--muted);font-size:0.7rem">"$2b$10$N9qo8…"</span> }';
+    $('app-bcrypt-label').textContent = '⑤ Confronto bcrypt · DENTRO l\'app, non nel DB';
+    $('app-bcrypt-content').innerHTML =
+      'const ok = <span class="fn">await</span> <span class="fn">bcrypt.compare</span>(<br>' +
+      '&nbsp;&nbsp;password,&nbsp;&nbsp;<span style="color:var(--muted)">// "segreta"</span><br>' +
+      '&nbsp;&nbsp;row.password_hash<br>' +
+      ');<br>' +
+      '<span style="color:var(--muted)">// ok = </span><span class="true">true</span>';
+  }
+
+  // FASE 2: SQL attaccato (UNION SELECT) — codice VULNERABILE (concatenazione)
+  function setSqlAttack(){
+    $('zone-app-label').innerHTML = '🟧 Application server · codice VULNERABILE (concatenazione)';
+    $('zone-db-label').innerHTML = '🟦 Database server · PostgreSQL';
+    $('app-input-label').textContent = '① L\'attaccante invia un payload come email';
+    $('app-input-content').innerHTML =
+      'POST /login<br>' +
+      '{ email: <span class="inj">"x\' UNION SELECT 99, \'$2b$10$AbCd…HASH_NOTO\' --"</span>,<br>' +
+      '&nbsp;&nbsp;password: <span class="str">"miaPasswordNota"</span> }<br>' +
+      '<span style="color:var(--muted);font-size:0.7rem">// l\'attaccante ha generato l\'hash di "miaPasswordNota" offline</span>';
+    $('app-call-label').textContent = '② L\'app concatena la stringa (NIENTE prepared statement)';
+    $('app-call-content').innerHTML =
+      '<span style="color:var(--muted)">// VULNERABILE — concatenazione diretta</span><br>' +
+      'const q = <span class="str">"SELECT id, password_hash FROM users<br>' +
+      '&nbsp;&nbsp;WHERE email = \'"</span> + email + <span class="str">"\'"</span>;<br>' +
+      'db.<span class="fn">query</span>(q);';
+    $('db-query-label').textContent = '③ Il DB esegue la query · l\'UNION viene parsata';
+    $('db-query-content').innerHTML =
+      'SELECT id, password_hash FROM users<br>' +
+      'WHERE email = <span class="str">\'x\'</span><br>' +
+      '<span class="inj">UNION SELECT 99, \'$2b$10$AbCd…HASH_NOTO\'</span>;';
+    $('db-table-label').textContent = 'risultato della query (riga sintetica iniettata)';
+    $('db-table-content').innerHTML =
+      '| id | password_hash&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br>' +
+      '|----|---------------------------|<br>' +
+      '<span style="color:var(--danger);font-weight:700">| 99 | $2b$10$AbCd…HASH_NOTO |</span> ← <span style="color:var(--muted);font-size:0.7rem">non viene da users</span>';
+    $('app-receive-label').textContent = '④ L\'app riceve la riga sintetica · pensa sia un utente vero';
+    $('app-receive-content').innerHTML =
+      '{ id: <span class="num">99</span>,<br>' +
+      '&nbsp;&nbsp;password_hash: <span style="color:var(--danger);font-size:0.7rem">"$2b$10$AbCd…HASH_NOTO"</span> }';
+    $('app-bcrypt-label').textContent = '⑤ bcrypt confronta · password coincide con l\'hash iniettato';
+    $('app-bcrypt-content').innerHTML =
+      'const ok = <span class="fn">await</span> <span class="fn">bcrypt.compare</span>(<br>' +
+      '&nbsp;&nbsp;password,&nbsp;&nbsp;<span style="color:var(--muted)">// "miaPasswordNota"</span><br>' +
+      '&nbsp;&nbsp;row.password_hash<span style="color:var(--muted)">  // hash iniettato</span><br>' +
+      ');<br>' +
+      '<span style="color:var(--muted)">// ok = </span><span class="true">true</span> ' +
+      '<span style="color:var(--danger);font-size:0.7rem">⚠ login come id=99</span>';
+  }
+
+  // FASE 3: Mongo legittimo
+  function setMongoLegit(){
+    $('zone-app-label').innerHTML = '🟧 Application server · Node / Python / Java';
+    $('zone-db-label').innerHTML = '🟦 Database server · MongoDB';
+    $('app-input-label').textContent = '① L\'utente invia credenziali';
+    $('app-input-content').innerHTML =
+      'POST /login<br>' +
+      '{ email: <span class="str">"mario@x.it"</span>, password: <span class="str">"segreta"</span> }';
+    $('app-call-label').textContent = '② L\'app cerca l\'utente con findOne';
+    $('app-call-content').innerHTML =
+      '<span style="color:var(--muted)">// con validazione tipo: email è string</span><br>' +
+      'const user = <span class="fn">await</span> db.users.<span class="fn">findOne</span>(<br>' +
+      '&nbsp;&nbsp;<span class="pun">{</span> email: email <span class="pun">}</span>,<br>' +
+      '&nbsp;&nbsp;<span class="pun">{</span> projection: <span class="pun">{</span> passwordHash: <span class="num">1</span> <span class="pun">}</span> <span class="pun">}</span><br>' +
+      ');';
+    $('db-query-label').textContent = '③ MongoDB esegue il match · solo filtro per email';
+    $('db-query-content').innerHTML =
+      '<span style="color:var(--muted)">// query Mongo eseguita lato server</span><br>' +
+      'db.users.find(<br>' +
+      '&nbsp;&nbsp;{ email: <span class="str">"mario@x.it"</span> }<br>' +
+      ').limit(1)';
+    $('db-table-label').textContent = 'collection users';
+    $('db-table-content').innerHTML =
+      '<span class="pun">{</span> _id: <span class="num">ObjectId(</span><span class="str">"f4..."</span><span class="num">)</span>,<br>' +
+      '&nbsp;&nbsp;email: <span class="str">"mario@x.it"</span>,<br>' +
+      '&nbsp;&nbsp;passwordHash: <span style="color:var(--muted)">"$2b$10$N9qo8…"</span>,<br>' +
+      '&nbsp;&nbsp;createdAt: ... <span class="pun">}</span>';
+    $('app-receive-label').textContent = '④ L\'app riceve il documento (solo passwordHash)';
+    $('app-receive-content').innerHTML =
+      '<span class="pun">{</span><br>' +
+      '&nbsp;&nbsp;_id: <span class="num">ObjectId(</span><span class="str">"f4..."</span><span class="num">)</span>,<br>' +
+      '&nbsp;&nbsp;passwordHash: <span style="color:var(--muted);font-size:0.7rem">"$2b$10$N9qo8…"</span><br>' +
+      '<span class="pun">}</span>';
+    $('app-bcrypt-label').textContent = '⑤ Confronto bcrypt · DENTRO l\'app';
+    $('app-bcrypt-content').innerHTML =
+      'const ok = <span class="fn">await</span> <span class="fn">bcrypt.compare</span>(<br>' +
+      '&nbsp;&nbsp;password,&nbsp;&nbsp;<span style="color:var(--muted)">// "segreta"</span><br>' +
+      '&nbsp;&nbsp;user.passwordHash<br>' +
+      ');<br>' +
+      '<span style="color:var(--muted)">// ok = </span><span class="true">true</span>';
+  }
+
+  // FASE 4: Mongo attaccato ($ne) — recupera utente arbitrario, poi serve wordlist
+  function setMongoAttack(){
+    $('zone-app-label').innerHTML = '🟧 Application server · NESSUNA validazione del tipo email';
+    $('zone-db-label').innerHTML = '🟦 Database server · MongoDB';
+    $('app-input-label').textContent = '① L\'attaccante invia email come oggetto operatore';
+    $('app-input-content').innerHTML =
+      'POST /login<br>' +
+      '{ email: <span class="inj">{ <span style="color:#FCD34D">$ne</span>: "" }</span>,<br>' +
+      '&nbsp;&nbsp;password: <span class="str">"???"</span> }<br>' +
+      '<span style="color:var(--muted);font-size:0.7rem">// ancora non sa la password</span>';
+    $('app-call-label').textContent = '② L\'app passa l\'oggetto direttamente a findOne';
+    $('app-call-content').innerHTML =
+      '<span style="color:var(--muted)">// VULNERABILE — nessun check sul tipo di email</span><br>' +
+      'const user = <span class="fn">await</span> db.users.<span class="fn">findOne</span>(<br>' +
+      '&nbsp;&nbsp;<span class="pun">{</span> email: req.body.email <span class="pun">}</span><br>' +
+      ');<span style="color:var(--muted);font-size:0.7rem">  // diventa { email: { $ne: "" } }</span>';
+    $('db-query-label').textContent = '③ Mongo trova un utente qualsiasi (il primo) — di solito admin';
+    $('db-query-content').innerHTML =
+      '<span style="color:var(--muted)">// filtro \"email diversa da stringa vuota\"</span><br>' +
+      'db.users.find(<br>' +
+      '&nbsp;&nbsp;{ email: <span class="inj">{ $ne: "" }</span> }<br>' +
+      ').limit(1)';
+    $('db-table-label').textContent = 'collection users (primo documento restituito)';
+    $('db-table-content').innerHTML =
+      '<span class="pun">{</span> _id: ObjectId(<span class="str">"a1..."</span>),<br>' +
+      '&nbsp;&nbsp;email: <span class="str">"admin@azienda.it"</span>,&nbsp;&nbsp;<span style="color:var(--danger);font-size:0.7rem">← admin!</span><br>' +
+      '&nbsp;&nbsp;passwordHash: <span style="color:var(--muted)">"$2b$10$XyZ…"</span>,<br>' +
+      '&nbsp;&nbsp;role: <span class="str">"superuser"</span> <span class="pun">}</span>';
+    $('app-receive-label').textContent = '④ L\'app riceve admin · ma non sa ancora la password';
+    $('app-receive-content').innerHTML =
+      '<span class="pun">{</span><br>' +
+      '&nbsp;&nbsp;_id: <span class="num">ObjectId(</span><span class="str">"a1..."</span><span class="num">)</span>,<br>' +
+      '&nbsp;&nbsp;passwordHash: <span style="color:var(--danger);font-size:0.7rem">"$2b$10$XyZ…"</span> <span style="color:var(--muted);font-size:0.7rem">← hash di admin</span><br>' +
+      '<span class="pun">}</span>';
+    $('app-bcrypt-label').textContent = '⑤ bcrypt confronta · password "???" non coincide';
+    $('app-bcrypt-content').innerHTML =
+      'const ok = <span class="fn">await</span> <span class="fn">bcrypt.compare</span>(<br>' +
+      '&nbsp;&nbsp;password,&nbsp;&nbsp;<span style="color:var(--muted)">// "???"</span><br>' +
+      '&nbsp;&nbsp;user.passwordHash<br>' +
+      ');<br>' +
+      '<span style="color:var(--muted)">// ok = </span><span class="false">false</span> ' +
+      '<span style="color:var(--warn);font-size:0.7rem">⚠ login fallito al primo tentativo</span>';
+  }
+
+  // =========================================================================
+  // RESET
+  // =========================================================================
+  function clearAllBoxes(){
+    ['app-input','app-call','app-receive','app-bcrypt','db-query','db-table','verdict','wordlist']
+      .forEach(id => { hide(id); removeClass(id, 'highlight'); removeClass(id, 'highlight-attack'); removeClass(id, 'danger'); });
+    $('verdict').classList.remove('bad','warn');
+    $('verdict').classList.add('ok');
+    clearArrows();
+    document.querySelectorAll('.dot').forEach(d => d.classList.remove('active','done','attack-done'));
+    removeClass('zone-app','attack-mode');
+    removeClass('zone-db','attack-mode');
+  }
+
+  function resetAll(){
+    abortToken++;
+    playing = false;
+    stepping = false;
+    actIdx = 0;
+    setPlayUI(false);
+    clearAllBoxes();
+    setSqlLegit();
+    setScenario('Pattern reale di autenticazione', 'stack SQL · lecito', false);
+    setPhase('FASE 1 / 4 · LECITO · STACK SQL');
+    setStatus('Premi ▶ per iniziare l\'animazione');
+    $('btn-play').disabled = false;
+    $('btn-step').disabled = false;
+  }
+
+  // =========================================================================
+  // SEQUENZA: 4 fasi
+  // =========================================================================
+  function buildPhaseActs(stack, attack, phaseNum){
+    const isSql = (stack === 'sql');
+    const phaseLabel = `FASE ${phaseNum} / 4 · ${attack ? 'ATTACCO' : 'LECITO'} · STACK ${isSql ? 'SQL' : 'MONGO'}`;
+    const sideTag = `stack ${isSql ? 'SQL' : 'MongoDB'} · ${attack ? 'attacco' : 'lecito'}`;
+    const scenarioText = attack ? 'Tecnica di iniezione · pattern realistico' : 'Pattern reale di autenticazione';
+    const acts = [];
+
+    // Atto 0: setup
+    acts.push(async () => {
+      clearAllBoxes();
+      if(isSql && !attack) setSqlLegit();
+      else if(isSql && attack) setSqlAttack();
+      else if(!isSql && !attack) setMongoLegit();
+      else setMongoAttack();
+      if(attack){
+        addClass('zone-app','attack-mode');
+        addClass('zone-db','attack-mode');
+      }
+      setPhase(phaseLabel);
+      setScenario(scenarioText, sideTag, attack);
+      dotActive(0, attack);
+      setStatus(buildStatusText(0, isSql, attack));
+      show('app-input');
+      addClass('app-input', attack ? 'highlight-attack' : 'highlight');
+      await waitInterruptible(STEP);
+      removeClass('app-input', attack ? 'highlight-attack' : 'highlight');
+    });
+
+    // Atto 1: app costruisce query
+    acts.push(async () => {
+      dotActive(1, attack);
+      setStatus(buildStatusText(1, isSql, attack));
+      show('app-call');
+      addClass('app-call', attack ? 'highlight-attack' : 'highlight');
+      await waitInterruptible(STEP);
+      removeClass('app-call', attack ? 'highlight-attack' : 'highlight');
+    });
+
+    // Atto 2: query verso DB (packet down)
+    acts.push(async () => {
+      dotActive(2, attack);
+      setStatus(buildStatusText(2, isSql, attack));
+      $('lbl-down').textContent = attack ? 'payload malevolo' : 'richiesta';
+      await animatePacketDown(attack);
+      show('db-query');
+      addClass('db-query', attack ? 'highlight-attack' : 'highlight');
+      show('db-table');
+      await waitInterruptible(STEP - PACKET_TRAVEL);
+      removeClass('db-query', attack ? 'highlight-attack' : 'highlight');
+    });
+
+    // Atto 3: DB risponde (packet up)
+    acts.push(async () => {
+      dotActive(3, attack);
+      setStatus(buildStatusText(3, isSql, attack));
+      addClass('db-table', attack ? 'highlight-attack' : 'highlight');
+      $('lbl-up').textContent = attack
+        ? (isSql ? 'risposta · riga sintetica' : 'risposta · admin')
+        : (isSql ? 'risposta · 1 riga' : 'risposta · 1 doc');
+      await animatePacketUp(attack);
+      removeClass('db-table', attack ? 'highlight-attack' : 'highlight');
+    });
+
+    // Atto 4: app riceve
+    acts.push(async () => {
+      dotActive(4, attack);
+      setStatus(buildStatusText(4, isSql, attack));
+      show('app-receive');
+      addClass('app-receive', attack ? 'highlight-attack' : 'highlight');
+      await waitInterruptible(STEP);
+      removeClass('app-receive', attack ? 'highlight-attack' : 'highlight');
+    });
+
+    // Atto 5: bcrypt + verdetto
+    acts.push(async () => {
+      dotActive(5, attack);
+      setStatus(buildStatusText(5, isSql, attack));
+      show('app-bcrypt');
+      addClass('app-bcrypt', attack ? 'highlight-attack' : 'highlight');
+      const v = $('verdict');
+      v.classList.remove('ok','bad','warn');
+      if(!attack){
+        v.classList.add('ok');
+        v.textContent = '✓ Autenticazione corretta — la password non è mai uscita dall\'app server come testo, e il DB non l\'ha mai vista in chiaro';
+      } else if(isSql){
+        v.classList.add('bad');
+        v.textContent = '✗ Login bypass — l\'attaccante ha iniettato una riga sintetica con un hash di cui conosce la password. Difesa: prepared statement.';
+      } else {
+        v.classList.add('warn');
+        v.textContent = '⚠ Iniezione riuscita parzialmente — l\'attaccante ha l\'hash di admin, ma non la password. Serve uno step ulteriore.';
+      }
+      show(v);
+      await waitInterruptible(attack && !isSql ? STEP : STEP_LONG);
+      removeClass('app-bcrypt', attack ? 'highlight-attack' : 'highlight');
+    });
+
+    // Atto 6 — solo per attacco Mongo: wordlist box
+    if(attack && !isSql){
+      acts.push(async () => {
+        // dot resta su 5 (active)
+        setStatus('⑥ L\'attaccante porta l\'hash offline e lo passa a hashcat / john-the-ripper. Tempi: da minuti a settimane a seconda della password.');
+        show('wordlist');
+        // aggiorna verdict finale
+        const v = $('verdict');
+        v.classList.remove('warn'); v.classList.add('bad');
+        v.textContent = '✗ L\'iniezione ha dato l\'hash di admin · poi serve un attacco a dizionario offline. Difesa: validare il TIPO di email come stringa.';
+        await waitInterruptible(STEP_VERY_LONG);
+      });
+    }
+
+    // Pausa o chiusura
+    if(phaseNum < 4){
+      acts.push(async () => {
+        await waitInterruptible(PAUSE_BETWEEN_PHASES);
+      });
+    } else {
+      acts.push(async () => {
+        setPhase('CONFRONTO TRA STACK');
+        setStatus('SQL: difesa con prepared statement. Mongo: difesa con validazione del tipo. Stessa logica: input non validato → struttura compromessa.');
+        await waitInterruptible(STEP_LONG);
+      });
+    }
+
+    return acts;
+  }
+
+  function buildStatusText(stepIdx, isSql, attack){
+    // Status testuale per ogni step di ogni combinazione
+    if(!attack && isSql){
+      return [
+        'L\'utente "Mario" invia email e password al backend',
+        'L\'app costruisce una query parametrizzata: il valore email è un PARAMETRO, non concatenato',
+        'La query parte verso il DB — solo filtro per email, NON contiene la password',
+        'Il DB cerca la riga e la restituisce — solo id e password_hash, mai la password in chiaro',
+        'L\'app riceve la riga: ha l\'hash, non la password. Per autenticare deve confrontare l\'hash.',
+        'bcrypt.compare gira nell\'app server: il DB non vede mai la password in chiaro'
+      ][stepIdx];
+    }
+    if(attack && isSql){
+      return [
+        'L\'attaccante manda nel campo email un payload SQL: "x\' UNION SELECT 99, \'$2b$10$AbCd…\' --"',
+        'L\'app concatena la stringa nella query (codice vulnerabile): il payload entra nella SQL',
+        'Il DB esegue la query: l\'UNION restituisce una riga sintetica con un hash che l\'attaccante CONOSCE',
+        'Il DB risponde all\'app con la riga sintetica — non distingue dati reali da dati iniettati',
+        'L\'app riceve {id:99, password_hash: hash_iniettato} e la considera un utente vero',
+        'bcrypt confronta con la password che l\'attaccante ha scelto → match → login OK'
+      ][stepIdx];
+    }
+    if(!attack && !isSql){
+      return [
+        'Stesso flusso ma con MongoDB: l\'utente invia credenziali al backend',
+        'L\'app chiama findOne passando un oggetto: notate che il valore email arriva validato come stringa',
+        'La query parte verso MongoDB — solo filtro per email, NON contiene la password',
+        'Mongo trova il documento e lo restituisce — solo passwordHash, mai la password in chiaro',
+        'L\'app riceve il documento: ha il passwordHash, non la password. Stesso schema di SQL.',
+        'bcrypt.compare gira nell\'app server: anche con Mongo il DB non vede mai la password'
+      ][stepIdx];
+    }
+    // attack && mongo
+    return [
+      'L\'attaccante manda email NON come stringa, ma come oggetto: { $ne: "" }',
+      'L\'app non valida il tipo di email e lo passa direttamente a findOne — il filtro diventa "qualsiasi email"',
+      'Mongo cerca un utente con email diversa da stringa vuota — restituisce IL PRIMO documento',
+      'Il primo documento è spesso admin (creato per primo) — Mongo lo restituisce all\'app',
+      'L\'app riceve admin con il suo passwordHash · ma l\'attaccante NON conosce ancora la password',
+      'bcrypt fallisce al primo tentativo — la password "???" non corrisponde all\'hash di admin'
+    ][stepIdx];
+  }
+
+  function buildAllActs(){
+    return [
+      ...buildPhaseActs('sql',   false, 1),
+      ...buildPhaseActs('sql',   true,  2),
+      ...buildPhaseActs('mongo', false, 3),
+      ...buildPhaseActs('mongo', true,  4),
+    ];
+  }
+
+  // =========================================================================
+  // RUNNER
+  // =========================================================================
+  async function runner(){
+    if(runnerActive) return;
+    runnerActive = true;
+    const myToken = abortToken;
+    try {
+      while(actIdx < currentActs.length){
+        if(myToken !== abortToken) break;
+        if(!playing && !stepping){
+          await new Promise(r => setTimeout(r, 80));
+          continue;
+        }
+        const act = currentActs[actIdx];
+        actIdx++;
+        try { await act(); }
+        catch(e){ if(e === 'aborted') break; else throw e; }
+        if(stepping){
+          stepping = false;
+          playing = false;
+          setPlayUI(false);
+          if(actIdx < currentActs.length){
+            const cur = $('status').textContent;
+            if(!cur.includes('▶')) setStatus(cur + '  ·  premi ▶ o ⏭ per continuare');
+          }
+        }
+      }
+      if(actIdx >= currentActs.length){
+        playing = false;
+        setPlayUI(false);
+        $('btn-play').disabled = true;
+        $('btn-step').disabled = true;
+      }
+    } finally {
+      runnerActive = false;
+    }
+  }
+
+  function setPlayUI(isPlaying){
+    if(isPlaying){
+      $('play-icon').textContent = '⏸';
+      $('play-text').textContent = 'Pausa';
+    } else {
+      $('play-icon').textContent = '▶';
+      $('play-text').textContent = 'Play';
+    }
+  }
+  function onPlayPause(){
+    if(actIdx >= currentActs.length) return;
+    playing = !playing;
+    setPlayUI(playing);
+    if(playing) runner();
+  }
+  function onStep(){
+    if(actIdx >= currentActs.length) return;
+    stepping = true;
+    runner();
+  }
+  function onReset(){
+    resetAll();
+    currentActs = buildAllActs();
+    actIdx = 0;
+  }
+
+  window.addEventListener('load', () => {
+    resetAll();
+    currentActs = buildAllActs();
+    $('btn-play').addEventListener('click', onPlayPause);
+    $('btn-step').addEventListener('click', onStep);
+    $('btn-reset').addEventListener('click', onReset);
+  });
+</script>
+
+</body>
+</html>
