@@ -143,36 +143,41 @@
   .db-query{        top:354px; left:30px;   width:46%;  min-height:78px;}
   .db-table{        top:354px; right:30px;  width:46%;  min-height:78px;}
 
-  /* Wordlist box (overlay durante attacco mongo) */
-  .wordlist-box{
-    position:absolute;
-    top:454px; left:30px; right:30px;
-    border:1.5px dashed var(--danger);
+  /* Caveat box didattico (sotto al verdict, in flow) */
+  .caveat-box{
+    margin:8px 14px 0;
+    border:1.5px dashed var(--warn);
     border-radius:8px;
-    background:#FFF7ED;
-    padding:8px 12px;
-    font-size:0.74rem;
-    font-family:"SF Mono",Menlo,Consolas,monospace;
+    background:#FFFBEB;
+    padding:10px 14px;
+    font-size:0.78rem;
+    font-family:-apple-system,sans-serif;
     color:var(--text);
     opacity:0;
     transition:opacity 0.4s;
-    line-height:1.4;
+    line-height:1.5;
+    max-height:0;
+    overflow:hidden;
   }
-  .wordlist-box.show{opacity:1}
-  .wordlist-box .lbl{
-    color:var(--danger);
-    font-family:-apple-system,sans-serif;
-    font-size:0.62rem;text-transform:uppercase;letter-spacing:0.8px;
-    display:block;margin-bottom:4px;font-weight:700;
+  .caveat-box.show{
+    opacity:1;
+    max-height:240px;
+    transition:opacity 0.4s, max-height 0.5s;
   }
-  .wordlist-attempts{
-    display:grid;grid-template-columns:1fr 1fr 1fr;
-    gap:3px 12px;font-size:0.72rem;
+  .caveat-box .lbl{
+    color:var(--warn);
+    font-size:0.66rem;text-transform:uppercase;letter-spacing:0.8px;
+    display:block;margin-bottom:6px;font-weight:700;
   }
-  .wordlist-attempts .a{color:var(--muted)}
-  .wordlist-attempts .a.try{color:var(--text)}
-  .wordlist-attempts .a.miss{color:var(--muted);text-decoration:line-through}
-  .wordlist-attempts .a.hit{color:var(--success);font-weight:700}
+  .caveat-box .body{
+    color:var(--text);font-size:0.78rem;
+  }
+  .caveat-box .body code{
+    font-family:"SF Mono",Menlo,Consolas,monospace;
+    font-size:0.74rem;color:var(--title);
+    background:#FEF3C7;padding:0 4px;border-radius:3px;
+  }
+  .caveat-box .body strong{color:var(--title)}
 
   .verdict{
     position:absolute;
@@ -358,7 +363,7 @@
     .zone{position:relative;left:auto;right:auto;margin:8px 14px;top:auto;height:auto;min-height:280px}
     .box{position:relative;left:auto!important;right:auto!important;width:auto!important;margin:6px 14px;top:auto!important}
     .arrow-flow,.zone-net{display:none}
-    .verdict,.wordlist-box{position:relative;top:auto;margin:10px 14px;left:auto;right:auto}
+    .verdict,.caveat-box{position:relative;top:auto;margin:10px 14px;left:auto;right:auto}
     .scenario-label{position:relative;display:inline-block;margin:10px auto;left:auto;transform:none}
     .stage{display:flex;flex-direction:column;padding-bottom:90px}
     .controls{flex-wrap:wrap;justify-content:flex-end}
@@ -463,23 +468,6 @@ WHERE email = <span class="str">'mario@x.it'</span>;
     </span>
   </div>
 
-  <!-- Wordlist (visibile solo durante attacco mongo) -->
-  <div class="wordlist-box" id="wordlist">
-    <span class="lbl">⑥ Attaccante: bruteforce offline o online sull'hash recuperato</span>
-    <div class="wordlist-attempts" id="wordlist-attempts">
-      <span class="a miss">"123456" ✗</span>
-      <span class="a miss">"password" ✗</span>
-      <span class="a miss">"admin" ✗</span>
-      <span class="a miss">"qwerty" ✗</span>
-      <span class="a miss">"letmein" ✗</span>
-      <span class="a miss">"welcome" ✗</span>
-      <span class="a try">… 10 milioni di tentativi …</span>
-      <span class="a hit">"P@ssw0rd1" ✓</span>
-      <span class="a">login OK</span>
-    </div>
-  </div>
-
-
   <!-- Verdict -->
   <div class="verdict ok" id="verdict">✓ Autenticazione corretta — la password non è mai uscita dall'app server come testo, e il DB non l'ha mai vista in chiaro</div>
 
@@ -509,6 +497,14 @@ WHERE email = <span class="str">'mario@x.it'</span>;
         <span class="icon">↻</span>Reset
       </button>
     </div>
+  </div>
+</div>
+
+<!-- Caveat didattico (fuori dallo stage, in flow naturale, visibile solo durante fasi di attacco) -->
+<div class="caveat-box" id="caveat">
+  <span class="lbl" id="caveat-label">⚠ Nota didattica</span>
+  <div class="body" id="caveat-body">
+    <!-- popolato dal JS in base al tipo di attacco -->
   </div>
 </div>
 
@@ -752,7 +748,7 @@ WHERE email = <span class="str">'mario@x.it'</span>;
       '<span style="color:var(--muted)">// ok = </span><span class="true">true</span>';
   }
 
-  // FASE 4: Mongo attaccato ($ne) — recupera utente arbitrario, poi serve wordlist
+  // FASE 4: Mongo attaccato ($ne) — recupera utente arbitrario, ma NON fa il bypass
   function setMongoAttack(){
     $('zone-app-label').innerHTML = '🟧 Application server · NESSUNA validazione del tipo email';
     $('zone-db-label').innerHTML = '🟦 Database server · MongoDB';
@@ -784,9 +780,9 @@ WHERE email = <span class="str">'mario@x.it'</span>;
     $('app-receive-content').innerHTML =
       '<span class="pun">{</span><br>' +
       '&nbsp;&nbsp;_id: <span class="num">ObjectId(</span><span class="str">"a1..."</span><span class="num">)</span>,<br>' +
-      '&nbsp;&nbsp;passwordHash: <span style="color:var(--danger);font-size:0.7rem">"$2b$10$XyZ…"</span> <span style="color:var(--muted);font-size:0.7rem">← hash di admin</span><br>' +
+      '&nbsp;&nbsp;passwordHash: <span style="color:var(--muted);font-size:0.7rem">"$2b$10$XyZ…"</span> <span style="color:var(--muted);font-size:0.7rem">← in memoria app, NON inviato al client</span><br>' +
       '<span class="pun">}</span>';
-    $('app-bcrypt-label').textContent = '⑤ bcrypt confronta · password "???" non coincide';
+    $('app-bcrypt-label').textContent = '⑤ bcrypt confronta · password "???" non coincide → login respinto';
     $('app-bcrypt-content').innerHTML =
       'const ok = <span class="fn">await</span> <span class="fn">bcrypt.compare</span>(<br>' +
       '&nbsp;&nbsp;password,&nbsp;&nbsp;<span style="color:var(--muted)">// "???"</span><br>' +
@@ -800,7 +796,7 @@ WHERE email = <span class="str">'mario@x.it'</span>;
   // RESET
   // =========================================================================
   function clearAllBoxes(){
-    ['app-input','app-call','app-receive','app-bcrypt','db-query','db-table','verdict','wordlist']
+    ['app-input','app-call','app-receive','app-bcrypt','db-query','db-table','verdict','caveat']
       .forEach(id => { hide(id); removeClass(id, 'highlight'); removeClass(id, 'highlight-attack'); removeClass(id, 'danger'); });
     $('verdict').classList.remove('bad','warn');
     $('verdict').classList.add('ok');
@@ -913,27 +909,47 @@ WHERE email = <span class="str">'mario@x.it'</span>;
         v.classList.add('ok');
         v.textContent = '✓ Autenticazione corretta — la password non è mai uscita dall\'app server come testo, e il DB non l\'ha mai vista in chiaro';
       } else if(isSql){
+        // Vittoria del bypass SQL UNION — verdict negativo, ma il caveat arriva nell'atto 6
         v.classList.add('bad');
-        v.textContent = '✗ Login bypass — l\'attaccante ha iniettato una riga sintetica con un hash di cui conosce la password. Difesa: prepared statement.';
+        v.textContent = '✗ Login bypass riuscito (in questo scenario semplificato) — l\'app ha trattato la riga sintetica come un utente vero. Difesa: prepared statement.';
       } else {
+        // Mongo $ne: NESSUN bypass — solo identificazione utente
         v.classList.add('warn');
-        v.textContent = '⚠ Iniezione riuscita parzialmente — l\'attaccante ha l\'hash di admin, ma non la password. Serve uno step ulteriore.';
+        v.textContent = '⚠ Iniezione riuscita parzialmente — l\'attaccante ha identificato un utente esistente (admin), ma non si è loggato. Per fare il bypass servono tecniche più sofisticate.';
       }
       show(v);
-      await waitInterruptible(attack && !isSql ? STEP : STEP_LONG);
+      await waitInterruptible(STEP_LONG);
       removeClass('app-bcrypt', attack ? 'highlight-attack' : 'highlight');
     });
 
-    // Atto 6 — solo per attacco Mongo: wordlist box
-    if(attack && !isSql){
+    // Atto 6 — caveat didattico, presente per entrambi gli scenari di attacco
+    if(attack && isSql){
       acts.push(async () => {
         // dot resta su 5 (active)
-        setStatus('⑥ L\'attaccante porta l\'hash offline e lo passa a hashcat / john-the-ripper. Tempi: da minuti a settimane a seconda della password.');
-        show('wordlist');
-        // aggiorna verdict finale
-        const v = $('verdict');
-        v.classList.remove('warn'); v.classList.add('bad');
-        v.textContent = '✗ L\'iniezione ha dato l\'hash di admin · poi serve un attacco a dizionario offline. Difesa: validare il TIPO di email come stringa.';
+        setStatus('⑥ Nota didattica · l\'esempio è una semplificazione del caso reale');
+        $('caveat-label').innerHTML = '⚠ Nota didattica · semplificazioni dell\'esempio UNION';
+        $('caveat-body').innerHTML =
+          'Per chiarezza didattica abbiamo mostrato una versione "ideale" dell\'attacco. Nella realtà l\'attaccante deve risolvere problemi non banali prima che la <code>UNION</code> funzioni: ' +
+          '<strong>numero di colonne</strong> della SELECT bersaglio, <strong>tipi compatibili</strong>, ' +
+          '<strong>posizione della colonna hash</strong> nel result set, e — se il sistema hash usa <strong>salt randomico</strong> (bcrypt lo fa) — ' +
+          'l\'hash precomputato deve essere ben formato e accettato da bcrypt come valido. ' +
+          'Il backend deve inoltre fare <strong>una sola query</strong> che restituisce direttamente l\'hash usato per il confronto — ' +
+          'pattern multi-query lo neutralizzano. Punto fermo: <strong>la radice resta la concatenazione</strong>, e la difesa è sempre <code>prepared statement</code>.';
+        show('caveat');
+        await waitInterruptible(STEP_VERY_LONG);
+      });
+    }
+    if(attack && !isSql){
+      acts.push(async () => {
+        setStatus('⑥ Nota didattica · cosa ha ottenuto davvero l\'attaccante con $ne');
+        $('caveat-label').innerHTML = '⚠ Nota didattica · l\'iniezione $ne da sola NON basta a fare login';
+        $('caveat-body').innerHTML =
+          'In questo scenario l\'app server ha letto l\'hash di admin in memoria, ma <strong>non lo ha mai mandato al client</strong>: l\'attaccante non ha l\'hash in mano e non può portarlo offline. ' +
+          'Quello che ha ottenuto è solo <strong>l\'esistenza di un utente</strong> (admin) — un\'informazione utile per altri attacchi, ma non un login bypass. ' +
+          'Per ottenere il bypass servono <strong>tecniche più sofisticate</strong> che esulano dallo scopo di questa animazione: backend con query unica che include anche il match della password, ' +
+          'esfiltrazione boolean-based con <code>$regex</code>, oppure <code>$where</code> injection su Mongo legacy. ' +
+          'Difesa fondamentale: <strong>validare il TIPO di email come stringa</strong> — taglia tutta la famiglia di attacchi alla radice.';
+        show('caveat');
         await waitInterruptible(STEP_VERY_LONG);
       });
     }
@@ -992,8 +1008,8 @@ WHERE email = <span class="str">'mario@x.it'</span>;
       'L\'app non valida il tipo di email e lo passa direttamente a findOne — il filtro diventa "qualsiasi email"',
       'Mongo cerca un utente con email diversa da stringa vuota — restituisce IL PRIMO documento',
       'Il primo documento è spesso admin (creato per primo) — Mongo lo restituisce all\'app',
-      'L\'app riceve admin con il suo passwordHash · ma l\'attaccante NON conosce ancora la password',
-      'bcrypt fallisce al primo tentativo — la password "???" non corrisponde all\'hash di admin'
+      'L\'app riceve il documento di admin · l\'attaccante NON conosce la password e NON ha l\'hash (resta nell\'app)',
+      'bcrypt fallisce — la password "???" non corrisponde all\'hash di admin. Il login è respinto.'
     ][stepIdx];
   }
 
