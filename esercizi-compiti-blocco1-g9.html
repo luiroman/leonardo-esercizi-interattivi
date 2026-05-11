@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>Compiti G9 Blocco 1 - Consolida NoSQL + pgAudit + RLS</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.6;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F1B2D 0%,#059669 100%);color:#fff;padding:30px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:24px;margin-bottom:6px}header p{color:#D1FAE5;font-size:14px}
+.intro{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:20px;font-size:14px}
+.cat{background:#059669;color:#fff;padding:10px 16px;border-radius:8px;margin:24px 0 14px;font-size:14px;font-weight:600;text-transform:uppercase}
+.ex{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:12px}
+.ex-num{display:inline-block;background:#10B981;color:#fff;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;margin-bottom:8px}
+.ex h3{font-size:15px;margin-bottom:8px}.ex p{font-size:13px;margin-bottom:8px;color:#334155}
+.ex ul{margin:6px 0 8px 20px;font-size:12px;color:#475569}
+details{margin-top:10px;background:#F0FDF4;border-radius:6px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600;color:#059669;font-size:12px}
+.sol{font-size:12px;color:#0F1B2D;line-height:1.7;margin-top:8px}
+.sol code{background:#1E293B;color:#34D399;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:11px}
+pre{background:#1E293B;color:#E2E8F0;padding:10px 12px;border-radius:6px;font-family:Consolas,monospace;font-size:11px;overflow-x:auto;margin:6px 0;line-height:1.5}
+pre .c{color:#34D399}pre .k{color:#60A5FA}pre .s{color:#FBBF24}pre .x{color:#F87171}
+</style></head><body><div class="container">
+<header><h1>📝 Compiti G9 · Blocco 1</h1><p>Consolida NoSQL injection, pgAudit, Row-Level Security · 18 esercizi</p></header>
+<div class="intro"><strong>Obiettivo:</strong> consolidare i contenuti di G9. Da svolgere a casa entro L10. Soluzioni nascoste: aprire dopo aver risposto.</div>
+
+<div class="cat">A · MongoDB injection</div>
+
+<div class="ex"><span class="ex-num">1</span><h3>Definisci operator injection in 3 righe</h3>
+<p>Scrivi cos'è "operator injection" in MongoDB e perché differisce dalla SQL injection.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">L'operator injection sfrutta il fatto che le query MongoDB sono <strong>oggetti JSON-like</strong>: una chiave può essere un campo (es. <code>username</code>) o un operatore (es. <code>$ne</code>). Se l'app accetta come valore di un campo un oggetto invece di un primitive, l'attaccante trasforma il valore in operatore. Differisce dalla SQL injection perché qui non c'è interpolazione di stringhe né eval di SQL: il payload sfrutta la <strong>tipizzazione debole del parsing JSON</strong> e la fiducia del driver nei tipi.</div></details></div>
+
+<div class="ex"><span class="ex-num">2</span><h3>I 5 operatori e il loro abuso</h3>
+<p>Compila la tabella associando ogni operatore al suo uso malevolo tipico:</p>
+<ul><li>$ne — ?</li><li>$gt / $lt — ?</li><li>$regex — ?</li><li>$exists — ?</li><li>$where — ?</li></ul>
+<details><summary>Mostra soluzione</summary><div class="sol"><code>$ne</code> → bypass condizioni di confronto (es. password). <code>$gt/$lt</code> → bypass su campi numerici/stringa (es. role &gt; "u" matcha "user","v","w","x","y","z"). <code>$regex</code> → enumeration carattere per carattere via timing/response. <code>$exists</code> → discovery dello schema (campi nascosti, soft-delete). <code>$where</code> → esecuzione JS server-side, RCE-like, DoS via loop infiniti.</div></details></div>
+
+<div class="ex"><span class="ex-num">3</span><h3>Trova l'attacco</h3>
+<p>Endpoint:</p>
+<pre>app.post(<span class="s">"/reset"</span>, async (req,res) => {
+  <span class="k">const</span> u = await db.users.findOne({email: req.body.email})
+  <span class="k">if</span> (u) sendResetEmail(u.email)
+  res.json({sent: <span class="k">true</span>})  <span class="c">// sempre true per non rivelare</span>
+})</pre>
+<p>Quale payload permette di scoprire un email valido?</p>
+<details><summary>Mostra soluzione</summary><div class="sol"><code>{"email":{"$regex":"@gmail\\.com$"}}</code> ritorna il primo utente con dominio gmail. Combinato con timing (<code>sendResetEmail</code> impiega tempo se trova l'utente, è veloce se non lo trova) → leak. Il <code>res.json({sent:true})</code> finto è inutile contro questo attacco perché il timing rivela il match. Difesa: type check + sanitize + rate limiting.</div></details></div>
+
+<div class="ex"><span class="ex-num">4</span><h3>Disabilita $where</h3>
+<p>Come si disabilita globalmente l'esecuzione di <code>$where</code> in MongoDB self-hosted?</p>
+<details><summary>Mostra soluzione</summary><div class="sol">Avviare MongoDB con <code>--noscripting</code> oppure aggiungere in <code>mongod.conf</code>:
+<pre>security:
+  javascriptEnabled: false</pre>
+Disabilita anche <code>$accumulator</code>, <code>$function</code> in aggregation, <code>mapReduce</code>. È una scelta drastica ma corretta: codice nuovo non dovrebbe mai usare scripting server-side. Atlas lo disabilita di default in tier &lt; M10.</div></details></div>
+
+<div class="cat">B · Difesa MongoDB</div>
+
+<div class="ex"><span class="ex-num">5</span><h3>I 4 layer in ordine</h3>
+<p>Elenca i 4 layer di difesa MongoDB nell'ordine in cui interceptano una richiesta HTTP malevola.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">1. <strong>Sanitize globale</strong> (express-mongo-sanitize) → rimuove chiavi $ in body/query/params PRIMA di tutto. 2. <strong>Validator schema</strong> (Zod/Joi) → middleware che valida tipo+struttura PRIMA del controller. 3. <strong>Type check inline</strong> nel controller → fail-fast finale. 4. <strong>Mongoose schema validation</strong> → casts e rifiuta tipi incompatibili al momento del save. L'ordine in cui un attacco trova le difese: sanitize → Zod → type check → Mongoose. Ognuno copre un caso che gli altri possono mancare.</div></details></div>
+
+<div class="ex"><span class="ex-num">6</span><h3>Zod schema</h3>
+<p>Scrivi uno schema Zod per <code>POST /transfer</code> che riceve <code>{from: "uuid", to: "uuid", amount: number, note: string opzionale max 200 caratteri}</code>.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<pre><span class="k">import</span> { z } <span class="k">from</span> <span class="s">"zod"</span>
+<span class="k">const</span> transferSchema = z.object({
+  from: z.string().uuid(),
+  to: z.string().uuid(),
+  amount: z.number().positive().finite(),
+  note: z.string().max(<span class="x">200</span>).optional()
+}).strict()  <span class="c">// rifiuta chiavi extra</span></pre>
+<code>.strict()</code> è importante: senza, Zod ignora chiavi extra. Con strict, qualsiasi chiave non dichiarata fa fallire la validazione → defense-in-depth contro injection di campi inattesi.</div></details></div>
+
+<div class="ex"><span class="ex-num">7</span><h3>Express-mongo-sanitize: trade-off</h3>
+<p>Quali sono 3 limiti di express-mongo-sanitize che lo rendono insufficiente come unica difesa?</p>
+<details><summary>Mostra soluzione</summary><div class="sol">1. <strong>Maintenance status incerto</strong>: la libreria non riceve update da tempo, ci sono fork e alternative (<code>mongo-sanitize</code>, <code>express-validator</code>). 2. <strong>NON sostituisce schema validation</strong>: rimuove $ ma non valida che <code>amount</code> sia un numero positivo. 3. <strong>Falsi positivi su campi che legittimamente contengono $</strong> (es. shop pricing, simboli valuta). 4. <strong>Difesa "ultima linea"</strong>: arriva troppo tardi rispetto a un schema validator che fail-fast prima del controller. Resta utile come safety net globale, mai come unico baluardo.</div></details></div>
+
+<div class="cat">C · Altri NoSQL</div>
+
+<div class="ex"><span class="ex-num">8</span><h3>Redis ACL · scrivi la regola</h3>
+<p>Crea un utente Redis chiamato <code>cache_app</code> con password <code>secret123</code> che può fare solo GET/SET/DEL su chiavi che iniziano per <code>session:</code>, e nient'altro.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<pre>ACL SETUSER cache_app on &gt;secret123 ~session:* +get +set +del</pre>
+Decomposizione: <code>on</code> = abilita, <code>&gt;secret123</code> = password, <code>~session:*</code> = pattern chiavi consentite, <code>+get +set +del</code> = comandi consentiti. Tutti gli altri comandi sono vietati di default. Verificare con <code>ACL LIST</code> e <code>ACL WHOAMI</code> dopo il login.</div></details></div>
+
+<div class="ex"><span class="ex-num">9</span><h3>Cassandra: la tua difesa</h3>
+<p>Hai un'app Java che usa <code>cassandra-driver</code>. Quale API garantisce automaticamente l'escape dei parametri e impedisce CQL injection?</p>
+<details><summary>Mostra soluzione</summary><div class="sol">Le <strong>prepared statement</strong>:
+<pre>PreparedStatement ps = session.prepare(
+  <span class="s">"SELECT * FROM users WHERE id = ?"</span>);
+ResultSet rs = session.execute(ps.bind(userId));</pre>
+La sintassi è identica a JDBC. Il driver invia il template SQL al cluster Cassandra una volta sola, poi invia i parametri separati come binari. Non c'è interpolazione testuale → niente injection. Da evitare: <code>session.execute("SELECT * FROM users WHERE id = " + userId)</code> — è la forma vulnerabile classica.</div></details></div>
+
+<div class="ex"><span class="ex-num">10</span><h3>Elasticsearch: object building</h3>
+<p>Riscrivi questo codice ES vulnerabile in versione sicura:</p>
+<pre><span class="k">const</span> body = <span class="s">`{"query":{"match":{"title":"${userInput}"}}}`</span>
+es.search({index: <span class="s">"products"</span>, body: JSON.parse(body)})</pre>
+<details><summary>Mostra soluzione</summary><div class="sol">Costruire l'oggetto JSON direttamente, senza concatenazione di stringhe:
+<pre><span class="k">const</span> body = {
+  query: {
+    match: { title: userInput }
+  }
+}
+es.search({index: <span class="s">"products"</span>, body})</pre>
+Il client driver serializza l'oggetto in JSON in modo sicuro: <code>userInput</code> è un valore string, non parte della struttura. Inoltre validare con Zod che <code>userInput</code> sia <code>z.string().max(200)</code> per evitare query DoS con regex enormi.</div></details></div>
+
+<div class="cat">D · pgAudit</div>
+
+<div class="ex"><span class="ex-num">11</span><h3>Setup pgAudit minimale</h3>
+<p>Scrivi i 4 comandi necessari per attivare pgAudit con session audit per ROLE+DDL su un PostgreSQL fresco.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<pre><span class="c">-- 1. carica libreria (richiede restart)</span>
+<span class="k">ALTER SYSTEM SET</span> shared_preload_libraries = <span class="s">'pgaudit'</span>;
+<span class="c">-- ora restart Postgres: pg_ctl restart</span>
+
+<span class="c">-- 2. crea extension nel DB target</span>
+<span class="k">CREATE EXTENSION</span> pgaudit;
+
+<span class="c">-- 3. configura classi auditate</span>
+<span class="k">ALTER SYSTEM SET</span> pgaudit.log = <span class="s">'role, ddl'</span>;
+
+<span class="c">-- 4. ricarica config (no restart richiesto)</span>
+<span class="k">SELECT</span> pg_reload_conf();</pre></div></details></div>
+
+<div class="ex"><span class="ex-num">12</span><h3>Le 7 classi a memoria</h3>
+<p>Elenca le 7 classi di eventi pgAudit con un esempio di statement per ognuna.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<ul style="font-size:12px"><li><strong>READ</strong>: SELECT, COPY FROM</li>
+<li><strong>WRITE</strong>: INSERT, UPDATE, DELETE</li>
+<li><strong>FUNCTION</strong>: chiamata a funzione, blocchi DO</li>
+<li><strong>ROLE</strong>: GRANT, REVOKE, CREATE ROLE</li>
+<li><strong>DDL</strong>: CREATE/ALTER/DROP TABLE/INDEX/VIEW</li>
+<li><strong>MISC</strong>: DISCARD, FETCH, CHECKPOINT</li>
+<li><strong>MISC_SET</strong>: SET parameter (ad es. SET row_security = off)</li></ul>
+Setup minimo always-on: <code>'role, ddl'</code>. Per dati sensibili aggiungere object audit invece di session-level <code>'read,write'</code>.</div></details></div>
+
+<div class="ex"><span class="ex-num">13</span><h3>Session vs Object</h3>
+<p>Spiega in 2 frasi la differenza tra session audit e object audit, e indica quando usare uno o l'altro.</p>
+<details><summary>Mostra soluzione</summary><div class="sol"><strong>Session audit</strong> logga in base alla CLASSE dell'evento (<code>pgaudit.log = 'read,write'</code>); è facile da configurare ma genera molto rumore se attivato per READ/WRITE su DB ad alto traffico. <strong>Object audit</strong> logga in base all'OGGETTO toccato, configurato via un ruolo dedicato con grant solo sulle tabelle sensibili (<code>pgaudit.role = 'audit_role'</code>); ha alto signal-to-noise ma richiede pianificazione iniziale.<br><br>Usa session per le classi "always-on" (ROLE, DDL — bassi volumi). Usa object per dati sensibili specifici (PII, financial, salaries).</div></details></div>
+
+<div class="ex"><span class="ex-num">14</span><h3>Parsa questo log</h3>
+<p>Anatomizza questo entry pgAudit campo per campo:</p>
+<pre>AUDIT: OBJECT,7,3,WRITE,DELETE,TABLE,public.salaries,
+DELETE FROM salaries WHERE department='HR',&lt;not logged&gt;</pre>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<ul style="font-size:12px"><li><code>OBJECT</code> → tipo audit (object-level via grant a audit_role)</li>
+<li><code>7</code> → audit ID (sequence number nella sessione)</li>
+<li><code>3</code> → statement ID (nel batch)</li>
+<li><code>WRITE</code> → classe pgAudit</li>
+<li><code>DELETE</code> → comando SQL</li>
+<li><code>TABLE</code> → tipo oggetto</li>
+<li><code>public.salaries</code> → schema.oggetto qualificato</li>
+<li><code>DELETE FROM salaries WHERE department='HR'</code> → testo query</li>
+<li><code>&lt;not logged&gt;</code> → valori parametri non loggati per privacy</li></ul>
+Eventi DELETE su tabelle sensibili come salaries dovrebbero sempre triggerare alert SIEM, indipendentemente dall'utente.</div></details></div>
+
+<div class="cat">E · Row-Level Security</div>
+
+<div class="ex"><span class="ex-num">15</span><h3>RLS in 3 frasi</h3>
+<p>Definisci Row-Level Security in massimo 3 frasi, evidenziando il salto rispetto all'authorization in app layer.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">RLS è una feature PostgreSQL che applica un <strong>predicato di filtro a livello di riga</strong> direttamente sulla tabella, valutato dal DBMS automaticamente per ogni query. Sposta authorization da app layer a DB layer: lo sviluppatore può scrivere <code>SELECT * FROM orders</code> e il DB applica il WHERE in modo automatico. Il vantaggio è defense-in-depth: anche se l'app dimentica un filtro, anche se un tool di reporting si connette al DB, anche se una migration tocca i dati, la policy è inevitabile.</div></details></div>
+
+<div class="ex"><span class="ex-num">16</span><h3>USING vs WITH CHECK</h3>
+<p>Quando uso solo <code>USING</code>? Quando devo aggiungere <code>WITH CHECK</code>? Fai un esempio in cui omettere WITH CHECK porta a un bug.</p>
+<details><summary>Mostra soluzione</summary><div class="sol"><code>USING</code> filtra le righe ESISTENTI (lettura, update target, delete). <code>WITH CHECK</code> valida le righe NUOVE (insert, update target post-modifica).<br><br>
+<strong>Bug se ometti WITH CHECK</strong>: in una tabella <code>orders(user_id, ...)</code> con policy <code>USING (user_id = current_user_id())</code>, l'utente A può fare <code>INSERT INTO orders (user_id, ...) VALUES (B_id, ...)</code>. La policy USING non si applica all'insert. La riga viene creata "appartenente" a B. Subito dopo, A non la vede più (USING la filtra). Risultato: A può creare ordini su conti di altri utenti, e poi non li vede più — perfetto per frode.<br><br>Fix: aggiungere <code>WITH CHECK (user_id = current_user_id())</code>. Per multi-tenant, USING e WITH CHECK quasi sempre identici.</div></details></div>
+
+<div class="ex"><span class="ex-num">17</span><h3>FORCE RLS · trappola del proprietario</h3>
+<p>Spiega in 2 frasi perché il proprietario di una tabella bypassa RLS by default, e quali sono le 2 mitigazioni.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">PostgreSQL bypassa RLS per il <strong>proprietario della tabella</strong> (chi l'ha creata) per evitare lock-out: se il DBA crea la tabella e poi una policy mal scritta lo esclude, deve poter intervenire. Il problema è che molte app si connettono come proprietario per comodità → RLS è di fatto disattivato.<br><br>Mitigazioni: (1) <code>ALTER TABLE invoices FORCE ROW LEVEL SECURITY</code> applica RLS anche al proprietario. (2) Separazione architetturale: ruolo <code>schema_owner</code> per migrations/DDL, ruolo <code>app_role</code> non-proprietario per CRUD. La (2) è la best practice; FORCE RLS è la safety net.</div></details></div>
+
+<div class="ex"><span class="ex-num">18</span><h3>Defense in depth · 4 layer</h3>
+<p>Elenca i 4 layer di defense-in-depth per un'app PostgreSQL hardened. Per ogni layer indica DOVE vive (app/boundary/DB).</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<ul style="font-size:12px"><li><strong>L1 · Input validation</strong> → APP LAYER. Type check, schema validation (Zod/Joi).</li>
+<li><strong>L2 · Parametri sicuri</strong> → APP-DB BOUNDARY. Prepared statement, ORM type-safe.</li>
+<li><strong>L3 · Authorization RLS</strong> → DB LAYER. Policy a livello riga, FORCE RLS, ruoli separati.</li>
+<li><strong>L4 · Audit pgAudit</strong> → DB LAYER. Detection + forensic trail (object audit per dati sensibili).</li></ul>
+I 4 layer sono <strong>indipendenti</strong>. L1+L2 li abbiamo costruiti in L8 (SQL injection). L3+L4 sono ciò che PG aggiunge per chiudere il gap. Un attaccante deve bucare TUTTI E 4 i layer per arrivare ai dati.</div></details></div>
+
+</div></body></html>
