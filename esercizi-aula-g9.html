@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><title>Esercizi Aula G9 - NoSQL Injection + pgAudit + RLS</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#F8FAFC;color:#0F1B2D;line-height:1.6;padding:20px}
+.container{max-width:900px;margin:0 auto}
+header{background:linear-gradient(135deg,#0F1B2D 0%,#059669 100%);color:#fff;padding:30px;border-radius:12px;margin-bottom:24px}
+header h1{font-size:24px;margin-bottom:6px}
+header p{color:#D1FAE5;font-size:14px}
+.intro{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:18px;margin-bottom:20px;font-size:14px}
+.cat{background:#059669;color:#fff;padding:10px 16px;border-radius:8px;margin:24px 0 14px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.ex{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:20px;margin-bottom:14px}
+.ex-num{display:inline-block;background:#10B981;color:#fff;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;margin-bottom:10px}
+.ex h3{font-size:16px;margin-bottom:10px;color:#0F1B2D}
+.ex p{font-size:14px;margin-bottom:10px;color:#334155}
+.ex ul{margin:8px 0 10px 22px;font-size:13px;color:#475569}
+details{margin-top:12px;background:#F0FDF4;border-radius:6px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600;color:#059669;font-size:13px}
+details[open] summary{margin-bottom:8px}
+.sol{font-size:13px;color:#0F1B2D;line-height:1.7}
+.sol code{background:#1E293B;color:#34D399;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+pre{background:#1E293B;color:#E2E8F0;padding:12px 14px;border-radius:6px;font-family:Consolas,monospace;font-size:12px;overflow-x:auto;margin:8px 0;line-height:1.5}
+pre .c{color:#34D399}pre .k{color:#60A5FA}pre .s{color:#FBBF24}pre .x{color:#F87171}
+</style></head><body><div class="container">
+<header><h1>📚 Esercizi Aula G9</h1><p>NoSQL Injection · pgAudit · Row-Level Security · 10 esercizi · ~50 minuti</p></header>
+<div class="intro"><strong>Modalità di lavoro:</strong> esercizi da svolgere in aula in coppie. Discussione plenaria dopo ogni categoria. Le soluzioni sono nascoste — apritele solo dopo aver provato.</div>
+
+<div class="cat">Categoria A · MongoDB injection</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 1</span><h3>Identifica l'operatore d'attacco</h3>
+<p>Un endpoint Express per il login fa:</p>
+<pre>app.post(<span class="s">"/login"</span>, async (req,res) => {
+  <span class="k">const</span> u = await db.users.findOne({
+    username: req.body.username,
+    password: req.body.password
+  })
+  <span class="k">if</span> (u) res.json({ok:<span class="k">true</span>, token: signJWT(u)})
+})</pre>
+<p>Un attaccante invia il payload JSON: <code>{"username":{"$ne":null},"password":{"$ne":null}}</code></p>
+<p><strong>Domande:</strong> 1) cosa succede? 2) quale operatore è stato iniettato? 3) chi viene loggato?</p>
+<details><summary>Mostra soluzione</summary><div class="sol">1) La query diventa <code>findOne({username:{$ne:null}, password:{$ne:null}})</code> → ritorna il <strong>primo utente</strong> trovato che ha username e password non null. In MongoDB l'ordine di insertion è preservato → di solito è l'admin (creato per primo).<br>2) L'operatore <code>$ne</code> (not equal). Si attacca alla chiave del campo trasformandola in operatore.<br>3) Loggato come admin con il suo JWT firmato. <strong>Auth bypass completo</strong>.<br><br>Difesa minima: <code>if (typeof req.body.username !== "string") return res.status(400)</code>. Una riga.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 2</span><h3>Enumeration con $regex</h3>
+<p>Un endpoint "verifica username disponibile" per la registrazione fa:</p>
+<pre>app.get(<span class="s">"/check"</span>, async (req,res) => {
+  <span class="k">const</span> exists = await db.users.findOne({username: req.query.u})
+  res.json({available: !exists})
+})</pre>
+<p>L'attaccante manda: <code>?u[$regex]=^a</code>, poi <code>?u[$regex]=^ab</code>, poi <code>?u[$regex]=^abc</code>...</p>
+<p><strong>Domande:</strong> 1) cosa sta facendo? 2) quante richieste servono per estrarre uno username di 10 caratteri minuscoli? 3) come puoi bloccare l'attacco con un solo middleware?</p>
+<details><summary>Mostra soluzione</summary><div class="sol">1) <strong>Enumeration carattere per carattere</strong>. Express con qs parser interpreta <code>u[$regex]=^a</code> come oggetto <code>{u: {$regex: "^a"}}</code>. La risposta <code>available:false</code> conferma che esiste uno username che inizia per "a", poi "ab", ecc.<br>2) Con 26 lettere e 10 posizioni: <strong>~260 richieste</strong> nel caso peggiore (linear scan). In realtà molte meno (l'attaccante fa pruning).<br>3) <code>express-mongo-sanitize</code>: rimuove ogni chiave che inizia per <code>$</code>. <code>app.use(mongoSanitize())</code>. In alternativa: type check forte (<code>typeof === "string"</code>) o validation schema (Zod).</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 3</span><h3>$where: trova il bug</h3>
+<p>Un endpoint per filtrare prodotti per range di prezzo:</p>
+<pre>app.get(<span class="s">"/products"</span>, async (req,res) => {
+  <span class="k">const</span> {min, max} = req.query
+  <span class="k">const</span> products = await db.products.find({
+    $where: <span class="s">`this.price &gt;= ${min} && this.price &lt;= ${max}`</span>
+  }).toArray()
+  res.json(products)
+})</pre>
+<p><strong>Domande:</strong> 1) trova 2 payload che sfruttano il bug — uno per DoS e uno per leak. 2) qual è la difesa corretta?</p>
+<details><summary>Mostra soluzione</summary><div class="sol">1) DoS: <code>?min=0&max=1; while(true){}</code> → loop infinito JS server-side, blocca il thread MongoDB. Leak: <code>?min=0&max=1; return JSON.stringify(this)</code> → ritorna l'intero documento anche se la query "logicamente" filtrava. Peggio: <code>?min=0&max=1; sleep(5000)</code> per timing-based exfiltration.<br>2) <strong>Bandire $where</strong>. Riscrivere con operatori standard: <code>db.products.find({price: {$gte: Number(min), $lte: Number(max)}})</code>. Convertire min/max a numero (cast esplicito), validare con Zod (<code>z.number().nonnegative()</code>). Mai usare $where con input utente — è la regola.</div></details></div>
+
+<div class="cat">Categoria B · Difesa MongoDB</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 4</span><h3>Costruisci i 4 layer</h3>
+<p>Hai un endpoint <code>POST /signup</code> che riceve <code>{username, password, email, age}</code>. Scrivi i 4 layer di difesa:</p>
+<ul><li>Layer 1: type check inline</li><li>Layer 2: schema Mongoose</li><li>Layer 3: validator Zod centralizzato (middleware)</li><li>Layer 4: configurazione globale di express-mongo-sanitize</li></ul>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<pre><span class="c">// Layer 1: type check inline (fail-fast)</span>
+<span class="k">if</span> (<span class="k">typeof</span> req.body.username !== <span class="s">"string"</span>) <span class="k">return</span> res.status(<span class="x">400</span>)
+<span class="k">if</span> (<span class="k">typeof</span> req.body.email !== <span class="s">"string"</span>) <span class="k">return</span> res.status(<span class="x">400</span>)
+
+<span class="c">// Layer 2: schema Mongoose</span>
+<span class="k">const</span> userSchema = <span class="k">new</span> Schema({
+  username: {type: <span class="k">String</span>, required:<span class="k">true</span>, trim:<span class="k">true</span>, minlength:<span class="x">3</span>},
+  password: {type: <span class="k">String</span>, required:<span class="k">true</span>, minlength:<span class="x">8</span>},
+  email: {type: <span class="k">String</span>, required:<span class="k">true</span>, match:/.+@.+/},
+  age: {type: Number, min:<span class="x">13</span>}
+})
+
+<span class="c">// Layer 3: Zod centralizzato</span>
+<span class="k">const</span> signupSchema = z.object({
+  username: z.string().min(<span class="x">3</span>).max(<span class="x">50</span>),
+  password: z.string().min(<span class="x">8</span>),
+  email: z.string().email(),
+  age: z.number().int().min(<span class="x">13</span>)
+})
+router.post(<span class="s">"/signup"</span>, validate(signupSchema), signupHandler)
+
+<span class="c">// Layer 4: globale</span>
+app.use(mongoSanitize({onSanitize: ({req,key}) => logger.warn(<span class="s">"sanitize"</span>,key)}))</pre>
+I 4 layer sono <strong>indipendenti</strong>. Se uno fallisce, gli altri reggono. Non è ridondanza inutile: ogni layer copre attacchi diversi.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 5</span><h3>Redis: trova l'injection</h3>
+<p>Una cache Redis viene usata così:</p>
+<pre>app.get(<span class="s">"/profile/:id"</span>, async (req,res) => {
+  <span class="k">const</span> raw = await redis.sendCommand(
+    <span class="s">`GET user:${req.params.id}`</span>
+  )
+  res.send(raw || <span class="s">"not found"</span>)
+})</pre>
+<p>L'attaccante chiama: <code>GET /profile/abc%0D%0AFLUSHALL</code></p>
+<p><strong>Domande:</strong> 1) cosa succede sul server Redis? 2) come si corregge il codice?</p>
+<details><summary>Mostra soluzione</summary><div class="sol">1) <code>%0D%0A</code> è <code>\r\n</code> URL-encoded. Il driver invia a Redis: <code>GET user:abc\r\nFLUSHALL\r\n</code>. RESP è line-based: Redis riceve <strong>due comandi</strong> e esegue <code>FLUSHALL</code> (cancella tutto il database). Disastro.<br>2) Usare l'API "by argument" del driver, che escapa i parametri:
+<pre><span class="k">const</span> raw = await redis.get(<span class="s">`user:${req.params.id}`</span>)
+<span class="c">// oppure più sicuro: validare l'id come numerico/uuid prima</span>
+<span class="k">if</span> (!/^[a-f0-9-]+$/.test(req.params.id)) <span class="k">return</span> res.status(<span class="x">400</span>)</pre>
+Aggiungi anche ACL Redis: <code>ACL SETUSER appuser on &gt;pwd ~user:* +get +set -flushall</code>. Anche se l'injection passa, FLUSHALL viene rifiutato.</div></details></div>
+
+<div class="cat">Categoria C · pgAudit</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 6</span><h3>Setup pgAudit per scenario</h3>
+<p>Sei DBA di un'app SaaS multi-tenant con tabella <code>invoices</code> (sensibile, tenant_id) e <code>products</code> (catalogo pubblico). 50.000 query/giorno. Devi soddisfare 3 requisiti:</p>
+<ul><li>Audit ogni GRANT/REVOKE e ogni CREATE/ALTER/DROP</li><li>Audit ogni operazione su <code>invoices</code> (read e write)</li><li>NON audit le SELECT su <code>products</code> (volume alto, contenuto pubblico)</li></ul>
+<p><strong>Domanda:</strong> scrivi i comandi pgAudit per configurare questo setup minimale.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<pre><span class="c">-- 1. Session audit per ROLE e DDL (always-on, basso volume)</span>
+<span class="k">ALTER SYSTEM SET</span> pgaudit.log = <span class="s">'role, ddl'</span>;
+
+<span class="c">-- 2. Object audit per invoices via ruolo dedicato</span>
+<span class="k">CREATE ROLE</span> audit_role NOLOGIN NOINHERIT;
+<span class="k">GRANT SELECT</span>, <span class="k">INSERT</span>, <span class="k">UPDATE</span>, <span class="k">DELETE</span>
+  <span class="k">ON</span> invoices <span class="k">TO</span> audit_role;
+<span class="k">ALTER SYSTEM SET</span> pgaudit.role = <span class="s">'audit_role'</span>;
+
+<span class="c">-- 3. products NON è grant-ato a audit_role → SELECT su products non loggate</span>
+
+<span class="c">-- ricarica</span>
+<span class="k">SELECT</span> pg_reload_conf();</pre>
+Il vantaggio: il volume di log scende di 100x perché products (catalogo, tante SELECT) non genera record. Solo ROLE/DDL (rari) + tutto su invoices (sensibile) → segnale pulito per il SIEM.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 7</span><h3>Parsa un log entry</h3>
+<p>Hai questo log entry pgAudit:</p>
+<pre>YYYY-MM-DD 14:23:11.987 UTC [9876] LOG:  AUDIT: SESSION,5,1,WRITE,UPDATE,
+TABLE,public.users,UPDATE users SET role='admin' WHERE id=$1,&lt;not logged&gt;</pre>
+<p><strong>Domande:</strong> 1) chi ha fatto cosa? 2) è un evento sospetto? perché? 3) come puoi ricostruire chi (utente DB) ha eseguito la query, dato questo entry?</p>
+<details><summary>Mostra soluzione</summary><div class="sol">1) Qualcuno ha fatto un <code>UPDATE</code> su <code>public.users</code> impostando <code>role='admin'</code> per un utente con id non loggato (è $1, parametro). È stato un evento di tipo SESSION (logged perché pgaudit.log include 'write').<br>2) <strong>SÌ, sospetto</strong>. Una promotion a admin è un'azione critica: dovrebbe avvenire raramente, da specifici account, in specifiche finestre. Una regola SIEM su questo pattern (UPDATE users SET role) genera sempre un alert.<br>3) Il PID è <code>[9876]</code>. Per risalire al ruolo DB serve correlare con i log di connessione PostgreSQL (<code>log_connections=on</code>): trovi il record di apertura sessione con stesso PID e timestamp vicino → <code>connection authorized: user=app_admin</code>. In jsonlog c'è il campo <code>user</code> già nel record.</div></details></div>
+
+<div class="cat">Categoria D · Row-Level Security</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 8</span><h3>Scrivi la policy RLS</h3>
+<p>Tabella <code>documents(id, owner_id, title, body, is_public)</code>. Vuoi che ogni utente veda:</p>
+<ul><li>I propri documenti (<code>owner_id = utente corrente</code>)</li><li>I documenti pubblici (<code>is_public = true</code>)</li></ul>
+<p>L'app setta la sessione con <code>SET app.user_id = '...'</code>. <strong>Domanda:</strong> scrivi la policy RLS completa (USING + WITH CHECK).</p>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<pre><span class="k">ALTER TABLE</span> documents <span class="k">ENABLE ROW LEVEL SECURITY</span>;
+
+<span class="k">CREATE POLICY</span> documents_visibility <span class="k">ON</span> documents
+  <span class="k">FOR ALL TO</span> app_role
+  <span class="k">USING</span> (
+    owner_id = current_setting(<span class="s">'app.user_id'</span>)::<span class="k">int</span>
+    <span class="k">OR</span> is_public = <span class="k">true</span>
+  )
+  <span class="k">WITH CHECK</span> (
+    owner_id = current_setting(<span class="s">'app.user_id'</span>)::<span class="k">int</span>
+  );</pre>
+Nota la differenza intenzionale tra USING e WITH CHECK: USING permette di <em>vedere</em> documenti pubblici di altri, WITH CHECK <strong>non</strong> permette di <em>creare</em> documenti per conto di altri (owner_id deve essere te). Senza questo dettaglio, un utente potrebbe inserire <code>INSERT INTO documents (owner_id, ...) VALUES (42, ...)</code> creando un documento "appartenente" all'utente 42.</div></details></div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 9</span><h3>FORCE RLS: la trappola</h3>
+<p>Hai abilitato RLS sulla tabella <code>invoices</code> con policy multi-tenant. La tua app si connette come ruolo <code>app_owner</code> (lo stesso che ha creato la tabella con CREATE TABLE). Apri psql come app_owner e fai <code>SELECT * FROM invoices</code>.</p>
+<p><strong>Domanda:</strong> 1) cosa vedi? 2) perché? 3) due modi per correggere il problema.</p>
+<details><summary>Mostra soluzione</summary><div class="sol">1) Vedi <strong>TUTTE le righe di tutti i tenant</strong>. RLS è ignorato.<br>2) Il proprietario della tabella bypassa RLS by default in PostgreSQL. È un comportamento progettato per evitare lock-out del DBA, ma è la prima causa di RLS inefficace in produzione.<br>3) Due soluzioni:<br>
+<pre><span class="c">-- a. FORCE RLS sulla tabella</span>
+<span class="k">ALTER TABLE</span> invoices <span class="k">FORCE ROW LEVEL SECURITY</span>;
+
+<span class="c">-- b. Separazione ruoli (preferita)</span>
+<span class="k">CREATE ROLE</span> app_role;  <span class="c">-- ruolo applicativo, NON proprietario</span>
+<span class="k">GRANT SELECT</span>,<span class="k">INSERT</span>,<span class="k">UPDATE</span>,<span class="k">DELETE</span> <span class="k">ON</span> invoices <span class="k">TO</span> app_role;
+<span class="c">-- l'app si connette come app_role, mai come app_owner</span></pre>
+La soluzione (b) è preferita architetturalmente: app_owner fa solo migrations/DDL. FORCE RLS è la safety net.</div></details></div>
+
+<div class="cat">Categoria E · Detection e SIEM</div>
+
+<div class="ex"><span class="ex-num">ESERCIZIO 10</span><h3>Code review live · trova le 4 issue</h3>
+<p>Trova i 4 problemi di security nel codice qui sotto. Hint: SQLi, type, multi-tenant, ruoli DB.</p>
+<pre><span class="c">// === API SaaS multi-tenant per fatturazione ===</span>
+<span class="c">// connection: postgres://app_owner:secret@db/saas (super)</span>
+router.get(<span class="s">"/invoices"</span>, async (req, res) => {
+  <span class="k">const</span> { search, sort } = req.query
+  <span class="k">const</span> sql = <span class="s">`SELECT * FROM invoices
+              WHERE customer LIKE '%${search}%'
+              ORDER BY ${sort}`</span>
+  <span class="k">const</span> rows = await pg.query(sql)
+  res.json(rows)
+})
+router.post(<span class="s">"/invoices"</span>, async (req, res) => {
+  await pg.query(
+    <span class="s">"INSERT INTO invoices(amount, customer) VALUES($1,$2)"</span>,
+    [req.body.amount, req.body.customer])
+  res.json({ ok: <span class="k">true</span> })
+})</pre>
+<details><summary>Mostra soluzione</summary><div class="sol">
+<strong>Issue 1 · SQL injection classico</strong>: <code>search</code> e <code>sort</code> sono concatenati nella stringa. Payload: <code>?search='; DROP TABLE invoices--</code>. Fix: prepared statement per <code>search</code>; per <code>sort</code> (che non si parametrizza) usa una <strong>whitelist</strong> di colonne ammesse.<br><br>
+<strong>Issue 2 · Multi-tenant assente</strong>: l'INSERT non setta <code>tenant_id</code>. Senza RLS, vedi gli invoices di tutti. Senza tenant_id nell'INSERT, crei record orfani. Fix: <code>ENABLE RLS + policy</code> su <code>tenant_id = current_setting('app.tenant_id')</code> + <code>SET app.tenant_id</code> per ogni request.<br><br>
+<strong>Issue 3 · Ruolo DB sbagliato</strong>: la connessione usa <code>app_owner</code> (super, proprietario). RLS sarebbe bypassato anche se attivato. Fix: ruolo <code>app_role</code> non-proprietario, con grant minimi.<br><br>
+<strong>Issue 4 · Type check assente sull'INSERT</strong>: <code>req.body.amount</code> potrebbe essere stringa, oggetto, array. Anche con prepared statement, se il driver fa cast implicito, valori inattesi entrano nel DB. Fix: Zod validation prima del query (<code>amount: z.number().positive()</code>).<br><br>
+<strong>Bonus</strong>: pgAudit non è abilitato — non c'è audit trail forense.
+</div></details></div>
+
+</div></body></html>
