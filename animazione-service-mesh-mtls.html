@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mTLS nel Service Mesh — Animazione</title>
+<style>
+  :root{
+    --title:#0F4C75; --text:#1E293B; --muted:#64748B; --bg:#F8F9FA;
+    --border:#E2E8F0; --success:#059669; --accent:#0891B2;
+    --client:#7C3AED; --service:#0891B2; --ctrl:#059669; --warn:#D97706;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);
+       display:flex;flex-direction:column;align-items:center;min-height:100vh}
+  .header{width:100%;background:var(--title);padding:16px 20px;text-align:center}
+  .header h1{color:#fff;font-size:1.25rem;font-weight:700;letter-spacing:.2px}
+  .header p{color:#BAD7E9;font-size:.82rem;margin-top:3px}
+  .wrap{width:100%;max-width:920px;padding:14px}
+  .stage{position:relative;background:#fff;border:1px solid var(--border);
+         border-radius:14px;height:430px;overflow:hidden}
+  svg.lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .entity{position:absolute;border-radius:14px;display:flex;flex-direction:column;
+          align-items:center;justify-content:center;text-align:center;
+          background:#fff;transition:box-shadow .3s,border-color .3s}
+  .entity .name{font-weight:700;font-size:.86rem}
+  .entity .sub{font-size:.66rem;color:var(--muted);margin-top:2px}
+  .glow{box-shadow:0 0 0 4px rgba(8,145,178,.18)}
+  .glow-c{box-shadow:0 0 0 4px rgba(5,150,105,.20)}
+  /* istiod */
+  #istiod{left:355px;top:14px;width:200px;height:58px;border:2px solid var(--ctrl);
+          background:#F0FDF4}
+  #istiod .name{color:var(--ctrl)}
+  /* pod */
+  .pod{position:absolute;top:190px;width:270px;height:150px;border:1px solid var(--border);
+       border-radius:16px;background:#F1F5F9}
+  .pod .podlbl{position:absolute;top:6px;left:12px;font-size:.66rem;color:var(--muted);font-weight:700}
+  #podA{left:22px} #podB{right:22px}
+  .app{width:110px;height:96px;top:42px;border:2px solid var(--client)}
+  .app .name{color:var(--client)}
+  .envoy{width:110px;height:96px;top:42px;border:2px solid var(--accent);background:#EFF6FF}
+  .envoy .name{color:var(--accent)}
+  #appA{left:34px}  #envoyA{left:150px}
+  #envoyB{right:150px} #appB{right:34px}
+  #appB .name{color:var(--service)} #appB{border-color:var(--service)}
+  /* certificati / pacchetti */
+  .dot{position:absolute;width:16px;height:16px;border-radius:50%;opacity:0;
+       transition:left 1.2s linear,top 1.2s linear,opacity .3s;z-index:6}
+  .cert{position:absolute;padding:3px 7px;border-radius:7px;font-size:.62rem;font-weight:700;
+        border:1.5px solid;background:#fff;opacity:0;
+        transition:left 1.1s linear,top 1.1s linear,opacity .3s;z-index:7;white-space:nowrap}
+  .cert.a{border-color:var(--ctrl);color:var(--ctrl)}
+  .pkt-clear{background:#94A3B8}
+  .pkt-enc{background:var(--success)}
+  .locktag{position:absolute;left:50%;top:150px;transform:translateX(-50%);
+           padding:6px 14px;border-radius:20px;background:var(--success);color:#fff;
+           font-size:.74rem;font-weight:700;opacity:0;transition:opacity .4s;z-index:8}
+  .midlabel{position:absolute;left:50%;top:172px;transform:translateX(-50%);
+            font-size:.66rem;color:var(--muted);opacity:0;transition:opacity .3s}
+  /* status bar */
+  .status{width:100%;max-width:920px;margin:0 14px;background:var(--title);border-radius:10px;
+          padding:11px 16px;display:flex;align-items:center;gap:14px;margin-top:-2px}
+  .status .txt{color:#fff;font-size:.86rem;flex:1;min-height:1.1em}
+  .dots{display:flex;gap:7px}
+  .sd{width:10px;height:10px;border-radius:50%;background:#33628A;transition:background .3s}
+  .sd.active{background:#38BDF8} .sd.done{background:var(--success)}
+  footer{color:var(--muted);font-size:.72rem;padding:12px;text-align:center}
+  @media(max-width:750px){
+    .stage{height:380px}
+    #istiod{left:calc(50% - 100px);width:200px}
+    .pod{width:150px;height:130px;top:200px} .app,.envoy{width:66px;height:80px}
+    #appA{left:8px}#envoyA{left:78px}#envoyB{right:78px}#appB{right:8px}
+    .entity .name{font-size:.72rem}.entity .sub{font-size:.58rem}
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>🔐 mTLS nel Service Mesh — mutua autenticazione</h1>
+    <p>istiod distribuisce l'identità · i sidecar cifrano e si autenticano · le app non lo sanno</p>
+  </div>
+
+  <div class="wrap">
+    <div class="stage" id="stage">
+      <svg class="lines" viewBox="0 0 920 430" preserveAspectRatio="none" id="svg"></svg>
+
+      <div class="entity" id="istiod"><div class="name">istiod</div><div class="sub">control plane · CA</div></div>
+
+      <div class="pod" id="podA"><div class="podlbl">Pod A</div>
+        <div class="entity app" id="appA"><div class="name">app A</div><div class="sub">business logic</div></div>
+        <div class="entity envoy" id="envoyA"><div class="name">Envoy</div><div class="sub">sidecar</div></div>
+      </div>
+      <div class="pod" id="podB"><div class="podlbl">Pod B</div>
+        <div class="entity envoy" id="envoyB"><div class="name">Envoy</div><div class="sub">sidecar</div></div>
+        <div class="entity app" id="appB"><div class="name">app B</div><div class="sub">business logic</div></div>
+      </div>
+
+      <div class="cert a" id="certA">📜 cert A</div>
+      <div class="cert a" id="certB">📜 cert B</div>
+      <div class="dot" id="pkt"></div>
+      <div class="midlabel" id="midlabel">handshake mTLS · verifica reciproca dei certificati</div>
+      <div class="locktag" id="locktag">🔒 traffico autenticato e cifrato</div>
+    </div>
+
+    <div class="status">
+      <div class="txt" id="statusText">Avvio…</div>
+      <div class="dots" id="dots"></div>
+    </div>
+  </div>
+
+  <footer>Corso Cybersecurity — Leonardo SpA · Minicorso Service Mesh</footer>
+
+<script>
+const NSTEP=7, STEP=3400, LAST=5800, PAUSE=2000;
+const svg=document.getElementById('svg');
+const dotsBox=document.getElementById('dots');
+const statusText=document.getElementById('statusText');
+for(let i=0;i<NSTEP;i++){const d=document.createElement('div');d.className='sd';d.id='sd'+i;dotsBox.appendChild(d);}
+
+function wait(ms){return new Promise(r=>setTimeout(r,ms));}
+function line(x1,y1,x2,y2,color,w,dash){
+  const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+  l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);
+  l.setAttribute('stroke',color);l.setAttribute('stroke-width',w);
+  if(dash)l.setAttribute('stroke-dasharray','7 6');
+  l.setAttribute('opacity','0');l.setAttribute('stroke-linecap','round');
+  svg.appendChild(l);return l;
+}
+// coordinate ancore (viewBox 920x430)
+const IST={x:455,y:72}, EA={x:227,y:280}, EB={x:693,y:280}, APPA={x:111,y:280}, APPB={x:809,y:280};
+// linee statiche
+const lCA=line(IST.x,IST.y,EA.x,EA.y,'#0891B2',2,true);
+const lCB=line(IST.x,IST.y,EB.x,EB.y,'#0891B2',2,true);
+const lApp=line(APPA.x,APPA.y,EA.x,EA.y,'#94A3B8',2,false);
+const lMesh=line(EA.x,EA.y,EB.x,EB.y,'#CBD5E1',3,false);
+const lAppB=line(EB.x,EB.y,APPB.x,APPB.y,'#94A3B8',2,false);
+
+function showLine(l,color){l.setAttribute('opacity','1');if(color)l.setAttribute('stroke',color);}
+function setStatus(t){statusText.textContent=t;}
+function dotActive(i){for(let k=0;k<NSTEP;k++){const e=document.getElementById('sd'+k);e.className='sd'+(k<i?' done':k===i?' active':'');}}
+function glow(id,c){document.getElementById(id).classList.add(c);}
+function unglow(){document.querySelectorAll('.entity').forEach(e=>e.classList.remove('glow','glow-c'));}
+
+function place(el,x,y){el.style.left=(x-8)+'px';el.style.top=(y-8)+'px';}
+function placeCert(el,x,y){el.style.left=(x-30)+'px';el.style.top=(y-11)+'px';}
+async function travelCert(el,from,to){placeCert(el,from.x,from.y);el.style.opacity='1';
+  await wait(30);placeCert(el,to.x,to.y);await wait(1100);}
+async function travelPkt(cls,from,to,dur=1200){const p=document.getElementById('pkt');
+  p.className='dot '+cls;place(p,from.x,from.y);p.style.opacity='1';
+  await wait(30);place(p,to.x,to.y);await wait(dur);p.style.opacity='0';}
+
+function resetAll(){
+  [lCA,lCB,lApp,lMesh,lAppB].forEach(l=>{l.setAttribute('opacity','0');});
+  lMesh.setAttribute('stroke','#CBD5E1');lMesh.setAttribute('stroke-width','3');
+  ['certA','certB'].forEach(id=>document.getElementById(id).style.opacity='0');
+  document.getElementById('pkt').style.opacity='0';
+  document.getElementById('locktag').style.opacity='0';
+  document.getElementById('midlabel').style.opacity='0';
+  unglow();dotActive(-1);
+}
+
+async function animate(){
+  resetAll();
+  // 1 — istiod emette cert ad Envoy A
+  dotActive(0);setStatus('istiod (CA) emette il certificato d\'identità al sidecar A');
+  showLine(lCA);glow('istiod','glow-c');glow('envoyA','glow');
+  await travelCert(document.getElementById('certA'),IST,EA);
+  await wait(STEP-1100);
+
+  // 2 — istiod emette cert ad Envoy B
+  dotActive(1);setStatus('istiod emette il certificato d\'identità al sidecar B');
+  unglow();glow('istiod','glow-c');glow('envoyB','glow');showLine(lCB);
+  await travelCert(document.getElementById('certB'),IST,EB);
+  await wait(STEP-1100);
+
+  // 3 — app A parla in chiaro col proprio sidecar
+  dotActive(2);setStatus('app A invia la richiesta in chiaro al proprio sidecar');
+  unglow();glow('appA','glow');showLine(lApp);
+  await travelPkt('pkt-clear',APPA,EA,1000);
+  await wait(STEP-1030);
+
+  // 4 — handshake mTLS tra i sidecar
+  dotActive(3);setStatus('i due sidecar eseguono l\'handshake mTLS: si verificano a vicenda');
+  unglow();glow('envoyA','glow');glow('envoyB','glow');
+  showLine(lMesh,'#0891B2');document.getElementById('midlabel').style.opacity='1';
+  await travelPkt('pkt-clear',EA,EB,1200);
+  await travelPkt('pkt-clear',EB,EA,1200);
+  await wait(400);
+
+  // 5 — tunnel cifrato: dati Envoy A -> Envoy B
+  dotActive(4);setStatus('identità confermate: tunnel cifrato attivo, i dati viaggiano protetti');
+  document.getElementById('midlabel').style.opacity='0';
+  lMesh.setAttribute('stroke','#059669');lMesh.setAttribute('stroke-width','4');
+  await travelPkt('pkt-enc',EA,EB,1300);
+  await wait(STEP-1330);
+
+  // 6 — Envoy B consegna in chiaro ad app B
+  dotActive(5);setStatus('il sidecar B decifra e consegna la richiesta in chiaro ad app B');
+  unglow();glow('appB','glow');showLine(lAppB);
+  await travelPkt('pkt-clear',EB,APPB,1000);
+  await wait(STEP-1030);
+
+  // 7 — finale
+  dotActive(6);setStatus('Traffico mutuamente autenticato e cifrato — le app non gestiscono chiavi né handshake');
+  unglow();document.getElementById('locktag').style.opacity='1';
+  for(let k=0;k<NSTEP;k++)document.getElementById('sd'+k).className='sd done';
+  await wait(LAST);
+
+  resetAll();
+  await wait(PAUSE);
+  animate();
+}
+window.addEventListener('load',()=>setTimeout(animate,800));
+</script>
+</body>
+</html>
